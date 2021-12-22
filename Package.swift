@@ -23,6 +23,10 @@ let package = Package(
             dependencies: []),
         .testTarget(
             name: "HL7SwiftTests",
-            dependencies: ["HL7Swift"]),
+            dependencies: ["HL7Swift"],
+            resources: [
+                .process("Resources"),
+            ]
+        )
     ]
 )
