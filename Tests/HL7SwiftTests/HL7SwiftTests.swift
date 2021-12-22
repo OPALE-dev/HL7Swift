@@ -18,7 +18,7 @@
                                         
                     let msg = Message(content)
 
-                    print(msg.description == content)
+                    assert(msg.description == content)
                     
                 } catch {
                     print("a")
