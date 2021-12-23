@@ -18,7 +18,13 @@ struct HL7Server: ParsableCommand {
     var port: Int = 2575
     
     mutating func run() throws {
-    
+        let server = HL7Swift.HL7Server(host: self.hostname, port: self.port)
+        
+        do {
+            try server.start()
+        } catch let e {
+            Logger.error(e.localizedDescription)
+        }
     }
 }
 
