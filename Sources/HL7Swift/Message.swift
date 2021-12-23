@@ -7,9 +7,24 @@
 
 import Foundation
 
+
+
+
 public struct Message {
     var segments: [Segment] = []
     var sep:Character = "\r"
+    
+    
+    init?(withFileAt path: String) throws {
+        do {
+            let content = try String(contentsOf: URL(fileURLWithPath: path))
+                                
+            self.init(content)
+            
+        } catch let e {
+            throw HL7Error.fileNotFound(message: e.localizedDescription)
+        }
+    }
     
     init(_ str: String) {
         if str.split(separator: "\r").count > 1 {

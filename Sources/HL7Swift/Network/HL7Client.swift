@@ -57,7 +57,24 @@ public class HL7CLient: ChannelInboundHandler {
     }
     
     
-    public func send(fileAt path:String) {
+    
+    // MARK: -
+    
+    public func send(fileAt path:String) throws {
+        let message = try Message(withFileAt: path)
+        
+        self.send(message)
+    }
+    
+    
+    public func send(messageAs string:String) {
+        let message = Message(string)
+        
+        self.send(message)
+    }
+    
+    
+    public func send(_ message: Message?) {
         
     }
     

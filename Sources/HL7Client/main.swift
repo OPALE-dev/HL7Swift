@@ -28,7 +28,11 @@ struct HL7Client: ParsableCommand {
             
             Logger.info("Connected to \(hostname):\(port)...")
             
-            sleep(4)
+            do {
+                try client.send(fileAt: filePath)
+            } catch let e {
+                Logger.error(e.localizedDescription)
+            }
             
             client.disconnect()
             
