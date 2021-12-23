@@ -41,12 +41,19 @@ public struct Message {
         }
     }
     
+    /// Some messages have types on one cell, eg ACK
+    /// Others have their type on two cells, eg PPR^PC1
+    /// Others have their type on three cells, eg VXU^V04^VXU_V04
     func getType() -> String {
         // ACK / NAK
         if segments[0].fields[7].cells[0].components.isEmpty {
             return segments[0].fields[7].cells[0].text
         } else {
-            return segments[0].fields[7].cells[0].components[2].text
+            if segments[0].fields[7].cells[0].components.count == 3 {
+                return segments[0].fields[7].cells[0].components[2].text
+            } else {
+                return segments[0].fields[7].cells[0].components[0].text + "_" + segments[0].fields[7].cells[0].components[1].text
+            }
         }
     }
     
