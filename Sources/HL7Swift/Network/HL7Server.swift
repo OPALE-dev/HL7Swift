@@ -13,16 +13,23 @@ public class HL7Server : ChannelInboundHandler {
     
     var host:String = "0.0.0.0"
     var port:Int = 2575
+    var dir:String = "~/hl7"
     
     var channel: Channel!
     var group:MultiThreadedEventLoopGroup!
     var bootstrap:ServerBootstrap!
     
     
-    public init(host: String, port: Int) {
+    public init(host: String, port: Int, dir: String) throws {
         self.host = host
         self.port = port
+        self.dir  = NSString(string: dir).expandingTildeInPath
         
+        // make sure dir exist, else try to create it
+        if !FileManager.default.fileExists(atPath: self.dir) {
+            try FileManager.default.createDirectory(at: URL(fileURLWithPath: self.dir), withIntermediateDirectories: true, attributes: nil)
+        }
+                
         self.group = MultiThreadedEventLoopGroup(numberOfThreads: System.coreCount)
         self.bootstrap = ServerBootstrap(group: group)
             .serverChannelOption(ChannelOptions.backlog, value: 256)
@@ -50,6 +57,25 @@ public class HL7Server : ChannelInboundHandler {
         Logger.info("Server listening on port \(port)...")
         
         try channel.closeFuture.wait()
+    }
+    
+    
+    
+    // MARK: -
+    
+    public func channelRead(context: ChannelHandlerContext, data: NIOAny) {
+        let message = self.unwrapInboundIn(data)
+        let timeInterval = NSDate().timeIntervalSince1970
+        let filePath = "\(dir)/\(message.getType())-\(timeInterval).hl7"
+        
+        print(message.getType())
+        
+        do {
+            try message.description.write(toFile: filePath, atomically: true, encoding: .utf8)
+            
+        } catch let e {
+            Logger.error("FS write error: \(e.localizedDescription)")
+        }
     }
 }
 

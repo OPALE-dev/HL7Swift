@@ -16,6 +16,8 @@
                     let content = try String(contentsOf: URL(fileURLWithPath: path))
                                         
                     let msg = Message(content)
+                    
+                    print(msg.getType())
                                                             
                     assert(msg.description.trimmingCharacters(in: .newlines) == content.trimmingCharacters(in: .newlines))
                 } catch {
