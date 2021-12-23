@@ -23,7 +23,7 @@ public struct Segment {
         
         code = String(strCloneSplit.remove(at: 0))
                     
-        if strCloneSplit[0].contains("^") && strCloneSplit[0].contains("~") {
+        if code == "MSH" || code == "FHS" || code == "BHS" {
             fields.append(Field([Cell(String(strCloneSplit.remove(at: 0)), isEncoding: true)]))
         }
         
