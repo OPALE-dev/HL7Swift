@@ -3,6 +3,12 @@
     @testable import HL7Swift
 
     final class HL7SwiftTests: XCTestCase {
+        func testParseACK() {
+            let ackContent = "MSH|^~\\&||372523L|372520L|372521L|||ACK|1|D|2.5.1||||||\rMSA|AA|LRI_3.0_1.1-NG|"
+            let msg = Message(ackContent)
+            assert("ACK" == msg.getType())
+        }
+        
         func testParse() {
             // This is an example of a functional test case.
             // Use XCTAssert and related functions to verify your tests produce the correct
