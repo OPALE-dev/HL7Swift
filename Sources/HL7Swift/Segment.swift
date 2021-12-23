@@ -13,6 +13,12 @@ public struct Segment {
     
     init(_ str: String) {
         
+        // see ORU 1 txt file, contains a ^ at the last line
+        if !str.contains("|") {
+            code = str
+            return
+        }
+        
         var strCloneSplit = str.split(separator: "|", maxSplits: 50, omittingEmptySubsequences: false)
         
         code = String(strCloneSplit.remove(at: 0))
@@ -21,11 +27,9 @@ public struct Segment {
             fields.append(Field([Cell(String(strCloneSplit.remove(at: 0)), isEncoding: true)]))
         }
         
-        
         for field in strCloneSplit {
             fields.append(Field(String(field)))
         }
-        
     }
 }
 

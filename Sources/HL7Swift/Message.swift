@@ -19,7 +19,7 @@ public struct Message {
         } else if str.split(separator: "\r\n").count > 1 {
             sep = "\r\n"
         }
-        
+
         // TODO separate by newline or \r ?
         for segment in str.split(separator: sep) {
             segments.append(Segment(String(segment)))
