@@ -10,7 +10,7 @@ import HL7Swift
 import ArgumentParser
 import NIO
 
-struct HL7Server: ParsableCommand {
+struct HL7Server: ParsableCommand, HL7ServerDelegate {
     @Option(name: .shortAndLong, help: "Hostname the server binds (default 127.0.0.1)")
     var hostname: String = "127.0.0.1"
     
@@ -23,15 +23,52 @@ struct HL7Server: ParsableCommand {
     
     mutating func run() throws {
         do {
+            // make sure dir exists, else try to create it
+            if !FileManager.default.fileExists(atPath: self.dirPath) {
+                try FileManager.default.createDirectory(
+                    at: URL(fileURLWithPath: self.dirPath),
+                    withIntermediateDirectories: true,
+                    attributes: nil)
+            }
+            
+            // start the server
             let server = try HL7Swift.HL7Server(
                 host: self.hostname,
                 port: self.port,
-                dir: self.dirPath)
+                delegate: self)
             
             try server.start()
+            
         } catch let e {
             Logger.error(e.localizedDescription)
         }
+    }
+    
+    
+    
+    
+    
+    // MARK: -
+    
+    func server(_ server: HL7Swift.HL7Server, receive message: Message) {
+        print(message)
+        
+        // store file
+        let timeInterval = NSDate().timeIntervalSince1970
+
+        let filePath = "\(dirPath)/\(message.getType())-\(timeInterval).hl7"
+
+        do {
+            try message.description.write(toFile: filePath, atomically: true, encoding: .utf8)
+
+        } catch let e {
+            Logger.error("FS write error: \(e.localizedDescription)")
+        }
+    }
+    
+    
+    func server(_ server: HL7Swift.HL7Server, ACKStatusFor message:Message) -> AcknowledgeStatus {
+        return .AA
     }
 }
 
