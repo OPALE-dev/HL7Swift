@@ -8,5 +8,6 @@
 import Foundation
 
 public enum HL7Error: LocalizedError {
-    case fileNotFound(message:String)
+    case fileNotFound(message: String)
+    case encondingFailed(message: String)
 }

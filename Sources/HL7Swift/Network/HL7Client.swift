@@ -21,7 +21,10 @@ public class HL7CLient: ChannelInboundHandler {
         self.host = host
         self.port = port
     }
+
     
+    
+    // MARK: -
     
     public func connect() -> EventLoopFuture<Void> {
         let group = MultiThreadedEventLoopGroup(numberOfThreads: 1)
@@ -31,6 +34,7 @@ public class HL7CLient: ChannelInboundHandler {
             .channelOption(ChannelOptions.maxMessagesPerRead, value: 10)
             .channelInitializer { channel in
                 channel.pipeline.addHandlers([
+                    MessageToByteHandler(MLLPEncoder()),
                     ByteToMessageHandler(MLLPDecoder()),
                     self
                 ])
@@ -63,20 +67,42 @@ public class HL7CLient: ChannelInboundHandler {
     public func send(fileAt path:String) throws {
         let message = try Message(withFileAt: path)
         
-        self.send(message)
+        try self.send(message)
     }
     
     
-    public func send(messageAs string:String) {
+    public func send(messageAs string:String) throws {
         let message = Message(string)
         
-        self.send(message)
+        try self.send(message)
     }
     
     
-    public func send(_ message: Message?) {
+    public func send(_ message: Message?) throws {
+        guard let message = message else {
+            return
+        }
+        
+        //let buffer = channel?.allocator.buffer(string: message.description)
+        
+        try channel!.writeAndFlush(message).wait()
+    }
+    
+    
+    
+    
+    // MARK: -
+    
+    public func channelActive(context: ChannelHandlerContext) {
         
     }
+    
+    
+    public func channelRead(context: ChannelHandlerContext, data: NIOAny) {
+        print("channelRead")
+    }
+    
+
     
     
     // MARK: -

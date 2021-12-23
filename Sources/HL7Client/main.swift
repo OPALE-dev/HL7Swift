@@ -30,6 +30,7 @@ struct HL7Client: ParsableCommand {
             
             do {
                 try client.send(fileAt: filePath)
+                
             } catch let e {
                 Logger.error(e.localizedDescription)
             }
