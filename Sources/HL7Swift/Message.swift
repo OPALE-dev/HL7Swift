@@ -43,8 +43,8 @@ public struct Message {
     
     func getType() -> String {
         // ACK / NAK
-        if segments[0].fields[7].cells[0].components.count == 1 {
-            return segments[0].fields[7].cells[0].description
+        if segments[0].fields[7].cells[0].components.isEmpty {
+            return segments[0].fields[7].cells[0].text
         } else {
             return segments[0].fields[7].cells[0].components[2].text
         }
