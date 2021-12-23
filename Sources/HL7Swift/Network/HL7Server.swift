@@ -8,12 +8,18 @@
 import Foundation
 import NIO
 
-public class HL7Server : ChannelInboundHandler {
+public class HL7Server : ChannelInboundHandler, ChannelOutboundHandler {
+    public typealias OutboundIn = Message
     public typealias InboundIn = Message
+    public typealias OutboundOut = Message
+    
     
     var host:String = "0.0.0.0"
     var port:Int = 2575
     var dir:String = "~/hl7"
+    
+    var name:String = "HL7SERVER"
+    var facility:String = "HL7SERVER"
     
     var channel: Channel!
     var group:MultiThreadedEventLoopGroup!
@@ -68,14 +74,25 @@ public class HL7Server : ChannelInboundHandler {
         let timeInterval = NSDate().timeIntervalSince1970
         let filePath = "\(dir)/\(message.getType())-\(timeInterval).hl7"
         
-        print(message.getType())
-        
+        // write file to disk
         do {
             try message.description.write(toFile: filePath, atomically: true, encoding: .utf8)
             
         } catch let e {
             Logger.error("FS write error: \(e.localizedDescription)")
         }
+        
+        // get remote name and facility
+        let remoteName = message.segments[0].fields[1].description
+        let remoteFacility = message.segments[0].fields[1].description
+        
+        // reply ACK/NAK
+        let ack = """
+        MSH|^~\\&|\(self.name)|\(self.facility)|\(remoteName)|\(remoteFacility)|||ACK|1|D|2.5.1||||||
+        MSA|AA|OK|
+        """
+            
+        _ = context.writeAndFlush(NIOAny(Message(ack)))
     }
 }
 
