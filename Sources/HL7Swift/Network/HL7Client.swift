@@ -48,6 +48,15 @@ public class HL7CLient: ChannelInboundHandler {
     
     
     
+    public func disconnect() {
+        self.channel?.closeFuture.whenComplete { _ in
+
+        }
+        
+        self.channel?.close(promise: nil)
+    }
+    
+    
     public func send(fileAt path:String) {
         
     }

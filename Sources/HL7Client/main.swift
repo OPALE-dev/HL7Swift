@@ -21,6 +21,21 @@ struct HL7Client: ParsableCommand {
     var filePath: String
     
     mutating func run() throws {
+        let client = HL7Swift.HL7CLient(host: hostname, port: port)
+        
+        do {
+            try client.connect().wait()
+            
+            Logger.info("Connected to \(hostname):\(port)...")
+            
+            sleep(4)
+            
+            client.disconnect()
+            
+        } catch let e {
+            Logger.error("Connection error: \(e.localizedDescription)")
+        }
+        
         
     }
 }
