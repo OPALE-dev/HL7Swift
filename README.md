@@ -1,3 +1,8 @@
 # HL7Swift
 
-A description of this package.
+HL7 implementation in Swift.
+
+## TODO
+
+- Documentation
+- Message validation
