@@ -26,6 +26,23 @@
             }
         }
         
+        func testSpecParse() {
+            //for path in Bundle.module.paths(forResourcesOfType: "", inDirectory: "HL7-xml v2.5.1") {
+            //}
+            
+            let oru = Bundle.module.url(forResource: "ORU_R01 - 3", withExtension: "txt")
+            if let oruPath = oru {
+                do {
+                    let content = try String(contentsOf: oruPath)
+                    let msg = Message(content)
+                    let group = getGroup(forMessage: msg)
+                    // print(group)
+                } catch {
+                    print("x")
+                }
+            }
+        }
+        
         func testParse() {
             // This is an example of a functional test case.
             // Use XCTAssert and related functions to verify your tests produce the correct
