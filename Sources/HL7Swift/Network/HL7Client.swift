@@ -110,9 +110,7 @@ public class HL7CLient: ChannelInboundHandler {
     
     public func channelRead(context: ChannelHandlerContext, data: NIOAny) {
         let response = self.unwrapInboundIn(data)
-        
-        print(response)
-                
+                        
         if response.getType() == "ACK" || response.getType() == "NAK" {
             promise?.succeed(response)
 
@@ -129,5 +127,5 @@ public class HL7CLient: ChannelInboundHandler {
     
     
     // MARK: -
-
+    
 }
