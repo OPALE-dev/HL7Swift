@@ -28,6 +28,12 @@ let package = Package(
                 "HL7Swift",
                 .product(name: "ArgumentParser", package: "swift-argument-parser")
             ]),
+        .target(
+            name: "HL7Server",
+            dependencies: [
+                "HL7Swift",
+                .product(name: "ArgumentParser", package: "swift-argument-parser")
+            ]),
         .testTarget(
             name: "HL7SwiftTests",
             dependencies: ["HL7Swift"],
