@@ -9,13 +9,15 @@ import Foundation
 import NIO
 
 public class HL7CLient: ChannelInboundHandler {
-    public typealias InboundIn = ByteBuffer
-    public typealias OutboundOut = ByteBuffer
+    public typealias InboundIn = Message
+    public typealias OutboundOut = Message
     
     var host:String!
     var port:Int!
     
     var channel:Channel?
+    var promise: EventLoopPromise<Message>?
+
     
     public init(host: String, port: Int) {
         self.host = host
@@ -45,6 +47,9 @@ public class HL7CLient: ChannelInboundHandler {
             .flatMap { channel in
                 
             self.channel = channel
+            
+            // make promise to receive ACK/NAK
+            self.promise = self.channel?.eventLoop.makePromise(of: Message.self)
                         
             return channel.eventLoop.makeSucceededVoidFuture()
         }
@@ -64,28 +69,28 @@ public class HL7CLient: ChannelInboundHandler {
     
     // MARK: -
     
-    public func send(fileAt path:String) throws {
+    public func send(fileAt path:String) throws -> Message?  {
         let message = try Message(withFileAt: path)
         
-        try self.send(message)
+        return try self.send(message)
     }
     
     
-    public func send(messageAs string:String) throws {
+    public func send(messageAs string:String) throws -> Message?  {
         let message = Message(string)
         
-        try self.send(message)
+        return try self.send(message)
     }
     
     
-    public func send(_ message: Message?) throws {
+    public func send(_ message: Message?) throws -> Message? {
         guard let message = message else {
-            return
+            return nil
         }
+         
+        try channel?.writeAndFlush(message).wait()
         
-        //let buffer = channel?.allocator.buffer(string: message.description)
-        
-        try channel!.writeAndFlush(message).wait()
+        return try promise?.futureResult.wait()
     }
     
     
@@ -94,15 +99,31 @@ public class HL7CLient: ChannelInboundHandler {
     // MARK: -
     
     public func channelActive(context: ChannelHandlerContext) {
-        
+        Logger.debug("channelActive")
+    }
+    
+    
+    public func channelInactive(context: ChannelHandlerContext) {
+        Logger.debug("channelInactive")
     }
     
     
     public func channelRead(context: ChannelHandlerContext, data: NIOAny) {
-        print("channelRead")
+        let response = self.unwrapInboundIn(data)
+                
+        if response.getType() == "ACK" || response.getType() == "NAK" {
+            promise?.succeed(response)
+
+        } else {
+            promise?.fail(HL7Error.unexpectedMessage(message: response.getType()))
+        }
     }
     
-
+    
+    public func errorCaught(context: ChannelHandlerContext, error: Error) {
+        promise?.fail(error)
+    }
+    
     
     
     // MARK: -

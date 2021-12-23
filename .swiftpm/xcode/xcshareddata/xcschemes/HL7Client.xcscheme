@@ -76,7 +76,7 @@
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = "-h 127.0.0.1"
+            argument = "-h 192.168.1.13"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
@@ -84,7 +84,7 @@
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "&quot;/Users/nark/hl7swift/Tests/HL7SwiftTests/Resources/ADT_A01 - 1.txt&quot;"
+            argument = "&quot;/Users/nark/hl7swift/Tests/HL7SwiftTests/Resources/ORU_R01 - .4.txt&quot;"
             isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>
