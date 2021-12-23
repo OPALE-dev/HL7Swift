@@ -16,12 +16,21 @@ public struct Cell {
             text = str
         } else {
 
-            for component in str.split(separator: "^", maxSplits: 20, omittingEmptySubsequences: false) {
-                var componentsArray: [Cell] = []
-                for subcomponent in component.split(separator: "&", maxSplits: 20, omittingEmptySubsequences: false) {
-                    componentsArray.append(Cell(text: String(subcomponent), components: []))
+            if str.contains("^") {
+                for component in str.split(separator: "^", maxSplits: 20, omittingEmptySubsequences: false) {
+                    
+                    if component.contains("&") {
+                        var componentsArray: [Cell] = []
+                        for subcomponent in component.split(separator: "&", maxSplits: 20, omittingEmptySubsequences: false) {
+                            componentsArray.append(Cell(text: String(subcomponent), components: []))
+                        }
+                        components.append(Cell(text: "", components: componentsArray))
+                    } else {
+                        components.append(Cell(text: String(component), components: []))
+                    }
                 }
-                components.append(Cell(text: "", components: componentsArray))
+            } else {
+                text = str
             }
         }
     }

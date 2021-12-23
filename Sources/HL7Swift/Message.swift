@@ -42,7 +42,12 @@ public struct Message {
     }
     
     func getType() -> String {
-        return segments[0].fields[7].cells[0].components[2].text
+        // ACK / NAK
+        if segments[0].fields[7].cells[0].components.isEmpty {
+            return segments[0].fields[7].cells[0].text
+        } else {
+            return segments[0].fields[7].cells[0].components[2].text
+        }
     }
     
     func getVersion() -> String {
