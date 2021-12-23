@@ -10,3 +10,4 @@ HL7 implementation in Swift.
 - Pretty print message with groups
 - Convert to XML
 - Read message with the correct encoding
+- Enum for message type ?
