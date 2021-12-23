@@ -16,7 +16,15 @@ public func getGroup(forMessage: Message) -> Group? {
     let filePath = Bundle.module.url(forResource: resourcesPath + path, withExtension: "xsd")
 
     if let f = filePath {
+        do {
+            let xsdFile = try Message(String(contentsOf: f))
+        } catch {
+            print("x")
+        }
         
+        
+        let parser = MessageSpecParser()
+        parser.runParser(forMessage: forMessage)
             
       
     } else {
@@ -56,35 +64,52 @@ class MessageSpecParser: NSObject, XMLParserDelegate {
         }
     }
 
+    //parser methods
+    func runParser(forMessage: Message) {
+        let path = forMessage.getType()
+        let version = forMessage.getVersion()
+        
+        let resourcesPath = "Resources/Messages/HL7-xml v" + version + "/"
+        //let filePath = Bundle.module.url(forResource: resourcesPath + path, withExtension: "xsd")
+
+        
+        let xmlURL = Bundle.main.url(forResource: resourcesPath + path, withExtension: "xsd")!
+        let xmlParser = XMLParser(contentsOf: xmlURL)!
+        xmlParser.delegate = self
+        let success = xmlParser.parse()
+        if success {
+            print("parse success!")
+            print(currentElement)
+        } else {
+            print("parse failure!")
+        }
+    }
+    
     //MARK: XMLParserDelegate methods
 
     func parser(_ parser: XMLParser, didStartElement elementName: String, namespaceURI: String?, qualifiedName qName: String?, attributes attributeDict: [String : String]) {
         currentElement = elementName
-        if elementName == "StationDesc"
-        || elementName == "StationLatitude"
-        || elementName == "StationLongitude"
-        || elementName == "StationCode"
-        || elementName == "StationId"
+        if elementName == "xsd:schema"
+        || elementName == "xsd:include"
+        || elementName == "xsd:complexType"
+        || elementName == "xsd:sequence"
+        || elementName == "xsd:element"
         {
-            if elementName == "StationDesc" {
-                passName = true
-            }
+        
             passData = true
         }
     }
 
     func parser(_ parser: XMLParser, didEndElement elementName: String, namespaceURI: String?, qualifiedName qName: String?) {
         currentElement = ""
-        if elementName == "StationDesc"
-        || elementName == "StationLatitude"
-        || elementName == "StationLongitude"
-        || elementName == "StationCode"
-        || elementName == "StationId"
+        if elementName == "xsd:schema"
+        || elementName == "xsd:include"
+        || elementName == "xsd:complexType"
+        || elementName == "xsd:sequence"
+        || elementName == "xsd:element"
         {
-            if elementName == "StationDesc" {
-                passName = false
-            }
-            passData = false
+        
+            passData = true
         }
     }
 
@@ -96,15 +121,15 @@ class MessageSpecParser: NSObject, XMLParserDelegate {
         if passData {
             //ready content for codable struct
             switch currentElement {
-            case "StationDesc":
+            case "xsd:schema":
                 station = string
-            case "StationLatitude":
+            case "xsd:include":
                 latitude = string
-            case "StationLongitude":
+            case "xsd:complexType":
                 longitude = string
-            case "StationCode":
+            case "xsd:sequence":
                 code = string
-            case "StationId":
+            case "xsd:element":
                 id = string
                 print(string)
 
