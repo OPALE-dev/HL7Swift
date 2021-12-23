@@ -16,7 +16,7 @@ public class HL7Server {
     var group:MultiThreadedEventLoopGroup!
     var bootstrap:ServerBootstrap!
     
-    public init(port: Int, localAET:String, config:ServerConfig) {
+    public init(port: Int, localAET:String) {
         
     }
 }

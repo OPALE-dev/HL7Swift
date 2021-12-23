@@ -21,7 +21,10 @@ let package = Package(
         // Targets can depend on other targets in this package, and on products in packages this package depends on.
         .target(
             name: "HL7Swift",
-            dependencies: [.product(name: "NIO", package: "swift-nio")]),
+            dependencies: [.product(name: "NIO", package: "swift-nio")],
+            resources: [
+                .process("Resources"),
+            ]),
         .target(
             name: "HL7Client",
             dependencies: [
