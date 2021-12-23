@@ -59,7 +59,7 @@ public class HL7CLient: ChannelInboundHandler {
     
     public func disconnect() {
         self.channel?.closeFuture.whenComplete { _ in
-
+            Logger.info("Disconnected form \(self.host!):\(self.port!)")
         }
         
         self.channel?.close(promise: nil)

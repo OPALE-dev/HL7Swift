@@ -8,17 +8,23 @@
 import Foundation
 import NIO
 
+public protocol HL7ServerDelegate {
+    func server(_ server:HL7Server, receive message:Message)
+    func server(_ server:HL7Server, ACKStatusFor message:Message) -> AcknowledgeStatus
+}
+
+
 public class HL7Server : ChannelInboundHandler, ChannelOutboundHandler {
     public typealias OutboundIn = Message
     public typealias InboundIn = Message
     public typealias OutboundOut = Message
     
+    var host:String     = "0.0.0.0"
+    var port:Int        = 2575
     
-    var host:String = "0.0.0.0"
-    var port:Int = 2575
-    var dir:String = "~/hl7"
+    var delegate:HL7ServerDelegate?
     
-    var name:String = "HL7SERVER"
+    var name:String     = "HL7SERVER"
     var facility:String = "HL7SERVER"
     
     var channel: Channel!
@@ -26,16 +32,12 @@ public class HL7Server : ChannelInboundHandler, ChannelOutboundHandler {
     var bootstrap:ServerBootstrap!
     
     
-    public init(host: String, port: Int, dir: String) throws {
+    public init(host: String, port: Int, delegate: HL7ServerDelegate? = nil) throws {
         self.host = host
         self.port = port
-        self.dir  = NSString(string: dir).expandingTildeInPath
         
-        // make sure dir exist, else try to create it
-        if !FileManager.default.fileExists(atPath: self.dir) {
-            try FileManager.default.createDirectory(at: URL(fileURLWithPath: self.dir), withIntermediateDirectories: true, attributes: nil)
-        }
-                
+        self.delegate = delegate
+         
         self.group = MultiThreadedEventLoopGroup(numberOfThreads: System.coreCount)
         self.bootstrap = ServerBootstrap(group: group)
             .serverChannelOption(ChannelOptions.backlog, value: 256)
@@ -50,6 +52,13 @@ public class HL7Server : ChannelInboundHandler, ChannelOutboundHandler {
             .childChannelOption(ChannelOptions.socketOption(.so_reuseaddr), value: 1)
             .childChannelOption(ChannelOptions.maxMessagesPerRead, value: 16)
             .childChannelOption(ChannelOptions.recvAllocator, value: AdaptiveRecvByteBufferAllocator())
+    }
+    
+    
+    deinit {
+        channel.close(mode: .all, promise: nil)
+
+        try? group.syncShutdownGracefully()
     }
     
     
@@ -71,15 +80,9 @@ public class HL7Server : ChannelInboundHandler, ChannelOutboundHandler {
     
     public func channelRead(context: ChannelHandlerContext, data: NIOAny) {
         let message = self.unwrapInboundIn(data)
-        let timeInterval = NSDate().timeIntervalSince1970
-        let filePath = "\(dir)/\(message.getType())-\(timeInterval).hl7"
         
-        // write file to disk
-        do {
-            try message.description.write(toFile: filePath, atomically: true, encoding: .utf8)
-            
-        } catch let e {
-            Logger.error("FS write error: \(e.localizedDescription)")
+        if let delegate = self.delegate {
+            delegate.server(self, receive: message)
         }
         
         // get remote name and facility

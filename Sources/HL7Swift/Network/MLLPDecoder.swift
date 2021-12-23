@@ -27,7 +27,7 @@ public struct MLLPDecoder: ByteToMessageDecoder {
             // read message until EB (0x1C) + CR (0x0D)
             while buffer.readableBytes > 0 && !endFound {
                 byte = buffer.readString(length: 1)
-                
+                                
                 if byte != "\u{1C}" {
                     messageString.append(byte!)
                     
