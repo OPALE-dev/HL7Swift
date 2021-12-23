@@ -13,21 +13,9 @@ public func getGroup(forMessage: Message) -> Group? {
     let version = forMessage.getVersion()
     
     let resourcesPath = "Resources/Messages/HL7-xml v" + version + "/"
-    let filePath = Bundle.module.path(forResource: resourcesPath + path, ofType: "xsd")
+    let filePath = Bundle.module.url(forResource: resourcesPath + path, withExtension: "xsd")
 
     if let f = filePath {
-        let xml = XMLParser(contentsOf: URL(fileURLWithPath: f))
-        let xmlDelegate = MessageSpecParser()
-        xml?.delegate = xmlDelegate
-        if let result = xml?.parse() {
-            if result {
-                print("oui")
-            } else {
-                print("x")
-            }
-        } else {
-            print("x")
-        }
         
             
       

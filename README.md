@@ -9,3 +9,4 @@ HL7 implementation in Swift.
 - Handle exceptions
 - Pretty print message with groups
 - Convert to XML
+- Read message with the correct encoding
