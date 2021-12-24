@@ -67,8 +67,6 @@
                     let msg = Message(content)
                                         
                     assert(msg.description.trimmingCharacters(in: .newlines) == content.trimmingCharacters(in: .newlines))
-                    print(path)
-                    print(msg.getType())
                 } catch {
                     print("x")
                 }

@@ -9,7 +9,7 @@ HL7Swift is *not* a production ready library and is not intented to be used as s
 ## Dependencies
 
 * **SwiftNIO**: [https://github.com/apple/swift-nio](https://github.com/apple/swift-nio)
-* **Swift Arguement Parser** : [https://github.com/apple/swift-argument-parser](https://github.com/apple/swift-argument-parser)
+* **Swift Argument Parser** : [https://github.com/apple/swift-argument-parser](https://github.com/apple/swift-argument-parser)
 
 ## Features
 
