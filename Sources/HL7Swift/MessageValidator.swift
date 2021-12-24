@@ -9,25 +9,18 @@ import Foundation
 
 public func getGroup(forMessage: Message) -> Group? {
     let parser = MessageSpecParser()
-    parser.runParser(forMessage: forMessage)
-    print(parser.rootGroup ?? "")
-    
+    parser.runParser(forMessage: forMessage)    
     return parser.rootGroup
 }
 
 class MessageSpecParser: NSObject, XMLParserDelegate {
 
-    //list type variables to hold XML values (update list base on XML structure):
-    
-
-    //reusable method type veriales (do not touch)
+    // (do not touch)
     var strXMLData: String = ""
     
-    public var sequence: [String: [[String: String]]] = [:]
     var currentSequence: String = ""
     public var message: Message?
     
-    var currentGroup: Group? = nil
     var rootGroup: Group?
 
     //parser methods
@@ -49,8 +42,9 @@ class MessageSpecParser: NSObject, XMLParserDelegate {
         let xmlParser = XMLParser(contentsOf: xmlURL)!
         xmlParser.delegate = self
         let success = xmlParser.parse()
+        
         if success {
-            print("parse success!")
+
         } else {
             print("parse failure!")
         }
@@ -62,31 +56,23 @@ class MessageSpecParser: NSObject, XMLParserDelegate {
         
         if elementName == "xsd:complexType" {
             currentSequence = (attributeDict["name"])!
-            sequence[currentSequence] = []
-            print("current complexType " + currentSequence)
             
         } else if elementName == "xsd:element" {
-            sequence[currentSequence]?.append(attributeDict)
-            
             if let ref = attributeDict["ref"] {
+                // is it a segment ?
                 if ref.count == 3 {
-                    print("append segment \(ref) under \(currentSequence)")
                     if let segment = (message?.getSegment(code: ref)) {
-                        print(rootGroup!.appendSegment(segment: segment, underGroupName: currentSequence))
-                        print(rootGroup!.pretty())
+                        _ = rootGroup!.appendSegment(segment: segment, underGroupName: currentSequence)
                     }
+                // it is a group
                 } else {
-                    print("append group \(ref) under \(currentSequence)")
-                    print(rootGroup!.appendGroup(group: Group(name: ref + ".CONTENT", items: []), underGroupName: currentSequence))
-                    print(rootGroup!.pretty())
+                    _ = rootGroup!.appendGroup(group: Group(name: ref + ".CONTENT", items: []), underGroupName: currentSequence)
                 }
             }
-            
         }
     }
 
     func parser(_ parser: XMLParser, didEndElement elementName: String, namespaceURI: String?, qualifiedName qName: String?) {
-        print("")
     }
 
     func parser(_ parser: XMLParser, foundCharacters string: String) {
