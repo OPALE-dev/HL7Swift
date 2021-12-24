@@ -36,11 +36,21 @@
                     let content = try String(contentsOf: oruPath)
                     let msg = Message(content)
                     let group = getGroup(forMessage: msg)
-                    // print(group)
+                    print(group!.pretty())
                 } catch {
                     print("x")
                 }
             }
+        }
+        
+        func testGroup() {
+            var rootGroup = Group(name: "R1", items: [])
+            assert(rootGroup.appendGroup(group: Group(name: "R2", items: []), underGroupName: "R1"))
+            assert(rootGroup.appendGroup(group: Group(name: "R3", items: []), underGroupName: "R2"))
+            assert(rootGroup.appendSegment(segment: Segment("FSH||||zefzef|||"), underGroupName: "R1"))
+            assert(rootGroup.appendSegment(segment: Segment("FSH||||zefzef|||"), underGroupName: "R2"))
+            assert(rootGroup.appendSegment(segment: Segment("FSH||||zefzef|||"), underGroupName: "R3"))
+            //print(rootGroup.pretty())
         }
         
         func testParse() {
