@@ -13,11 +13,26 @@ public enum AcknowledgeStatus: String {
     case AR // rejected
 }
 
-
+/**
+ HL7 message. A message is a set of segments. The separator of the segments depends on the implementation : `\r`, `\n` or `\r\n`. The standard says `\r` but not all implementations follows that.
+ 
+ Usage :
+ ```
+ let message = Message("MSH|^~\\&||372523L|372520L|372521L|||ACK|1|D|2.5.1||||||\rMSA|AA|LRI_3.0_1.1-NG|")
+ 
+ print(message.getType())
+ # "ACK"
+ 
+ print(message.getVersion())
+ # "2.5.1"
+ 
+ print(message.segments[0])
+ # "MSH|^~\\&||372523L|372520L|372521L|||ACK|1|D|2.5.1||||||"
+ ```
+ */
 public struct Message {
     var segments: [Segment] = []
     var sep:Character = "\r"
-    
     
     init?(withFileAt path: String) throws {
         do {
@@ -31,6 +46,7 @@ public struct Message {
     }
     
     init(_ str: String) {
+        // The separator depends on the implementation, not on the standard
         if str.split(separator: "\r").count > 1 {
             sep = "\r"
         } else if str.split(separator: "\n").count > 1 {
@@ -39,12 +55,12 @@ public struct Message {
             sep = "\r\n"
         }
 
-        // TODO separate by newline or \r ?
         for segment in str.split(separator: sep) {
             segments.append(Segment(String(segment)))
         }
     }
     
+    /// Gets a segment with a given code
     func getSegment(code: String) -> Segment? {
         for segment in segments {
             if segment.code == code {
@@ -71,6 +87,7 @@ public struct Message {
         }
     }
     
+    /// Returns the version of the message (2.3, 2.3.1, 2.5, 2.5.1 etc)
     func getVersion() -> String {
         return segments[0].fields[10].cells[0].text
     }
