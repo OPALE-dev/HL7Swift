@@ -14,19 +14,13 @@ import Foundation
  
  Usage :
  ```
- let segment = Segment("MSH|^~\\&||372523L|372520L|372521L|||ACK|1|D|2.5.1||||||\rMSA|AA|LRI_3.0_1.1-NG|")
+ let segment = Segment("MSH|^~\\&||372523L|372520L|372521L|||ACK|1|D|2.5.1||||||")
  
  print(segment) # same as segment.description
- # "MSH|^~\\&||372523L|372520L|372521L|||ACK|1|D|2.5.1||||||\rMSA|AA|LRI_3.0_1.1-NG|"
+ # "MSH|^~\\&||372523L|372520L|372521L|||ACK|1|D|2.5.1||||||"
  
  print(segment.code)
  # "MSH"
- 
- print(segment.getType())
- # "ACK"
- 
- print(segment.getVersion())
- # "2.5.1"
  ```
  */
 public struct Segment {
