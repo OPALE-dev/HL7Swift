@@ -21,12 +21,13 @@ public class Version {
 }
 
 
-public class V23:Version {
+
+public class V26:Version {
     static let ACK = MessageType(rawValue: "ACK")
 }
 
 
-public class V26:Version {
+public class V282:Version {
     static let ACK = MessageType(rawValue: "ACK")
 }
 
