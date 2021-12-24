@@ -7,6 +7,18 @@
 
 import Foundation
 
+/**
+ A group is a set of segments and/or groups, with a name. It's like a tree
+ 
+ Usage :
+ ```
+ var rootGroup = Group(name: "R1", items: [])
+ 
+ rootGroup.appendGroup(group: Group(name: "R2", items: []), underGroupName: "R1")
+ 
+ rootGroup.appendSegment(segment: Segment("FSH||||whatever|||"), underGroupName: "R2")
+ ```
+ */
 public struct Group {
     public var name: String = ""
     public var items: [Item] = []
@@ -87,7 +99,6 @@ public struct Group {
         return str
     }
 }
-
 
 public indirect enum Item {
     case group(Group)

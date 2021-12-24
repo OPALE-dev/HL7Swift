@@ -91,6 +91,13 @@ public struct Message {
     func getVersion() -> String {
         return segments[0].fields[10].cells[0].text
     }
+    
+    /// Gets the group of the message : parses the spec file 
+    lazy var group: Group? = {
+        let parser = MessageSpecParser()
+        parser.runParser(forMessage: self)
+        return parser.rootGroup
+    }()
 }
 
 extension Message: CustomStringConvertible {
