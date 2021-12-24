@@ -12,7 +12,7 @@ public enum HL7Error: LocalizedError {
     case networkError(message: String)
     case encondingFailed(message: String)
     case unexpectedMessage(message: String)
-    
+    case unsupportedVersion(message: String)
     
     public var errorDescription: String? {
         switch self {
@@ -28,6 +28,9 @@ public enum HL7Error: LocalizedError {
             
         case .unexpectedMessage(message: let message):
             return "Unexpected message: \(message)"
+        
+        case .unsupportedVersion(message: let message):
+            return "Unsupported version: \(message)"
 
         }
     }

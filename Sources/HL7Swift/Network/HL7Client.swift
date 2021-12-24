@@ -110,12 +110,19 @@ public class HL7CLient: ChannelInboundHandler {
     
     public func channelRead(context: ChannelHandlerContext, data: NIOAny) {
         let response = self.unwrapInboundIn(data)
-                        
-        if response.getType() == "ACK" || response.getType() == "NAK" {
-            promise?.succeed(response)
+        
+        do {
+            let type = try response.getType()
+            
+            if type.rawValue == "ACK" || type.rawValue == "NAK" {
+                promise?.succeed(response)
 
-        } else {
-            promise?.fail(HL7Error.unexpectedMessage(message: response.getType()))
+            } else {
+                promise?.fail(HL7Error.unexpectedMessage(message: type.rawValue))
+            }
+            
+        } catch let e {
+            promise?.fail(e)
         }
     }
     

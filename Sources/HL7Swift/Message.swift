@@ -48,21 +48,30 @@ public struct Message {
     /// Some messages have types on one cell, eg ACK
     /// Others have their type on two cells, eg PPR^PC1
     /// Others have their type on three cells, eg VXU^V04^VXU_V04
-    public func getType() -> String {
+    public func getType() throws -> Version.MessageType {
+        var str = ""
+        
+        guard let version = getVersion() else {
+            throw HL7Error.unsupportedVersion(message: segments[0].fields[10].cells[0].text)
+        }
+        
         // ACK / NAK
         if segments[0].fields[7].cells[0].components.isEmpty {
-            return segments[0].fields[7].cells[0].text
+            str = segments[0].fields[7].cells[0].text
         } else {
             if segments[0].fields[7].cells[0].components.count == 3 {
-                return segments[0].fields[7].cells[0].components[2].text
+                str = segments[0].fields[7].cells[0].components[2].text
             } else {
-                return segments[0].fields[7].cells[0].components[0].text + "_" + segments[0].fields[7].cells[0].components[1].text
+                str = segments[0].fields[7].cells[0].components[0].text + "_" + segments[0].fields[7].cells[0].components[1].text
             }
         }
+        
+        return version.klass(forVersion: version).MessageType.init(rawValue: str)!
     }
+
     
-    func getVersion() -> String {
-        return segments[0].fields[10].cells[0].text
+    func getVersion() -> VersionType? {
+        return VersionType(rawValue: segments[0].fields[10].cells[0].text)
     }
 }
 

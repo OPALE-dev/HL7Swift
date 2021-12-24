@@ -54,9 +54,9 @@ struct HL7Server: ParsableCommand, HL7ServerDelegate {
         // store file
         let timeInterval = NSDate().timeIntervalSince1970
 
-        let filePath = "\(dirPath)/\(message.getType())-\(timeInterval).hl7"
-
         do {
+            let filePath = "\(dirPath)/\(try message.getType())-\(timeInterval).hl7"
+
             try message.description.write(toFile: filePath, atomically: true, encoding: .utf8)
 
         } catch let e {

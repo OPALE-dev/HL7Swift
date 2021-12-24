@@ -6,7 +6,7 @@
         func testParseACK() {
             let ackContent = "MSH|^~\\&||372523L|372520L|372521L|||ACK|1|D|2.5.1||||||\rMSA|AA|LRI_3.0_1.1-NG|"
             let msg = Message(ackContent)
-            assert("ACK" == msg.getType())
+            assert("ACK" == (try? msg.getType().rawValue))
         }
         
         func testType() {
@@ -19,7 +19,7 @@
                                         
                     let msg = Message(content)
     
-                    _ = msg.getType()
+                    _ = try? msg.getType().rawValue
                 } catch {
                     print("x")
                 }
@@ -42,7 +42,7 @@
                                         
                     assert(msg.description.trimmingCharacters(in: .newlines) == content.trimmingCharacters(in: .newlines))
                     print(path)
-                    print(msg.getType())
+                    print(try? msg.getType())
                 } catch {
                     print("x")
                 }
