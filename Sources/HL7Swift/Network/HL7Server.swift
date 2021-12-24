@@ -55,18 +55,20 @@ public class HL7Server : ChannelInboundHandler, ChannelOutboundHandler {
     }
     
     
-    deinit {
-        channel.close(mode: .all, promise: nil)
-
-        try? group.syncShutdownGracefully()
-    }
+//    deinit {
+//        print("deinit")
+//
+//        channel.close(mode: .all, promise: nil)
+//
+//        try? group.syncShutdownGracefully()
+//    }
     
     
     public func start() throws {
-        defer {
-            try? group.syncShutdownGracefully()
-        }
-        
+//        defer {
+//            try? group.syncShutdownGracefully()
+//        }
+//        
         channel = try bootstrap.bind(host: host, port: port).wait()
         
         Logger.info("Server listening on port \(port)...")
