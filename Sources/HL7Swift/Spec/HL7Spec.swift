@@ -9,15 +9,16 @@ import Foundation
 
 
 public enum VersionType:String {
-    case v23    = "2.3"
     case v251   = "2.5.1"
     case v26    = "2.6"
+    case v282   = "2.8.2"
     
     public static func klass(forVersion type: VersionType) -> Version.Type {
         switch type {
-        case .v23:  return V23.self
         case .v251: return V251.self
         case .v26:  return V26.self
+        case .v282:  return V282.self
+
         }
     }
 }
