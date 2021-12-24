@@ -41,6 +41,16 @@ public struct Message {
         }
     }
     
+    func getSegment(code: String) -> Segment? {
+        for segment in segments {
+            if segment.code == code {
+                return segment
+            }
+        }
+        
+        return nil
+    }
+    
     /// Some messages have types on one cell, eg ACK
     /// Others have their type on two cells, eg PPR^PC1
     /// Others have their type on three cells, eg VXU^V04^VXU_V04
