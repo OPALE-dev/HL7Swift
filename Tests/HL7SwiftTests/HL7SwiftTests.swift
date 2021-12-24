@@ -34,9 +34,8 @@
             if let oruPath = oru {
                 do {
                     let content = try String(contentsOf: oruPath)
-                    let msg = Message(content)
-                    let group = getGroup(forMessage: msg)
-                    print(group!.pretty())
+                    var msg = Message(content)
+                    _ = msg.group
                 } catch {
                     print("x")
                 }

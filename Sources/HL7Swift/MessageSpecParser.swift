@@ -7,23 +7,32 @@
 
 import Foundation
 
-public func getGroup(forMessage: Message) -> Group? {
-    let parser = MessageSpecParser()
-    parser.runParser(forMessage: forMessage)    
-    return parser.rootGroup
-}
-
+/**
+ Parser for the messages specifications (XSD files)
+ 
+ Usage :
+ ```
+ let parser = MessageSpecParser()
+ 
+ parser.runParser(forMessage: Message("MSH|whatever|..........|"))
+ print(parser.rootGroup.pretty())
+ ```
+ */
 class MessageSpecParser: NSObject, XMLParserDelegate {
 
     // (do not touch)
     var strXMLData: String = ""
     
     var currentSequence: String = ""
-    public var message: Message?
-    
+    var message: Message?
     var rootGroup: Group?
 
-    //parser methods
+    /**
+     Get the specification file for the message : if the message is of type ORU_R01, the parser will fetch
+     the ORU_R01.xsd file and parse it. It will generate a group accordingly to the message
+     
+     Beware: the message must have a version and a type, else it won't work
+    */
     func runParser(forMessage: Message) {
         message = forMessage
         
@@ -31,14 +40,7 @@ class MessageSpecParser: NSObject, XMLParserDelegate {
         let version = forMessage.getVersion()
         rootGroup = Group(name: path + ".CONTENT", items: [])
         
-        // let resourcesPath = "Resources/HL7-xml v" + version + "/"
-        //let filePath = Bundle.module.url(forResource: resourcesPath + path, withExtension: "xsd")
-
-        // print(resourcesPath + path)
-        //print(Bundle.module.paths(forResourcesOfType: "", inDirectory: nil))
-        //print(Bundle.module.paths(forResourcesOfType: "", inDirectory: "HL7-xml v2.5.1"))
-        
-        let xmlURL = Bundle.module.url(forResource: path, withExtension: "xsd", subdirectory: "HL7-xml v" + version)!//url(forResource: resourcesPath + path, withExtension: "xsd")!
+        let xmlURL = Bundle.module.url(forResource: path, withExtension: "xsd", subdirectory: "HL7-xml v" + version)!
         let xmlParser = XMLParser(contentsOf: xmlURL)!
         xmlParser.delegate = self
         let success = xmlParser.parse()

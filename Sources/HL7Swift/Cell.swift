@@ -7,6 +7,10 @@
 
 import Foundation
 
+/**
+ `Cell` contains the data of the HL7 message. A cell can contain components which can contain subcomponents.
+ Components may be sTODO
+ */
 public struct Cell {
     var text: String = ""
     var components: [Cell] = []
