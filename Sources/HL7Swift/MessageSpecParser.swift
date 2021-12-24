@@ -25,6 +25,7 @@ class MessageSpecParser: NSObject, XMLParserDelegate {
     
     var currentSequence: String = ""
     var message: Message?
+    var messageType: String = ""
     var rootGroup: Group?
 
     /**
@@ -37,12 +38,13 @@ class MessageSpecParser: NSObject, XMLParserDelegate {
         message = forMessage
         
         guard let version = forMessage.getVersion()?.rawValue else {
-            throw HL7Error.parserError(message: "Tu n'a rien à dire")
+            throw HL7Error.parserError(message: "Tu n'as rien à dire")
         }
         
         let path = try forMessage.getType().rawValue
-        
-        rootGroup = Group(name: path + ".CONTENT", items: [])
+        messageType = path
+        print("message type \(messageType)")
+        rootGroup = Group(name: "", items: [])
         
         let xmlURL = Bundle.module.url(forResource: path, withExtension: "xsd", subdirectory: "HL7-xml v" + version)!
         let xmlParser = XMLParser(contentsOf: xmlURL)!
@@ -63,6 +65,9 @@ class MessageSpecParser: NSObject, XMLParserDelegate {
         if elementName == "xsd:complexType" {
             currentSequence = (attributeDict["name"])!
             
+            currentSequence = shortName(currentSequence, type: messageType)
+            
+            
         } else if elementName == "xsd:element" {
             if let ref = attributeDict["ref"] {
                 // is it a segment ?
@@ -72,7 +77,8 @@ class MessageSpecParser: NSObject, XMLParserDelegate {
                     }
                 // it is a group
                 } else {
-                    _ = rootGroup!.appendGroup(group: Group(name: ref + ".CONTENT", items: []), underGroupName: currentSequence)
+                    let groupName = shortName(ref, type: messageType)
+                    _ = rootGroup!.appendGroup(group: Group(name: groupName, items: []), underGroupName: currentSequence)
                 }
             }
         }
