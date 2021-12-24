@@ -14,6 +14,7 @@ public enum HL7Error: LocalizedError {
     case unexpectedMessage(message: String)
     case unsupportedVersion(message: String)
     case parserError(message: String)
+    case initError(message: String)
     
     public var errorDescription: String? {
         switch self {
@@ -35,6 +36,9 @@ public enum HL7Error: LocalizedError {
 
         case .parserError(message: let message):
             return "Parser error: \(message)"
+            
+        case .initError(message: let message):
+            return "Init error: \(message)"
             
         }
     }

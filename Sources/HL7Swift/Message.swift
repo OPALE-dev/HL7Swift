@@ -60,6 +60,25 @@ public struct Message {
         }
     }
     
+    init?(withType type: Version.MessageType?) throws {
+        do {
+            guard let items = try group()?.items else {
+                throw HL7Error.initError(message: "Cannot build message of type \(type)")
+            }
+            
+            for index in items.indices {
+                switch items[index] {
+                case .segment(let segment):
+                    segments.append(segment)
+                default: continue
+                }
+            }
+            
+        } catch let e {
+            throw e
+        }
+    }
+    
     /// Gets a segment with a given code
     func getSegment(code: String) -> Segment? {
         for segment in segments {
@@ -92,7 +111,7 @@ public struct Message {
             }
         }
         
-        return version.klass(forVersion: version).MessageType.init(rawValue: str)!
+        return VersionType.klass(forVersion: version).MessageType.init(rawValue: str)!
     }
 
     

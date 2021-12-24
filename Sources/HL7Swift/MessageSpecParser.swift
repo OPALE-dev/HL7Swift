@@ -37,7 +37,7 @@ class MessageSpecParser: NSObject, XMLParserDelegate {
         message = forMessage
         
         guard let version = forMessage.getVersion()?.rawValue else {
-            throw HL7Error.parserError(message: "Tu n'a rien à dire")
+            throw HL7Error.parserError(message: "Cannot read version")
         }
         
         let path = try forMessage.getType().rawValue
