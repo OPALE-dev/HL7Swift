@@ -8,21 +8,6 @@
 import Foundation
 
 
-public enum VersionType:String {
-    case v23    = "2.3"
-    case v251   = "2.5.1"
-    case v26    = "2.6"
-    
-    public func klass(forVersion type: VersionType) -> Version.Type {
-        switch type {
-        case .v23:  return V23.self
-        case .v251: return V251.self
-        case .v26:  return V26.self
-        }
-    }
-}
-
-
 public class Version {
     public struct MessageType: RawRepresentable {
         public init?(rawValue: String) {

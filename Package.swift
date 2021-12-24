@@ -24,6 +24,7 @@ let package = Package(
             dependencies: [.product(name: "NIO", package: "swift-nio")],
             resources: [
                 .process("Resources"),
+                .process("Spec/Resources"),
             ]),
         .target(
             name: "HL7Client",

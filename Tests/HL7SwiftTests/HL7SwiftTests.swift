@@ -35,7 +35,8 @@
                 do {
                     let content = try String(contentsOf: oruPath)
                     var msg = Message(content)
-                    _ = try msg.group()
+                    
+                    print(try msg.group()!.pretty())
                 } catch {
                     print("x")
                 }
@@ -70,5 +71,11 @@
                     print("x")
                 }
             }
+        }
+        
+        func testSpec() {
+            let spec = try? HL7Spec(.v251)
+            
+            print(spec?.messages)
         }
     }
