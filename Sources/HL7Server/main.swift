@@ -24,7 +24,7 @@ struct HL7Server: ParsableCommand, HL7ServerDelegate {
     mutating func run() throws {
         do {
             // make sure dir exists, else try to create it
-            if !FileManager.default.fileExists(atPath: self.dirPath) {
+            if !FileManager.default.fileExists(atPath: (self.dirPath as NSString).expandingTildeInPath) {
                 try FileManager.default.createDirectory(
                     at: URL(fileURLWithPath: self.dirPath),
                     withIntermediateDirectories: true,
@@ -55,8 +55,8 @@ struct HL7Server: ParsableCommand, HL7ServerDelegate {
         let timeInterval = NSDate().timeIntervalSince1970
 
         do {
-            let filePath = "\(dirPath)/\(try message.getType())-\(timeInterval).hl7"
-
+            let filePath = "\((self.dirPath as NSString).expandingTildeInPath)/\(try message.getType().rawValue)-\(timeInterval).hl7"
+        
             try message.description.write(toFile: filePath, atomically: true, encoding: .utf8)
 
         } catch let e {

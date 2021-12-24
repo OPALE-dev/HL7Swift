@@ -26,6 +26,31 @@
             }
         }
         
+        func testSpecParse() {
+            //for path in Bundle.module.paths(forResourcesOfType: "", inDirectory: "HL7-xml v2.5.1") {
+            //}
+            
+            let oru = Bundle.module.url(forResource: "ORU_R01 - 3", withExtension: "txt")
+            if let oruPath = oru {
+                do {
+                    let content = try String(contentsOf: oruPath)
+                    var msg = Message(content)
+                    _ = try msg.group()
+                } catch {
+                    print("x")
+                }
+            }
+        }
+        
+        func testGroup() {
+            var rootGroup = Group(name: "R1", items: [])
+            assert(rootGroup.appendGroup(group: Group(name: "R2", items: []), underGroupName: "R1"))
+            assert(rootGroup.appendGroup(group: Group(name: "R3", items: []), underGroupName: "R2"))
+            assert(rootGroup.appendSegment(segment: Segment("FSH||||zefzef|||"), underGroupName: "R1"))
+            assert(rootGroup.appendSegment(segment: Segment("FSH||||zefzef|||"), underGroupName: "R2"))
+            assert(rootGroup.appendSegment(segment: Segment("FSH||||zefzef|||"), underGroupName: "R3"))
+        }
+        
         func testParse() {
             // This is an example of a functional test case.
             // Use XCTAssert and related functions to verify your tests produce the correct
@@ -41,8 +66,6 @@
                     let msg = Message(content)
                                         
                     assert(msg.description.trimmingCharacters(in: .newlines) == content.trimmingCharacters(in: .newlines))
-                    print(path)
-                    print(try? msg.getType())
                 } catch {
                     print("x")
                 }
