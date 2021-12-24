@@ -8,9 +8,12 @@
 import Foundation
 
 public func getGroup(forMessage: Message) -> Group? {
-    
-    let path = forMessage.getType()
-    let version = forMessage.getVersion()
+    guard let path = try? forMessage.getType().rawValue else {
+        return nil
+    }
+    guard let version = forMessage.getVersion()?.rawValue else {
+        return nil
+    }
     
     let resourcesPath = "Resources/Messages/HL7-xml v" + version + "/"
     let filePath = Bundle.module.url(forResource: resourcesPath + path, withExtension: "xsd")
@@ -66,8 +69,12 @@ class MessageSpecParser: NSObject, XMLParserDelegate {
 
     //parser methods
     func runParser(forMessage: Message) {
-        let path = forMessage.getType()
-        let version = forMessage.getVersion()
+        guard let path = try? forMessage.getType().rawValue else {
+            return
+        }
+        guard let version = forMessage.getVersion()?.rawValue else {
+            return
+        }
         
         let resourcesPath = "Resources/Messages/HL7-xml v" + version + "/"
         //let filePath = Bundle.module.url(forResource: resourcesPath + path, withExtension: "xsd")
