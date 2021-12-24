@@ -14,21 +14,18 @@ public struct Group {
     /// Appends a segment to the group, under a certain group, eg. ORU_RO1.CONTENT
     /// Returns `true` is the segment was appended
     public mutating func appendSegment(segment: Segment, underGroupName: String) -> Bool {
-        print("trying to add segment \(segment.code) to group \(underGroupName) [current \(name)]")
+        var isAppended = false
         
         if name == underGroupName {
             items.append(Item.segment(segment))
             
-            return true
+            isAppended = true
         } else {
-            for index in items.indices {
+            for index in items.indices where isAppended != true {
                 switch items[index] {
                 case .group(var itemGroup):
-                    let rst = itemGroup.appendSegment(segment: segment, underGroupName: underGroupName)
+                    isAppended = itemGroup.appendSegment(segment: segment, underGroupName: underGroupName)
                     items[index] = Item.group(itemGroup)
-                    if rst {
-                        return rst
-                    }
 
                 default:
                     continue
@@ -36,36 +33,38 @@ public struct Group {
             }
         }
         
-        return false
+        return isAppended
     }
     
+    /// Appends a group under a given group
+    /// Returns `true` if the group is added
     public mutating func appendGroup(group: Group, underGroupName: String) -> Bool {
+        var appended = false
+        
         if group.name == self.name {
             print("TODO error : can't append a group already appended")
-            return false
+
         } else if group.name == underGroupName {
             print("TODO error : can't append a group under the same group")
-            return false
+
         } else if name == underGroupName {
             items.append(Item.group(group))
             
-            return true
+            appended = true
         } else {
-            for index in items.indices {
+            for index in items.indices where appended != true {
                 switch items[index] {
                 case .group(var itemGroup):
-                    let rst = itemGroup.appendGroup(group: group, underGroupName: underGroupName)
+                    appended = itemGroup.appendGroup(group: group, underGroupName: underGroupName)
                     items[index] = Item.group(itemGroup)
-                    if rst {
-                        return rst
-                    }
+    
                 default:
                     continue
                 }
             }
         }
         
-        return false
+        return appended
     }
     
     /// Returns a pretty string
