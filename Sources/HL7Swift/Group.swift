@@ -14,15 +14,22 @@ public struct Group {
     /// Appends a segment to the group, under a certain group, eg. ORU_RO1.CONTENT
     /// Returns `true` is the segment was appended
     public mutating func appendSegment(segment: Segment, underGroupName: String) -> Bool {
+        print("trying to add segment \(segment.code) to group \(underGroupName) [current \(name)]")
+        
         if name == underGroupName {
             items.append(Item.segment(segment))
             
             return true
         } else {
-            for item in items {
-                switch item {
+            for index in items.indices {
+                switch items[index] {
                 case .group(var itemGroup):
-                    return itemGroup.appendSegment(segment: segment, underGroupName: underGroupName)
+                    let rst = itemGroup.appendSegment(segment: segment, underGroupName: underGroupName)
+                    items[index] = Item.group(itemGroup)
+                    if rst {
+                        return rst
+                    }
+
                 default:
                     continue
                 }
@@ -44,10 +51,14 @@ public struct Group {
             
             return true
         } else {
-            for item in items {
-                switch item {
+            for index in items.indices {
+                switch items[index] {
                 case .group(var itemGroup):
-                    return itemGroup.appendGroup(group: group, underGroupName: underGroupName)
+                    let rst = itemGroup.appendGroup(group: group, underGroupName: underGroupName)
+                    items[index] = Item.group(itemGroup)
+                    if rst {
+                        return rst
+                    }
                 default:
                     continue
                 }
@@ -56,7 +67,28 @@ public struct Group {
         
         return false
     }
+    
+    /// Returns a pretty string
+    public func pretty(depth: Int = 1) -> String {
+        var str = name + ":\n"
+        
+        for item in items {
+            str += String(repeating: "\t", count: depth)
+            
+            switch item {
+            case .group(let group):
+                str += group.pretty(depth: depth + 1)
+            case .segment(let segment):
+                str += segment.code
+            }
+            
+            str += "\n"
+        }
+        
+        return str
+    }
 }
+
 
 public indirect enum Item {
     case group(Group)
