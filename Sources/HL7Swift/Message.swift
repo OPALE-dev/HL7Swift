@@ -7,7 +7,11 @@
 
 import Foundation
 
-
+public enum AcknowledgeStatus: String {
+    case AA // accepted
+    case AE // app error
+    case AR // rejected
+}
 
 
 public struct Message {
@@ -54,7 +58,7 @@ public struct Message {
     /// Some messages have types on one cell, eg ACK
     /// Others have their type on two cells, eg PPR^PC1
     /// Others have their type on three cells, eg VXU^V04^VXU_V04
-    func getType() -> String {
+    public func getType() -> String {
         // ACK / NAK
         if segments[0].fields[7].cells[0].components.isEmpty {
             return segments[0].fields[7].cells[0].text

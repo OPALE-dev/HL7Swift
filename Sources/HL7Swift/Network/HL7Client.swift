@@ -9,19 +9,24 @@ import Foundation
 import NIO
 
 public class HL7CLient: ChannelInboundHandler {
-    public typealias InboundIn = ByteBuffer
-    public typealias OutboundOut = ByteBuffer
+    public typealias InboundIn = Message
+    public typealias OutboundOut = Message
     
     var host:String!
     var port:Int!
     
     var channel:Channel?
+    var promise: EventLoopPromise<Message>?
+
     
     public init(host: String, port: Int) {
         self.host = host
         self.port = port
     }
+
     
+    
+    // MARK: -
     
     public func connect() -> EventLoopFuture<Void> {
         let group = MultiThreadedEventLoopGroup(numberOfThreads: 1)
@@ -31,6 +36,7 @@ public class HL7CLient: ChannelInboundHandler {
             .channelOption(ChannelOptions.maxMessagesPerRead, value: 10)
             .channelInitializer { channel in
                 channel.pipeline.addHandlers([
+                    MessageToByteHandler(MLLPEncoder()),
                     ByteToMessageHandler(MLLPDecoder()),
                     self
                 ])
@@ -41,6 +47,9 @@ public class HL7CLient: ChannelInboundHandler {
             .flatMap { channel in
                 
             self.channel = channel
+            
+            // make promise to receive ACK/NAK
+            self.promise = self.channel?.eventLoop.makePromise(of: Message.self)
                         
             return channel.eventLoop.makeSucceededVoidFuture()
         }
@@ -50,7 +59,7 @@ public class HL7CLient: ChannelInboundHandler {
     
     public func disconnect() {
         self.channel?.closeFuture.whenComplete { _ in
-
+            Logger.info("Disconnected form \(self.host!):\(self.port!)")
         }
         
         self.channel?.close(promise: nil)
@@ -60,25 +69,63 @@ public class HL7CLient: ChannelInboundHandler {
     
     // MARK: -
     
-    public func send(fileAt path:String) throws {
+    public func send(fileAt path:String) throws -> Message?  {
         let message = try Message(withFileAt: path)
         
-        self.send(message)
+        return try self.send(message)
     }
     
     
-    public func send(messageAs string:String) {
+    public func send(messageAs string:String) throws -> Message?  {
         let message = Message(string)
         
-        self.send(message)
+        return try self.send(message)
     }
     
     
-    public func send(_ message: Message?) {
+    public func send(_ message: Message?) throws -> Message? {
+        guard let message = message else {
+            return nil
+        }
+         
+        try channel?.writeAndFlush(message).wait()
         
+        return try promise?.futureResult.wait()
     }
+    
+    
     
     
     // MARK: -
+    
+    public func channelActive(context: ChannelHandlerContext) {
+        Logger.debug("channelActive")
+    }
+    
+    
+    public func channelInactive(context: ChannelHandlerContext) {
+        Logger.debug("channelInactive")
+    }
+    
+    
+    public func channelRead(context: ChannelHandlerContext, data: NIOAny) {
+        let response = self.unwrapInboundIn(data)
+                        
+        if response.getType() == "ACK" || response.getType() == "NAK" {
+            promise?.succeed(response)
 
+        } else {
+            promise?.fail(HL7Error.unexpectedMessage(message: response.getType()))
+        }
+    }
+    
+    
+    public func errorCaught(context: ChannelHandlerContext, error: Error) {
+        promise?.fail(error)
+    }
+    
+    
+    
+    // MARK: -
+    
 }
