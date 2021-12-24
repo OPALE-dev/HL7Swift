@@ -44,9 +44,7 @@ struct HL7Server: ParsableCommand, HL7ServerDelegate {
         }
     }
     
-    
-    
-    
+        
     
     // MARK: -
     
@@ -71,5 +69,9 @@ struct HL7Server: ParsableCommand, HL7ServerDelegate {
         return .AA
     }
 }
+
+
+
+// MARK: -
 
 HL7Server.main()
