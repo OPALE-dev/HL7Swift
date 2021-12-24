@@ -7,6 +7,28 @@
 
 import Foundation
 
+/**
+ A segment is composed of a set of fields
+ The first field is the code; the code is left out from the field array. The fields are separated by a pipe, you can retrieve the original format
+ with the property `description`.
+ 
+ Usage :
+ ```
+ let segment = Segment("MSH|^~\\&||372523L|372520L|372521L|||ACK|1|D|2.5.1||||||\rMSA|AA|LRI_3.0_1.1-NG|")
+ 
+ print(segment) # same as segment.description
+ # "MSH|^~\\&||372523L|372520L|372521L|||ACK|1|D|2.5.1||||||\rMSA|AA|LRI_3.0_1.1-NG|"
+ 
+ print(segment.code)
+ # "MSH"
+ 
+ print(segment.getType())
+ # "ACK"
+ 
+ print(segment.getVersion())
+ # "2.5.1"
+ ```
+ */
 public struct Segment {
     var code: String = ""
     var fields: [Field] = []
