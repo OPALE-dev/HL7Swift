@@ -73,17 +73,18 @@
             }
         }
         
-        func testSpec() {
-            let _ = try? HL7(.v23)
-            let _ = try? HL7(.v231)
-            let _ = try? HL7(.v24)
-            let _ = try? HL7(.v25)
-            let _ = try? HL7(.v251)
-            let _ = try? HL7(.v26)
-            let _ = try? HL7(.v27)
-            let _ = try? HL7(.v271)
-            let _ = try? HL7(.v28)
-            let _ = try? HL7(.v281)
-            let _ = try? HL7(.v282)
+        
+        
+        func testAllSpec() {
+            let _ = HL7()
+        }
+        
+        
+        func testSpec251() {
+            let version = Version.v251
+            let spec    = try! HL7(version)
+            
+            print(spec[V251.ADT_A01, version]!)
+            print(spec["ADT_A01", version]!)
         }
     }

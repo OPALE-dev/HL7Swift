@@ -8,10 +8,7 @@
 import Foundation
 import NIO
 
-public class HL7CLient: ChannelInboundHandler {
-    public typealias InboundIn = Message
-    public typealias OutboundOut = Message
-    
+public class HL7CLient {
     var host:String!
     var port:Int!
     
@@ -92,11 +89,16 @@ public class HL7CLient: ChannelInboundHandler {
         
         return try promise?.futureResult.wait()
     }
-    
-    
-    
-    
+
+}
+
+
+
     // MARK: -
+extension HL7CLient: ChannelInboundHandler {
+    public typealias InboundIn = Message
+    public typealias OutboundOut = Message
+    
     
     public func channelActive(context: ChannelHandlerContext) {
         Logger.debug("channelActive")
@@ -130,9 +132,4 @@ public class HL7CLient: ChannelInboundHandler {
     public func errorCaught(context: ChannelHandlerContext, error: Error) {
         promise?.fail(error)
     }
-    
-    
-    
-    // MARK: -
-    
 }
