@@ -36,14 +36,14 @@ class MessageSpecParser: NSObject, XMLParserDelegate {
     func runParser(forMessage: Message) throws {
         message = forMessage
         
-        guard let version = forMessage.getVersion()?.rawValue else {
+        guard let version = forMessage.getVersion()?.description else {
             throw HL7Error.parserError(message: "Cannot read version")
         }
         
         let path = try forMessage.getType().rawValue
         
         rootGroup = Group(name: path + ".CONTENT", items: [])
-        
+                
         let xmlURL = Bundle.module.url(forResource: path, withExtension: "xsd", subdirectory: "HL7-xml v" + version)!
         let xmlParser = XMLParser(contentsOf: xmlURL)!
         xmlParser.delegate = self

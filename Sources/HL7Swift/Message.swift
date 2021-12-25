@@ -111,13 +111,13 @@ public struct Message {
             }
         }
         
-        return Version.klass(forVersion: version).MessageType.init(rawValue: str)!
+        return Version.klass(forVersion: version).MessageType.init(rawValue: str)
     }
 
     
 
     func getVersion() -> Version? {
-        return Version(rawValue: segments[0].fields[10].cells[0].text)
+        return Version(string: segments[0].fields[10].cells[0].text)
     }
     
     

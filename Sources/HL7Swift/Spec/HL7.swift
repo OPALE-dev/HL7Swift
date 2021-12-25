@@ -11,14 +11,15 @@ import Foundation
 
 public class SpecMessage: CustomStringConvertible {
     public var description: String {
-        "\(type.rawValue) \(rootGroup.debugDescription)"
+        "\(type.rawValue) \(rootGroup.pretty())"
     }
     
     var type:HL7.MessageType!
-    var rootGroup: Group?
+    var rootGroup: Group!
     
     init(type: HL7.MessageType) {
         self.type = type
+        self.rootGroup = Group(name: type.rawValue + ".CONTENT", items: [])
     }
 
 }
@@ -28,7 +29,7 @@ public class SpecMessage: CustomStringConvertible {
 
 public class HL7: NSObject, XMLParserDelegate {
     public struct MessageType: RawRepresentable {
-        public init?(rawValue: String) {
+        public init(rawValue: String) {
             self.rawValue = rawValue
         }
         
@@ -38,79 +39,109 @@ public class HL7: NSObject, XMLParserDelegate {
     
     
         
-    var version:Version = .v251
+    var version:Version = .all
 
-    var messages:[SpecMessage] = []
+    var messages:[Version:[SpecMessage]] = [:]
     
     var loadMessagesFlag = false
     var loadSegmentsFlag = false
     
+    var currentVersion:Version? = nil
     var currentSequence:String? = nil
-    var loadingMessage:SpecMessage? = nil
+    var currentMessage:SpecMessage? = nil
     
-    init(_ version:Version) throws {
-        self.version = version
+    
+    public override init() {
+        super.init()
+        
+        do {
+            try loadVersions()
+        } catch let e {
+            Logger.error(e.localizedDescription)
+        }
+    }
+    
+    
+    init(_ version:Version? = .all) throws {
+        self.version = version ?? .all
         
         super.init()
         
-        try loadMessages()
+        try loadVersions()
     }
     
     
-    // MARK: -
     
-    subscript(type: HL7.MessageType) -> SpecMessage? {
-        for message in messages {
-            if message.type == type {
-                return message
+    // MARK: -
+    subscript(type: HL7.MessageType, version: Version) -> SpecMessage? {
+        if let messages = messages[version] {
+            for message in messages {
+                if message.type == type {
+                    return message
+                }
+            }
+        }
+        return nil
+    }
+
+    subscript(name: String, version: Version) -> SpecMessage? {
+        if let messages = messages[version] {
+            for message in messages {
+                if message.type.rawValue == name {
+                    return message
+                }
             }
         }
         return nil
     }
     
-    subscript(name: String) -> SpecMessage? {
-        for message in messages {
-            if message.type.rawValue == name {
-                return message
+    
+    // MARK: -
+    func loadVersions() throws {
+        if self.version == .all {
+            for v in Version.allCases {
+                currentVersion = v
+                try loadMessages(forVersion: v)
             }
+        } else {
+            currentVersion = version
+            try loadMessages(forVersion: self.version)
         }
-        return nil
     }
     
     
-    // MARK: -
-    
-    func loadMessages() throws {
-        let xmlURL = Bundle.module.url(forResource: "messages", withExtension: "xsd", subdirectory: "v\(version.rawValue)")!
+    func loadMessages(forVersion version: Version) throws {
+        let xmlURL = Bundle.module.url(forResource: "messages", withExtension: "xsd", subdirectory: "v\(version.description)")!
         
         let xmlParser = XMLParser(contentsOf: xmlURL)!
         
         xmlParser.delegate = self
         
         loadMessagesFlag = true
+        currentVersion = version
         
         if !xmlParser.parse() {
             throw HL7Error.parserError(message: "Cannot parse")
         }
                 
-        for m in messages {
-            try loadSegments(forMessage: m)
+        for (version, messages) in messages {
+            for message in messages {
+                try loadSegments(forMessage: message, version: version)
+            }
         }
     }
     
     
     
-    func loadSegments(forMessage message: SpecMessage) throws {
-        if let xmlURL = Bundle.module.url(forResource: message.type.rawValue, withExtension: "xsd", subdirectory: "v\(version.rawValue)/messages") {
+    func loadSegments(forMessage message: SpecMessage, version: Version) throws {
+        if let xmlURL = Bundle.module.url(forResource: message.type.rawValue, withExtension: "xsd", subdirectory: "v\(version.description)/messages") {
             let xmlParser = XMLParser(contentsOf: xmlURL)!
             
             xmlParser.delegate = self
             
             loadSegmentsFlag = true
-            loadingMessage = message
-            
-            loadingMessage?.rootGroup = Group(name: message.type.rawValue + ".CONTENT", items: [])
-            
+            currentMessage = message
+                        
             if !xmlParser.parse() {
                 throw HL7Error.parserError(message: "Cannot parse")
             }
@@ -125,9 +156,13 @@ public class HL7: NSObject, XMLParserDelegate {
         if loadMessagesFlag {
             if elementName == "xsd:element" {
                 if let ref = attributeDict["ref"] {
-                   if let type = Version.klass(forVersion: version).MessageType.init(rawValue: ref) {
-                        messages.append(SpecMessage(type: type))
-                   }
+                    let type = Version.klass(forVersion: version).MessageType.init(rawValue: ref)
+                        
+                    if messages[currentVersion!] == nil {
+                        messages[currentVersion!] = []
+                    }
+                    
+                    messages[currentVersion!]?.append(SpecMessage(type: type))
                 }
             }
         }
@@ -140,10 +175,10 @@ public class HL7: NSObject, XMLParserDelegate {
                     if let currentSequence = currentSequence {
                         // is it a segment ?
                         if ref.count == 3 {
-                            _ = loadingMessage?.rootGroup?.appendSegment(segment: Segment(ref), underGroupName: currentSequence)
+                            _ = currentMessage?.rootGroup?.appendSegment(segment: Segment(ref), underGroupName: currentSequence)
                         // it is a group
                         } else {
-                            _ = loadingMessage?.rootGroup?.appendGroup(group: Group(name: ref + ".CONTENT", items: []), underGroupName: currentSequence)
+                            _ = currentMessage?.rootGroup?.appendGroup(group: Group(name: ref + ".CONTENT", items: []), underGroupName: currentSequence)
                         }
                     }
                 }
@@ -175,7 +210,7 @@ public class HL7: NSObject, XMLParserDelegate {
             loadSegmentsFlag = false
         }
      
-        loadingMessage = nil
+        currentMessage = nil
     }
     
 }
