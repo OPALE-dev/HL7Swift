@@ -60,7 +60,7 @@ public struct Message {
         }
     }
     
-    init?(withType type: Version.MessageType?) throws {
+    init?(withType type: HL7.MessageType?) throws {
         do {
             guard let items = try group()?.items else {
                 throw HL7Error.initError(message: "Cannot build message of type \(type)")
@@ -93,7 +93,7 @@ public struct Message {
     /// Some messages have types on one cell, eg ACK
     /// Others have their type on two cells, eg PPR^PC1
     /// Others have their type on three cells, eg VXU^V04^VXU_V04
-    public func getType() throws -> Version.MessageType {
+    public func getType() throws -> HL7.MessageType {
         var str = ""
         
         guard let version = getVersion() else {
@@ -111,13 +111,13 @@ public struct Message {
             }
         }
         
-        return VersionType.klass(forVersion: version).MessageType.init(rawValue: str)!
+        return Version.klass(forVersion: version).MessageType.init(rawValue: str)!
     }
 
     
 
-    func getVersion() -> VersionType? {
-        return VersionType(rawValue: segments[0].fields[10].cells[0].text)
+    func getVersion() -> Version? {
+        return Version(rawValue: segments[0].fields[10].cells[0].text)
     }
     
     

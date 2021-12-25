@@ -23,6 +23,24 @@ public struct Group {
     public var name: String = ""
     public var items: [Item] = []
     
+    
+    /// subscript that return a group item based on its name
+    /// Returns `Group` is matching group item found
+    subscript(name: String) -> Group? {
+        for index in items.indices {
+            switch items[index] {
+            case .group(let itemGroup):
+                if itemGroup.name == name {
+                    return itemGroup
+                }
+            default:
+                continue
+            }
+        }
+        return nil
+    }
+    
+    
     /// Appends a segment to the group, under a certain group, eg. ORU_RO1.CONTENT
     /// Returns `true` is the segment was appended
     public mutating func appendSegment(segment: Segment, underGroupName: String) -> Bool {
