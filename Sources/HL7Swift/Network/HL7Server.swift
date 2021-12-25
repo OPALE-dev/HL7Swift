@@ -96,6 +96,8 @@ public class HL7Server : ChannelInboundHandler, ChannelOutboundHandler {
         MSH|^~\\&|\(self.name)|\(self.facility)|\(remoteName)|\(remoteFacility)|||ACK|1|D|2.5.1||||||
         MSA|AA|OK|
         """
+        
+        
             
         _ = context.writeAndFlush(NIOAny(Message(ack)))
     }

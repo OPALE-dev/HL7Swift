@@ -74,8 +74,16 @@
         }
         
         func testSpec() {
-            let spec = try? HL7Spec(.v251)
-            
-            print(spec?.messages)
+            let _ = try? HL7(.v23)
+            let _ = try? HL7(.v231)
+            let _ = try? HL7(.v24)
+            let _ = try? HL7(.v25)
+            let _ = try? HL7(.v251)
+            let _ = try? HL7(.v26)
+            let _ = try? HL7(.v27)
+            let _ = try? HL7(.v271)
+            let _ = try? HL7(.v28)
+            let _ = try? HL7(.v281)
+            let _ = try? HL7(.v282)
         }
     }
