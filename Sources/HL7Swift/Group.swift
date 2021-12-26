@@ -21,6 +21,9 @@ import Foundation
  */
 public struct Group {
     public var name: String = ""
+    public lazy var shortName: String = {
+        return String(self.name.split(separator: ".")[1])
+    }()
     public var items: [Item] = []
     
     
@@ -116,6 +119,22 @@ public struct Group {
         
         return str
     }
+}
+
+/// Shortens `"ORU_RO1.PATIENT_RESULT.CONTENT"` to `"PATIENT_RESULT"`
+public func shortName(_ longName: String, type: String) -> String {
+    var name = longName
+    if name.hasPrefix(type) {
+        name.removeFirst(type.count + 1)
+    }
+    if name.hasSuffix("CONTENT") {
+        if name.count == 7 {
+            name.removeLast(7)
+        } else {
+            name.removeLast(8)
+        }
+    }
+    return name
 }
 
 public indirect enum Item {

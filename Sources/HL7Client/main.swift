@@ -31,6 +31,7 @@ struct HL7Client: ParsableCommand {
             do {
                 if let response = try client.send(fileAt: filePath) {
                     Logger.info("Received \(try response.getType().rawValue)")
+
                     Logger.debug("\n\n\(response.description)\n")
                 }
                 
