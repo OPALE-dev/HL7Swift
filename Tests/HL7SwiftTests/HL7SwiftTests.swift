@@ -84,7 +84,20 @@
             let version = Version.v251
             let spec    = try! HL7(version)
             
-            print(spec[V251.ADT_A01, version]!)
-            print(spec["ADT_A01", version]!)
+            if let specMessage = spec[V251.ADT_A01, version] {
+                print(specMessage)
+            }
+            
+            if let specMessage = spec["ADT_A01", version] {
+                print(specMessage)
+            }
+
+        }
+        
+        
+        func testBuildMessage() {
+            let m = try! Message(withType: V251.ADT_A01, version: .v251)
+            
+            print(m)
         }
     }

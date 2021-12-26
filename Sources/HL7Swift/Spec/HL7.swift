@@ -9,25 +9,7 @@ import Foundation
 
 
 
-public class SpecMessage: CustomStringConvertible {
-    public var description: String {
-        "\(type.rawValue) \(rootGroup.pretty())"
-    }
-    
-    var type:HL7.MessageType!
-    var rootGroup: Group!
-    
-    init(type: HL7.MessageType) {
-        self.type = type
-        self.rootGroup = Group(name: type.rawValue + ".CONTENT", items: [])
-    }
-
-}
-
-
-
-
-public class HL7: NSObject, XMLParserDelegate {
+public class HL7: NSObject {
     public struct MessageType: RawRepresentable {
         public init(rawValue: String) {
             self.rawValue = rawValue
@@ -97,7 +79,7 @@ public class HL7: NSObject, XMLParserDelegate {
     
     
     // MARK: -
-    func loadVersions() throws {
+    private func loadVersions() throws {
         if self.version == .all {
             for v in Version.allCases {
                 currentVersion = v
@@ -110,7 +92,7 @@ public class HL7: NSObject, XMLParserDelegate {
     }
     
     
-    func loadMessages(forVersion version: Version) throws {
+    private func loadMessages(forVersion version: Version) throws {
         let xmlURL = Bundle.module.url(forResource: "messages", withExtension: "xsd", subdirectory: "v\(version.description)")!
         
         let xmlParser = XMLParser(contentsOf: xmlURL)!
@@ -133,7 +115,7 @@ public class HL7: NSObject, XMLParserDelegate {
     
     
     
-    func loadSegments(forMessage message: SpecMessage, version: Version) throws {
+    private func loadSegments(forMessage message: SpecMessage, version: Version) throws {
         if let xmlURL = Bundle.module.url(forResource: message.type.rawValue, withExtension: "xsd", subdirectory: "v\(version.description)/messages") {
             let xmlParser = XMLParser(contentsOf: xmlURL)!
             
@@ -149,14 +131,16 @@ public class HL7: NSObject, XMLParserDelegate {
     }
     
     
-    
-    //MARK: XMLParserDelegate methods
+}
 
+
+//MARK: XMLParserDelegate methods
+extension HL7:XMLParserDelegate {
     public func parser(_ parser: XMLParser, didStartElement elementName: String, namespaceURI: String?, qualifiedName qName: String?, attributes attributeDict: [String : String]) {
         if loadMessagesFlag {
             if elementName == "xsd:element" {
                 if let ref = attributeDict["ref"] {
-                    let type = Version.klass(forVersion: version).MessageType.init(rawValue: ref)
+                    let type = HL7.MessageType.init(rawValue: ref)
                         
                     if messages[currentVersion!] == nil {
                         messages[currentVersion!] = []

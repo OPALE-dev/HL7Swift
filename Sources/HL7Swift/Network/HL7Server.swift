@@ -18,6 +18,7 @@ public protocol HL7ServerDelegate {
 public class HL7Server {
     var host:String     = "0.0.0.0"
     var port:Int        = 2575
+    var spec:HL7!
     
     var name:String     = "HL7SERVER"
     var facility:String = "HL7SERVER"
@@ -29,9 +30,10 @@ public class HL7Server {
     var bootstrap:ServerBootstrap!
     
     
-    public init(host: String, port: Int, delegate: HL7ServerDelegate? = nil) throws {
-        self.host = host
-        self.port = port
+    public init(host: String, port: Int, version: Version, delegate: HL7ServerDelegate? = nil) throws {
+        self.host       = host
+        self.port       = port
+        self.spec       = try HL7(version)
         
         self.delegate = delegate
          
@@ -80,6 +82,11 @@ extension HL7Server : ChannelInboundHandler, ChannelOutboundHandler {
     public func channelRead(context: ChannelHandlerContext, data: NIOAny) {
         let message = self.unwrapInboundIn(data)
         
+        if let v = message.getVersion(), v != spec.version {
+            Logger.error(HL7Error.unsupportedVersion(message: v.description).localizedDescription)
+            return
+        }
+        
         if let delegate = self.delegate {
             delegate.server(self, receive: message)
         }
@@ -88,10 +95,16 @@ extension HL7Server : ChannelInboundHandler, ChannelOutboundHandler {
         let remoteName = message.segments[0].fields[1].description
         let remoteFacility = message.segments[0].fields[1].description
         
+        var status = AcknowledgeStatus.AA
+        
+        if let delegate = self.delegate {
+            status = delegate.server(self, ACKStatusFor: message)
+        }
+        
         // reply ACK/NAK
         let ack = """
-        MSH|^~\\&|\(self.name)|\(self.facility)|\(remoteName)|\(remoteFacility)|||ACK|1|D|2.5.1||||||
-        MSA|AA|OK|
+        MSH|^~\\&|\(self.name)|\(self.facility)|\(remoteName)|\(remoteFacility)|||ACK|1|D|\(spec.version.description)||||||
+        MSA|\(status)|OK|
         """
         
         _ = context.writeAndFlush(NIOAny(Message(ack)))
