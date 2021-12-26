@@ -31,6 +31,7 @@ public enum AcknowledgeStatus: String {
  ```
  */
 public struct Message {
+    var spec:HL7!
     var segments: [Segment] = []
     var sep:Character = "\r"
     
@@ -60,22 +61,16 @@ public struct Message {
         }
     }
     
-    init?(withType type: HL7.MessageType?) throws {
-        do {
-            guard let items = try group()?.items else {
-                throw HL7Error.initError(message: "Cannot build message of type \(type)")
-            }
-            
-            for index in items.indices {
-                switch items[index] {
-                case .segment(let segment):
-                    segments.append(segment)
+    init?(withType type: HL7.MessageType, version: Version) throws {
+        self.spec = try HL7(version)
+        
+        if let specMessage = self.spec[type, version] {
+            for item in specMessage.rootGroup.items {
+                switch item {
+                case .segment(let segment): segments.append(segment)
                 default: continue
                 }
             }
-            
-        } catch let e {
-            throw e
         }
     }
     
@@ -96,9 +91,9 @@ public struct Message {
     public func getType() throws -> HL7.MessageType {
         var str = ""
         
-        guard let version = getVersion() else {
-            throw HL7Error.unsupportedVersion(message: segments[0].fields[10].cells[0].text)
-        }
+//        guard let version = getVersion() else {
+//            throw HL7Error.unsupportedVersion(message: segments[0].fields[10].cells[0].text)
+//        }
         
         // ACK / NAK
         if segments[0].fields[7].cells[0].components.isEmpty {
@@ -111,12 +106,12 @@ public struct Message {
             }
         }
         
-        return Version.klass(forVersion: version).MessageType.init(rawValue: str)
+        return HL7.MessageType.init(rawValue: str)
     }
 
     
 
-    func getVersion() -> Version? {
+    public func getVersion() -> Version? {
         return Version(string: segments[0].fields[10].cells[0].text)
     }
     

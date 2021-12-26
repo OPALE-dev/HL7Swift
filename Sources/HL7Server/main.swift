@@ -35,6 +35,7 @@ struct HL7Server: ParsableCommand, HL7ServerDelegate {
             let server = try HL7Swift.HL7Server(
                 host: self.hostname,
                 port: self.port,
+                version: .v282,
                 delegate: self)
             
             try server.start()
@@ -49,8 +50,6 @@ struct HL7Server: ParsableCommand, HL7ServerDelegate {
     // MARK: -
     
     func server(_ server: HL7Swift.HL7Server, receive message: Message) {
-        print(message)
-        
         // store file
         let timeInterval = NSDate().timeIntervalSince1970
 
