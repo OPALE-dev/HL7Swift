@@ -22,10 +22,11 @@ HL7Swift is *not* a production ready library and is not intented to be used as s
 - Documentation
 - Message validation
 - Handle exceptions
-- Pretty print message with groups
 - Convert to XML
 - Read message with the correct encoding
 - Enum for message type ? (YES!)
+- Terser for groups
+- Tests groups generation for all tests messages (get all specs too)
 
 ## Getting Started
 

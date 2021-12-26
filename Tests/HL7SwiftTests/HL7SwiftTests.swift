@@ -26,6 +26,7 @@
             }
         }
         
+        // TODO test all files
         func testSpecParse() {
             //for path in Bundle.module.paths(forResourcesOfType: "", inDirectory: "HL7-xml v2.5.1") {
             //}
@@ -34,13 +35,35 @@
             if let oruPath = oru {
                 do {
                     let content = try String(contentsOf: oruPath)
-                    var msg = Message(content)
-                    
-                    print(try msg.group()!.pretty())
+
+                    let msg = Message(content)
+                    _ = try msg.group()
+
                 } catch {
                     print("x")
                 }
             }
+        }
+        
+        func testTerser() {
+            let oru = Bundle.module.url(forResource: "ORU_R01 - 3", withExtension: "txt")
+            if let oruPath = oru {
+                do {
+                    let content = try String(contentsOf: oruPath)
+                    let msg = Message(content)
+                    let group = try msg.group()
+                    print(group!.pretty())
+                    
+                    let tersePath = "/ORU_R01.PATIENT_RESULT.CONTENT/ORU_R01.VISIT.CONTENT/PV1"
+                    let terser = Terser(msg)
+                    //let pv1 = try terser.get(tersePath)
+                    //print(pv1!)
+                    //assert(pv1?.description == "PV1|1|I|G52^G52-08^^||||213322^KRAT^DAVID^JOHN^^^5871925^^LIS_LAB^L^^^DN|||||||||||I|11036427586|||||||||||||||||||||||||20251014030201-0400||||||||")
+                } catch {
+                    print("x")
+                }
+            }
+            
         }
         
         func testGroup() {
