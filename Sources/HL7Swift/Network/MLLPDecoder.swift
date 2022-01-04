@@ -15,6 +15,12 @@ public struct MLLPDecoder: ByteToMessageDecoder {
     var startFound = false
     var endFound = false
     
+    var hl7:HL7!
+    
+    init(withHL7 hl7: HL7) {
+        self.hl7 = hl7
+    }
+    
     public mutating func decode(context: ChannelHandlerContext, buffer: inout ByteBuffer) -> DecodingState {
         var byte = buffer.readString(length: 1)
         
@@ -48,7 +54,7 @@ public struct MLLPDecoder: ByteToMessageDecoder {
         
         if endFound {
             do {                
-                context.fireChannelRead(wrapInboundOut(try Message(messageString)))
+                context.fireChannelRead(wrapInboundOut(try Message(messageString, hl7: hl7)))
                 
             } catch let e {
                 context.fireErrorCaught(e)

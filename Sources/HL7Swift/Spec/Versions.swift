@@ -16,7 +16,8 @@ public struct Version: RawRepresentable, Hashable {
     public typealias RawValue = String
     
     public init?(rawValue: String) {
-        if      rawValue != "2.3"       &&
+        if      rawValue != "2.1"       &&
+                rawValue != "2.3"       &&
                 rawValue != "2.3.1"     &&
                 rawValue != "2.4"       &&
                 rawValue != "2.5"       &&
@@ -34,6 +35,7 @@ public struct Version: RawRepresentable, Hashable {
     }
     
     public static let all    = Version(rawValue: "*")!
+    public static let v21    = Version(rawValue: "2.1")!
     public static let v23    = Version(rawValue: "2.3")!
     public static let v231   = Version(rawValue: "2.3.1")!
     public static let v24    = Version(rawValue: "2.4")!
@@ -49,7 +51,8 @@ public struct Version: RawRepresentable, Hashable {
     
     internal static func klass(forVersion type: Version) -> Versionable.Type {
         switch type {
-        case v23:     return HL7.V23.self as Versionable.Type
+        case v21:    return HL7.V21.self as Versionable.Type
+        case v23:    return HL7.V23.self as Versionable.Type
         case v231:   return HL7.V231.self as Versionable.Type
         case v24:    return HL7.V24.self as Versionable.Type
         case v25:    return HL7.V25.self as Versionable.Type

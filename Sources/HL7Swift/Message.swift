@@ -42,21 +42,28 @@ public struct Message {
     }
     
     public var type:Typable {
-        return specMessage!.type
+        return specMessage?.type ?? HL7.MessageType(name: "Unknow")
     }
     
-    init?(withFileAt path: String) throws {
+    
+    init(withFileAt url: URL, hl7: HL7) throws {
         do {
-            let content = try String(contentsOf: URL(fileURLWithPath: path))
+            let content = try String(contentsOf: url)
                                 
-            try self.init(content)
+            try self.init(content, hl7: hl7)
             
         } catch let e {
             throw HL7Error.fileNotFound(message: e.localizedDescription)
         }
     }
     
-    init(_ str: String) throws {
+    
+    init(withFileAt path: String, hl7: HL7) throws {
+        try self.init(withFileAt: URL(fileURLWithPath: path), hl7: hl7)
+    }
+    
+    
+    init(_ str: String, hl7: HL7) throws {
         // The separator depends on the implementation, not on the standard
         if str.split(separator: "\r").count > 1 {
             sep = "\r"
@@ -69,22 +76,19 @@ public struct Message {
         for segment in str.split(separator: sep) {
             segments.append(Segment(String(segment)))
         }
-        
-        print("\n\(str)\n")
-                
+                        
         guard let version = try getVersion() else {
             throw HL7Error.unsupportedVersion(message: "Unknow")
         }
         
         let type = try getType()
+        let spec = hl7.spec(ofVersion: version)
         
-        let hl7  = try HL7.load(version: version)
+        self.specMessage = spec.messages[type]
         
-        guard let specMessage = hl7.messages[type] else {
-            throw HL7Error.unsupportedMessage(message: str)
+        for s in segments {
+            s.specMessage = self.specMessage
         }
-        
-        self.specMessage = specMessage
     }
     
     
@@ -98,11 +102,26 @@ public struct Message {
      Usage: `let segment = message["MSH"]`
      
      */
-    subscript(code: String) -> Segment? {
+    public subscript(code: String) -> Segment? {
         return getSegment(code)
     }
     
     
+    
+    
+    /// Validates a message
+    func validate() -> Bool {
+        if self.specMessage == nil {
+            return false
+        }
+        
+        // TODO: Validate message against the HL7 spec
+        // 1. check required segments
+        // 2. check required fields/components
+        // 3. check datatypes and values
+        
+        return true
+    }
     
     
     

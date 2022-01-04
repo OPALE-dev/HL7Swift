@@ -3,15 +3,35 @@
     @testable import HL7Swift
 
     final class HL7SwiftTests: XCTestCase {
+        var hl7:HL7!
+        
+        override func setUp() {
+            super.setUp()
+
+            do {
+                self.hl7 = try HL7()
+            } catch let e {
+                NSLog("Cannot load HL7 spec \(e.localizedDescription)")
+                assertionFailure(e.localizedDescription)
+            }
+        }
+
+        
+        
         func testParseACK() {
             let ackContent = "MSH|^~\\&||372523L|372520L|372521L|||ACK|1|D|2.5.1||||||\rMSA|AA|LRI_3.0_1.1-NG|"
             do {
-                let msg = try Message(ackContent)
+                let msg = try Message(ackContent, hl7: hl7)
+                
+                print(msg.specMessage!.rootGroup.pretty())
+                
                 assert("ACK" == (msg.type.name))
             } catch let e {
-                print(e.localizedDescription)
+                assertionFailure(e.localizedDescription)
             }
         }
+        
+        
         
         func testType() {
             let paths = Bundle.module.paths(forResourcesOfType: "txt", inDirectory: nil)
@@ -21,14 +41,18 @@
                 do {
                     let content = try String(contentsOf: URL(fileURLWithPath: path))
                                         
-                    let msg = try Message(content)
+                    let msg = try Message(content, hl7: hl7)
     
-                    _ = msg.type.name
+                    // seek for unknow message types
+                    if msg.type.name == "Unknow" {
+                        print("\((path as NSString).lastPathComponent): \(msg.type.name)")
+                    }
                 } catch let e {
-                    print(e.localizedDescription)
+                    assertionFailure(e.localizedDescription)
                 }
             }
         }
+        
         
         // TODO test all files
         func testSpecParse() {
@@ -40,12 +64,12 @@
                 do {
                     let content = try String(contentsOf: oruPath)
 
-                    let msg = try Message(content)
+                    let msg = try Message(content, hl7: hl7)
                     
                     print(msg.specMessage!.rootGroup.pretty())
 
                 } catch let e {
-                    print(e.localizedDescription)
+                    assertionFailure(e.localizedDescription)
                 }
             }
         }
@@ -55,7 +79,7 @@
             if let oruPath = oru {
                 do {
                     let content = try String(contentsOf: oruPath)
-                    let msg = try Message(content)
+                    let msg = try Message(content, hl7: hl7)
                     let group = try msg.group()
                     
                     print(group)
@@ -66,7 +90,7 @@
                     //print(pv1!)
                     //assert(pv1?.description == "PV1|1|I|G52^G52-08^^||||213322^KRAT^DAVID^JOHN^^^5871925^^LIS_LAB^L^^^DN|||||||||||I|11036427586|||||||||||||||||||||||||20251014030201-0400||||||||")
                 } catch let e {
-                    print(e.localizedDescription)
+                    assertionFailure(e.localizedDescription)
                 }
             }
             
@@ -82,29 +106,36 @@
         }
         
         func testParse() {
-            // This is an example of a functional test case.
-            // Use XCTAssert and related functions to verify your tests produce the correct
-            // results.
-            
             let paths = Bundle.module.paths(forResourcesOfType: "txt", inDirectory: nil)
             
             for path in paths {
-                
                 do {
                     let content = try String(contentsOf: URL(fileURLWithPath: path))
                                         
-                    let msg = try Message(content)
+                    let msg = try Message(content, hl7: hl7)
                                         
                     assert(msg.description.trimmingCharacters(in: .newlines) == content.trimmingCharacters(in: .newlines))
                 } catch let e {
-                    print(e.localizedDescription)
-                    assertionFailure()
+                    assertionFailure(e.localizedDescription)
                 }
             }
         }
+        
+        func testSubscripts() {
+            if let url = Bundle.module.url(forResource: "ORU_R01 - 3", withExtension: "txt") {
+                do {
+                    let message = try Message(withFileAt: url, hl7: hl7)
+                    
+                    print(message.specMessage!.rootGroup!.pretty())
+                                                        
+                    assert(message["SFT"]![1]!.cells[0].text == "1.2.3")
+                    assert(message["SFT"]!["Software Certified Version or Release Number"]!.cells[0].text == "1.2.3")
+                    assert(message["ORC"]!["Filler Order Number"]!.cells[0].components[0].text == "R3464105_20181016131600")
+                    assert(message["PID"]!["Patient Name"]!.cells[0].description == "WILLS^CYRUS^MARIO^^^^L")
 
-
-        func testSpec() {
-            
+                } catch let e {
+                    assertionFailure(e.localizedDescription)
+                }
+            }
         }
     }
