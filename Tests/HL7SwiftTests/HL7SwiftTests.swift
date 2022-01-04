@@ -98,6 +98,7 @@
                     assert(msg.description.trimmingCharacters(in: .newlines) == content.trimmingCharacters(in: .newlines))
                 } catch let e {
                     print(e.localizedDescription)
+                    assertionFailure()
                 }
             }
         }
