@@ -5,8 +5,12 @@
     final class HL7SwiftTests: XCTestCase {
         func testParseACK() {
             let ackContent = "MSH|^~\\&||372523L|372520L|372521L|||ACK|1|D|2.5.1||||||\rMSA|AA|LRI_3.0_1.1-NG|"
-            let msg = Message(ackContent)
-            assert("ACK" == (try? msg.getType().rawValue))
+            do {
+                let msg = try Message(ackContent)
+                assert("ACK" == (msg.type.name))
+            } catch let e {
+                print(e.localizedDescription)
+            }
         }
         
         func testType() {
@@ -17,11 +21,11 @@
                 do {
                     let content = try String(contentsOf: URL(fileURLWithPath: path))
                                         
-                    let msg = Message(content)
+                    let msg = try Message(content)
     
-                    _ = try? msg.getType().rawValue
-                } catch {
-                    print("x")
+                    _ = msg.type.name
+                } catch let e {
+                    print(e.localizedDescription)
                 }
             }
         }
@@ -36,11 +40,12 @@
                 do {
                     let content = try String(contentsOf: oruPath)
 
-                    let msg = Message(content)
-                    _ = try msg.group()
+                    let msg = try Message(content)
+                    
+                    print(msg.specMessage!.rootGroup.pretty())
 
-                } catch {
-                    print("x")
+                } catch let e {
+                    print(e.localizedDescription)
                 }
             }
         }
@@ -50,17 +55,18 @@
             if let oruPath = oru {
                 do {
                     let content = try String(contentsOf: oruPath)
-                    let msg = Message(content)
+                    let msg = try Message(content)
                     let group = try msg.group()
-                    print(group!.pretty())
                     
-                    let tersePath = "/ORU_R01.PATIENT_RESULT.CONTENT/ORU_R01.VISIT.CONTENT/PV1"
-                    let terser = Terser(msg)
+                    print(group)
+                    
+//                    let tersePath = "/ORU_R01.PATIENT_RESULT.CONTENT/ORU_R01.VISIT.CONTENT/PV1"
+//                    let terser = Terser(msg)
                     //let pv1 = try terser.get(tersePath)
                     //print(pv1!)
                     //assert(pv1?.description == "PV1|1|I|G52^G52-08^^||||213322^KRAT^DAVID^JOHN^^^5871925^^LIS_LAB^L^^^DN|||||||||||I|11036427586|||||||||||||||||||||||||20251014030201-0400||||||||")
-                } catch {
-                    print("x")
+                } catch let e {
+                    print(e.localizedDescription)
                 }
             }
             
@@ -87,40 +93,17 @@
                 do {
                     let content = try String(contentsOf: URL(fileURLWithPath: path))
                                         
-                    let msg = Message(content)
+                    let msg = try Message(content)
                                         
                     assert(msg.description.trimmingCharacters(in: .newlines) == content.trimmingCharacters(in: .newlines))
-                } catch {
-                    print("x")
+                } catch let e {
+                    print(e.localizedDescription)
                 }
             }
         }
-        
-        
-        
-        func testAllSpec() {
-            let _ = HL7()
-        }
-        
-        
-        func testSpec251() {
-            let version = Version.v251
-            let spec    = try! HL7(version)
-            
-            if let specMessage = spec[V251.ADT_A01, version] {
-                print(specMessage)
-            }
-            
-            if let specMessage = spec["ADT_A01", version] {
-                print(specMessage)
-            }
 
-        }
-        
-        
-        func testBuildMessage() {
-            let m = try! Message(withType: V251.ADT_A01, version: .v251)
+
+        func testSpec() {
             
-            print(m)
         }
     }

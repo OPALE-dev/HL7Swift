@@ -74,7 +74,7 @@ public class HL7CLient {
     
     
     public func send(messageAs string:String) throws -> Message?  {
-        let message = Message(string)
+        let message = try Message(string)
         
         return try self.send(message)
     }
@@ -113,18 +113,13 @@ extension HL7CLient: ChannelInboundHandler {
     public func channelRead(context: ChannelHandlerContext, data: NIOAny) {
         let response = self.unwrapInboundIn(data)
         
-        do {
-            let type = try response.getType()
-            
-            if type.rawValue == "ACK" || type.rawValue == "NAK" {
-                promise?.succeed(response)
+        let type = response.type
+        
+        if type.name == "ACK" || type.name == "NAK" {
+            promise?.succeed(response)
 
-            } else {
-                promise?.fail(HL7Error.unexpectedMessage(message: type.rawValue))
-            }
-            
-        } catch let e {
-            promise?.fail(e)
+        } else {
+            promise?.fail(HL7Error.unexpectedMessage(message: type.name))
         }
     }
     

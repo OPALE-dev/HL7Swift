@@ -47,8 +47,13 @@ public struct MLLPDecoder: ByteToMessageDecoder {
         }
         
         if endFound {
-            context.fireChannelRead(wrapInboundOut(Message(messageString)))
-            
+            do {                
+                context.fireChannelRead(wrapInboundOut(try Message(messageString)))
+                
+            } catch let e {
+                context.fireErrorCaught(e)
+            }
+
             // reset states
             messageString   = String()
             startFound      = false

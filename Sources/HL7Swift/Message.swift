@@ -26,27 +26,37 @@ public enum AcknowledgeStatus: String {
  print(message.getVersion())
  # "2.5.1"
  
- print(message.segments[0])
+ print(message["MSH"])
  # "MSH|^~\\&||372523L|372520L|372521L|||ACK|1|D|2.5.1||||||"
  ```
  */
 public struct Message {
-    var spec:HL7!
     var segments: [Segment] = []
     var sep:Character = "\r"
+
+    var spec:HL7!
+    var specMessage:SpecMessage?
+    
+    public var version:Version {
+        return specMessage!.version
+    }
+    
+    public var type:Typable {
+        return specMessage!.type
+    }
     
     init?(withFileAt path: String) throws {
         do {
             let content = try String(contentsOf: URL(fileURLWithPath: path))
                                 
-            self.init(content)
+            try self.init(content)
             
         } catch let e {
             throw HL7Error.fileNotFound(message: e.localizedDescription)
         }
     }
     
-    init(_ str: String) {
+    init(_ str: String) throws {
         // The separator depends on the implementation, not on the standard
         if str.split(separator: "\r").count > 1 {
             sep = "\r"
@@ -59,23 +69,47 @@ public struct Message {
         for segment in str.split(separator: sep) {
             segments.append(Segment(String(segment)))
         }
+        
+        print("\n\(str)\n")
+                
+        guard let version = try getVersion() else {
+            throw HL7Error.unsupportedVersion(message: "Unknow")
+        }
+        
+        let type = try getType()
+        
+        let hl7  = try HL7.load(version: version)
+        
+        guard let specMessage = hl7.messages[type] else {
+            throw HL7Error.unsupportedMessage(message: str)
+        }
+        
+        self.specMessage = specMessage
     }
     
-    init?(withType type: HL7.MessageType, version: Version) throws {
-        self.spec = try HL7(version)
-        
-        if let specMessage = self.spec[type, version] {
-            for item in specMessage.rootGroup.items {
-                switch item {
-                case .segment(let segment): segments.append(segment)
-                default: continue
-                }
-            }
-        }
+    
+    
+    
+    // MARK: -
+    
+    /*
+     Easily get a segment of the message with a given code using subscript notation.
+     
+     Usage: `let segment = message["MSH"]`
+     
+     */
+    subscript(code: String) -> Segment? {
+        return getSegment(code)
     }
+    
+    
+    
+    
+    
+    // MARK: -
     
     /// Gets a segment with a given code
-    func getSegment(code: String) -> Segment? {
+    func getSegment(_ code: String) -> Segment? {
         for segment in segments {
             if segment.code == code {
                 return segment
@@ -88,31 +122,41 @@ public struct Message {
     /// Some messages have types on one cell, eg ACK
     /// Others have their type on two cells, eg PPR^PC1
     /// Others have their type on three cells, eg VXU^V04^VXU_V04
-    public func getType() throws -> HL7.MessageType {
+    private func getType() throws -> String {
         var str = ""
         
-//        guard let version = getVersion() else {
-//            throw HL7Error.unsupportedVersion(message: segments[0].fields[10].cells[0].text)
-//        }
+        guard let segment = self["MSH"] else {
+            throw HL7Error.unsupportedMessage(message: "MSH segment not found")
+        }
         
         // ACK / NAK
-        if segments[0].fields[7].cells[0].components.isEmpty {
-            str = segments[0].fields[7].cells[0].text
+        if segment.fields[7].cells[0].components.isEmpty {
+            str = segment.fields[7].cells[0].text
         } else {
-            if segments[0].fields[7].cells[0].components.count == 3 {
-                str = segments[0].fields[7].cells[0].components[2].text
+            if segment.fields[7].cells[0].components.count == 3 {
+                str = segment.fields[7].cells[0].components[2].text
             } else {
-                str = segments[0].fields[7].cells[0].components[0].text + "_" + segments[0].fields[7].cells[0].components[1].text
+                str = segment.fields[7].cells[0].components[0].text + "_" + segment.fields[7].cells[0].components[1].text
             }
         }
         
-        return HL7.MessageType.init(rawValue: str)
+        return str
     }
 
     
 
-    public func getVersion() -> Version? {
-        return Version(string: segments[0].fields[10].cells[0].text)
+    private func getVersion() throws -> Version? {
+        guard let segment = self["MSH"] else {
+            throw HL7Error.unsupportedMessage(message: "MSH segment not found")
+        }
+        
+        var vString = segment.fields[10].cells[0].text
+        
+        if vString == "" {
+            vString = segment.fields[10].cells[0].components[0].text
+        }
+        
+        return Version(rawValue: vString)
     }
     
     
@@ -132,7 +176,11 @@ extension Message: CustomStringConvertible {
         for segment in segments {
             str += segment.description + sep.description
         }
-        str.removeLast()
+        
+        if !str.isEmpty {
+            str.removeLast()
+        }
+        
         return str
     }
 }

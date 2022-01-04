@@ -22,6 +22,18 @@ import Foundation
 public struct Field {
     var cells: [Cell] = []
     
+    var segmentCode: String = ""
+    var name: String = ""
+    var longName: String = ""
+    var type: String = ""
+    var item: String = ""
+    var maxLength: Int = 0
+    var index: Int = 0
+    
+    init(name: String) {
+        self.name = name
+    }
+    
     init(_ str: String) {
         if str.contains("~") {
             // 20 is a random number, could be anything; we want to take empty subsequences but we oughta specify a maximum number
@@ -48,7 +60,9 @@ extension Field: CustomStringConvertible {
         }
         
         // remove last ~
-        str.removeLast()
+        if !str.isEmpty {
+            str.removeLast()
+        }
         
         return str
     }

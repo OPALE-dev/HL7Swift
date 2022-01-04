@@ -75,10 +75,10 @@ public struct Group {
         var appended = false
         
         if group.name == self.name {
-            print("TODO error : can't append a group already appended")
+            //print("TODO error : can't append a group already appended")
 
         } else if group.name == underGroupName {
-            print("TODO error : can't append a group under the same group")
+            //print("TODO error : can't append a group under the same group")
 
         } else if name == underGroupName {
             items.append(Item.group(group))
@@ -112,6 +112,9 @@ public struct Group {
                 str += group.pretty(depth: depth + 1)
             case .segment(let segment):
                 str += segment.code
+                for f in segment.fields {
+                    str += "|\(f.longName)"
+                }
             }
             
             str += "\n"

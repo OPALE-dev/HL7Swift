@@ -18,7 +18,7 @@ public protocol HL7ServerDelegate {
 public class HL7Server {
     var host:String     = "0.0.0.0"
     var port:Int        = 2575
-    var spec:HL7!
+    var spec:Versioned!
     
     var name:String     = "HL7SERVER"
     var facility:String = "HL7SERVER"
@@ -33,7 +33,7 @@ public class HL7Server {
     public init(host: String, port: Int, version: Version, delegate: HL7ServerDelegate? = nil) throws {
         self.host       = host
         self.port       = port
-        self.spec       = try HL7(version)
+        self.spec       = try HL7.load(version: version)
         
         self.delegate = delegate
          
@@ -82,8 +82,8 @@ extension HL7Server : ChannelInboundHandler, ChannelOutboundHandler {
     public func channelRead(context: ChannelHandlerContext, data: NIOAny) {
         let message = self.unwrapInboundIn(data)
         
-        if let v = message.getVersion(), v != spec.version {
-            Logger.error(HL7Error.unsupportedVersion(message: v.description).localizedDescription)
+        if message.version != spec.version {
+            Logger.error(HL7Error.unsupportedVersion(message: "Cannor read version").localizedDescription)
             return
         }
         
@@ -103,11 +103,19 @@ extension HL7Server : ChannelInboundHandler, ChannelOutboundHandler {
         
         // reply ACK/NAK
         let ack = """
-        MSH|^~\\&|\(self.name)|\(self.facility)|\(remoteName)|\(remoteFacility)|||ACK|1|D|\(spec.version.description)||||||
+        MSH|^~\\&|\(self.name)|\(self.facility)|\(remoteName)|\(remoteFacility)|||ACK|1|D|\(spec.version)||||||
         MSA|\(status)|OK|
         """
+
+        do {
+            _ = context.writeAndFlush(NIOAny(try Message(ack)))
+        } catch let e {
+            context.fireErrorCaught(e)
+        }
         
-        _ = context.writeAndFlush(NIOAny(Message(ack)))
+        // build reply message against spec
+
+        
     }
 }
 

@@ -9,15 +9,17 @@ import Foundation
 
 public class SpecMessage: CustomStringConvertible {
     public var description: String {
-        "\(type.rawValue) \(rootGroup.pretty())"
+        "\(type.name) \(rootGroup.pretty())"
     }
     
-    var type:HL7.MessageType!
+    var type:Typable!
     var rootGroup: Group!
+    var version: Version!
     
-    init(type: HL7.MessageType) {
+    init(type: Typable, version: Version) {
         self.type = type
-        self.rootGroup = Group(name: type.rawValue + ".CONTENT", items: [])
+        self.version = version
+        self.rootGroup = Group(name: type.name + ".CONTENT", items: [])
     }
 
 }

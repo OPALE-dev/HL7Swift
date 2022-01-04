@@ -36,26 +36,23 @@ class MessageSpecParser: NSObject, XMLParserDelegate {
     */
     func runParser(forMessage: Message) throws {
         message = forMessage
-        
-        guard let version = forMessage.getVersion()?.description else {
-            throw HL7Error.parserError(message: "Cannot read message version")
-        }
-        
-        let path = try forMessage.getType().rawValue
-        messageType = path
-        print("message type \(messageType)")
+
+        let version = forMessage.version
+
+        let path = try forMessage.type
         rootGroup = Group(name: "", items: [])
         
-        let xmlURL = Bundle.module.url(forResource: path, withExtension: "xsd", subdirectory: "HL7-xml v" + version)!
-        let xmlParser = XMLParser(contentsOf: xmlURL)!
-        xmlParser.delegate = self
-        let success = xmlParser.parse()
+        print(version)
+        print(path)
         
-        if success {
-
-        } else {
-            print("parse failure!")
-        }
+//        let xmlURL = Bundle.module.url(forResource: path.name, withExtension: "xsd", subdirectory: "HL7-xml v" + version.rawValue)!
+//        let xmlParser = XMLParser(contentsOf: xmlURL)!
+//        xmlParser.delegate = self
+//        let success = xmlParser.parse()
+//
+//        if !success {
+//            print("parse failure!")
+//        }
     }
     
     //MARK: XMLParserDelegate methods
@@ -72,7 +69,7 @@ class MessageSpecParser: NSObject, XMLParserDelegate {
             if let ref = attributeDict["ref"] {
                 // is it a segment ?
                 if ref.count == 3 {
-                    if let segment = (message?.getSegment(code: ref)) {
+                    if let segment = (message?[ref]) {
                         _ = rootGroup!.appendSegment(segment: segment, underGroupName: currentSequence)
                     }
                 // it is a group
