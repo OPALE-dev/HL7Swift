@@ -18,6 +18,8 @@ public protocol HL7ServerDelegate {
 public class HL7Server {
     var host:String     = "0.0.0.0"
     var port:Int        = 2575
+    
+    var hl7:HL7!
     var spec:Versioned!
     
     var name:String     = "HL7SERVER"
@@ -31,11 +33,11 @@ public class HL7Server {
     
     
     public init(host: String, port: Int, version: Version, delegate: HL7ServerDelegate? = nil) throws {
+        self.hl7        = try HL7()
         self.host       = host
         self.port       = port
-        self.spec       = try HL7.load(version: version)
-        
-        self.delegate = delegate
+        self.spec       = hl7.spec(ofVersion: version)
+        self.delegate   = delegate
          
         self.group = MultiThreadedEventLoopGroup(numberOfThreads: System.coreCount)
         self.bootstrap = ServerBootstrap(group: group)
@@ -44,7 +46,7 @@ public class HL7Server {
             .childChannelInitializer { channel in
                 return channel.pipeline.addHandlers([
                     MessageToByteHandler(MLLPEncoder()),
-                    ByteToMessageHandler(MLLPDecoder()),
+                    ByteToMessageHandler(MLLPDecoder(withHL7: self.hl7)),
                     self
                 ])
             }
@@ -108,7 +110,7 @@ extension HL7Server : ChannelInboundHandler, ChannelOutboundHandler {
         """
 
         do {
-            _ = context.writeAndFlush(NIOAny(try Message(ack)))
+            _ = context.writeAndFlush(NIOAny(try Message(ack, hl7: self.hl7)))
         } catch let e {
             context.fireErrorCaught(e)
         }

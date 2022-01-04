@@ -12,13 +12,16 @@ public class HL7CLient {
     var host:String!
     var port:Int!
     
+    var hl7:HL7!
     var channel:Channel?
     var promise: EventLoopPromise<Message>?
 
     
-    public init(host: String, port: Int) {
+    public init(host: String, port: Int) throws {
         self.host = host
         self.port = port
+        
+        self.hl7 = try HL7()
     }
 
     
@@ -34,7 +37,7 @@ public class HL7CLient {
             .channelInitializer { channel in
                 channel.pipeline.addHandlers([
                     MessageToByteHandler(MLLPEncoder()),
-                    ByteToMessageHandler(MLLPDecoder()),
+                    ByteToMessageHandler(MLLPDecoder(withHL7: self.hl7)),
                     self
                 ])
         }
@@ -67,14 +70,14 @@ public class HL7CLient {
     // MARK: -
     
     public func send(fileAt path:String) throws -> Message?  {
-        let message = try Message(withFileAt: path)
+        let message = try Message(withFileAt: path, hl7: self.hl7)
         
         return try self.send(message)
     }
     
     
     public func send(messageAs string:String) throws -> Message?  {
-        let message = try Message(string)
+        let message = try Message(string, hl7: self.hl7)
         
         return try self.send(message)
     }

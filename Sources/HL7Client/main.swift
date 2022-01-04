@@ -21,7 +21,7 @@ struct HL7Client: ParsableCommand {
     var filePath: String
     
     mutating func run() throws {
-        let client = HL7Swift.HL7CLient(host: hostname, port: port)
+        let client = try HL7Swift.HL7CLient(host: hostname, port: port)
         
         do {
             try client.connect().wait()
@@ -30,7 +30,7 @@ struct HL7Client: ParsableCommand {
             
             do {
                 if let response = try client.send(fileAt: filePath) {
-                    Logger.info("Received \(try response.getType().name)")
+                    Logger.info("Received \(response.type.name)")
 
                     Logger.debug("\n\n\(response.description)\n")
                 }

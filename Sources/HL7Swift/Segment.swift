@@ -23,11 +23,13 @@ import Foundation
  # "MSH"
  ```
  */
-public struct Segment {
+public class Segment {
     var code: String = ""
     var fields: [Field] = []
+    var specMessage:SpecMessage? = nil
     
-    init(_ str: String) {
+    init(_ str: String, specMessage:SpecMessage? = nil) {
+        self.specMessage = specMessage
         
         // see ORU 1 txt file, contains a ^ at the last line
         if !str.contains("|") {
@@ -46,6 +48,28 @@ public struct Segment {
         for field in strCloneSplit {
             fields.append(Field(String(field)))
         }
+    }
+    
+    
+    
+    public subscript(index: Int) -> Field? {
+        return fields[index]
+    }
+    
+    public subscript(name: String) -> Field? {
+        if let specMessage = specMessage {
+            for segment in specMessage.rootGroup.segments {
+                if segment.code == self.code {
+                    for f in segment.fields {
+                        if f.longName == name {
+                            return self[f.index-1]
+                        }
+                    }
+                }
+            }
+        }
+        
+        return nil
     }
 }
 

@@ -25,7 +25,7 @@ public struct Group {
         return String(self.name.split(separator: ".")[1])
     }()
     public var items: [Item] = []
-    
+    public var segments: [Segment] = []
     
     /// subscript that return a group item based on its name
     /// Returns `Group` is matching group item found
@@ -48,6 +48,8 @@ public struct Group {
     /// Returns `true` is the segment was appended
     public mutating func appendSegment(segment: Segment, underGroupName: String) -> Bool {
         var isAppended = false
+        
+        segments.append(segment)
         
         if name == underGroupName {
             items.append(Item.segment(segment))

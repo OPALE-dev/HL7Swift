@@ -8,7 +8,6 @@
 import Foundation
 
 
-
 public protocol Typable {
     var name:String { get }
 }
@@ -45,7 +44,7 @@ public class Versioned: NSObject, Versionable {
     }
     
     
-    func loadXML() throws {
+    internal func loadXML() throws {
         try loadFields(forVersion: self.version)
         try loadMessages(forVersion: self.version)
     }
@@ -107,22 +106,53 @@ public class Versioned: NSObject, Versionable {
 
 
 
-public struct HL7 {
-    public static func load(version: Version) throws -> Versioned {
+public struct HL7 {    
+    private var v21     :V21!
+    private var v23     :V23!
+    private var v231    :V231!
+    private var v24     :V24!
+    private var v25     :V25!
+    private var v251    :V251!
+    private var v26     :V26!
+    private var v27     :V27!
+    private var v271    :V271!
+    private var v28     :V28!
+    private var v281    :V281!
+    private var v282    :V282!
+    
+    
+    public init() throws {
+        self.v21  = try V21(.v21)
+        self.v23  = try V23(.v23)
+        self.v231 = try V231(.v231)
+        self.v24  = try V24(.v24)
+        self.v25  = try V25(.v25)
+        self.v251 = try V251(.v251)
+        self.v26  = try V26(.v26)
+        self.v27  = try V27(.v27)
+        self.v271 = try V271(.v271)
+        self.v28  = try V28(.v28)
+        self.v281 = try V281(.v281)
+        self.v282 = try V282(.v282)
+    }
+    
+    
+    internal func spec(ofVersion version: Version) -> Versioned {
         switch version {
-        case .v23:  return try V23(version)
-        case .v231: return try V231(version)
-        case .v24:  return try V24(version)
-        case .v25:  return try V25(version)
-        case .v251: return try V251(version)
-        case .v26:  return try V26(version)
-        case .v27:  return try V27(version)
-        case .v271: return try V271(version)
-        case .v28:  return try V28(version)
-        case .v281: return try V281(version)
-        case .v282: return try V282(version)
+        case .v21:  return v21
+        case .v23:  return v23
+        case .v231: return v231
+        case .v24:  return v24
+        case .v25:  return v25
+        case .v251: return v251
+        case .v26:  return v26
+        case .v27:  return v27
+        case .v271: return v271
+        case .v28:  return v28
+        case .v281: return v281
+        case .v282: return v282
         default:
-            return try V282(version)
+            return v282
         }
     }
     
@@ -130,14 +160,44 @@ public struct HL7 {
         var name: String
     }
     
+    func parse(_ str:String) throws -> Message {
+        return try Message(str, hl7: self)
+    }
+    
+    
+    func validate(_ message:Message) -> Bool {
+        return message.validate()
+    }
+    
+    
+    func create(version: Version, type: String) throws -> Message? {
+        // TODO: TBD
+        // let spec = spec(ofVersion: version)
+        
+        return nil
+    }
+    
+    
+    
+    
+    
+    
+    class Unknow: Versioned {
+        override init(_ version: Version) throws {
+            try super.init(.v21)
+        }
+    }
+    
+    
+    class V21: Versioned {
+        override init(_ version: Version) throws {
+            try super.init(.v21)
+        }
+    }
     
     class V23: Versioned {
         override init(_ version: Version) throws {
             try super.init(.v23)
-        }
-
-        struct Message {
-            var type: MessageType
         }
     }
 
@@ -146,18 +206,12 @@ public struct HL7 {
             try super.init(.v231)
         }
 
-        struct Message {
-            var type: MessageType
-        }
+        
     }
     
     class V24: Versioned {
         override init(_ version: Version) throws {
             try super.init(.v24)
-        }
-
-        struct Message {
-            var type: MessageType
         }
     }
     
@@ -165,19 +219,11 @@ public struct HL7 {
         override init(_ version: Version) throws {
             try super.init(.v25)
         }
-
-        struct Message {
-            var type: MessageType
-        }
     }
     
     class V251: Versioned {
         override init(_ version: Version) throws {
             try super.init(.v251)
-        }
-
-        struct Message {
-            var type: MessageType
         }
     }
     
@@ -185,19 +231,11 @@ public struct HL7 {
         override init(_ version: Version) throws {
             try super.init(.v26)
         }
-
-        struct Message {
-            var type: MessageType
-        }
     }
     
     class V27: Versioned {
         override init(_ version: Version) throws {
             try super.init(.v27)
-        }
-
-        struct Message {
-            var type: MessageType
         }
     }
     
@@ -205,19 +243,11 @@ public struct HL7 {
         override init(_ version: Version) throws {
             try super.init(.v271)
         }
-                            
-        struct Message {
-            var type: MessageType
-        }
     }
     
     class V28: Versioned {
         override init(_ version: Version) throws {
             try super.init(.v28)
-        }
-                                
-        struct Message {
-            var type: MessageType
         }
     }
     
@@ -225,19 +255,11 @@ public struct HL7 {
         override init(_ version: Version) throws {
             try super.init(.v281)
         }
-             
-        struct Message {
-            var type: MessageType
-        }
     }
     
     class V282: Versioned {
         override init(_ version: Version) throws {
             try super.init(.v282)
-        }
-             
-        struct Message {
-            var type: MessageType
         }
     }
 }
@@ -262,7 +284,7 @@ extension Versioned:XMLParserDelegate {
                     if let currentSequence = currentSequence {
                         // is it a segment ?
                         if ref.count == 3 {
-                            var segment = Segment(ref)
+                            var segment = Segment(ref, specMessage: currentMessage)
                             
                             if let fields = fields[ref] {
                                 segment.fields.append(contentsOf: fields)
