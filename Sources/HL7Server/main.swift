@@ -35,7 +35,7 @@ struct HL7Server: ParsableCommand, HL7ServerDelegate {
             let server = try HL7Swift.HL7Server(
                 host: self.hostname,
                 port: self.port,
-                version: .v282,
+                version: .all,
                 delegate: self)
             
             try server.start()
@@ -50,14 +50,13 @@ struct HL7Server: ParsableCommand, HL7ServerDelegate {
     // MARK: -
     
     func server(_ server: HL7Swift.HL7Server, receive message: Message) {
-        // store file
         let timeInterval = NSDate().timeIntervalSince1970
 
         do {
-            let filePath = "\((self.dirPath as NSString).expandingTildeInPath)/\(try message.getType().rawValue)-\(timeInterval).hl7"
+            // store file
+            let filePath = "\((self.dirPath as NSString).expandingTildeInPath)/\(message.type.name)-\(timeInterval).hl7"
         
             try message.description.write(toFile: filePath, atomically: true, encoding: .utf8)
-
         } catch let e {
             Logger.error("FS write error: \(e.localizedDescription)")
         }

@@ -58,7 +58,9 @@ extension Segment: CustomStringConvertible {
         }
         
         // remove last |
-        str.removeLast()
+        if !str.isEmpty {
+            str.removeLast()
+        }
 
         return str
     }

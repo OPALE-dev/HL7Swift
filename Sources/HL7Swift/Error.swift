@@ -13,6 +13,7 @@ public enum HL7Error: LocalizedError {
     case encondingFailed(message: String)
     case unexpectedMessage(message: String)
     case unsupportedVersion(message: String)
+    case unsupportedMessage(message: String)
     case parserError(message: String)
     case initError(message: String)
     
@@ -33,7 +34,10 @@ public enum HL7Error: LocalizedError {
         
         case .unsupportedVersion(message: let message):
             return "Unsupported version: \(message)"
-
+            
+        case .unsupportedMessage(message: let message):
+            return "Unsupported message: \(message)"
+            
         case .parserError(message: let message):
             return "Parser error: \(message)"
             
