@@ -46,7 +46,6 @@ public class Versioned: NSObject, Versionable {
     
     
     func loadXML() throws {
-       // fatalError("Must be overritten locally")
         try loadFields(forVersion: self.version)
         try loadMessages(forVersion: self.version)
     }
@@ -241,29 +240,6 @@ public struct HL7 {
             var type: MessageType
         }
     }
-    
-    // MARK: -
-//    subscript(type: HL7.MessageType, version: Version) -> SpecMessage? {
-//        if let messages = messages[version] {
-//            for message in messages {
-//                if message.type == type {
-//                    return message
-//                }
-//            }
-//        }
-//        return nil
-//    }
-//
-//    subscript(name: String, version: Version) -> SpecMessage? {
-//        if let messages = messages[version] {
-//            for message in messages {
-//                if message.type.rawValue == name {
-//                    return message
-//                }
-//            }
-//        }
-//        return nil
-//    }
 }
 
 
