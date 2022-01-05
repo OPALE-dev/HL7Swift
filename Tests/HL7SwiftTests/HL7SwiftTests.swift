@@ -82,7 +82,7 @@
                     let msg = try Message(content, hl7: hl7)
                     let group = try msg.group()
                     
-                    print(group)
+                    print(group!)
                     
 //                    let tersePath = "/ORU_R01.PATIENT_RESULT.CONTENT/ORU_R01.VISIT.CONTENT/PV1"
 //                    let terser = Terser(msg)

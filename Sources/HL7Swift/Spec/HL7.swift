@@ -284,7 +284,7 @@ extension Versioned:XMLParserDelegate {
                     if let currentSequence = currentSequence {
                         // is it a segment ?
                         if ref.count == 3 {
-                            var segment = Segment(ref, specMessage: currentMessage)
+                            let segment = Segment(ref, specMessage: currentMessage)
                             
                             if let fields = fields[ref] {
                                 segment.fields.append(contentsOf: fields)
