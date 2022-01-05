@@ -56,12 +56,15 @@ final class HL7SwiftGenTests: XCTestCase {
     
     func testGenerateStructs2() {
         var namespace = Generator.Struct(name: "HL7")
+        var version = Generator.Struct(name: "V23", protocols: ["Versionable"])
         
         for messageType in hl7.spec(ofVersion: .v23).messages.keys.sorted() {
-            namespace.nodes.append(
+            version.nodes.append(
                 Generator.Struct(name: messageType, protocols: ["MessageType"])
             )
         }
+        
+        namespace.nodes.append(version)
         
         print(namespace.generate())
     }
