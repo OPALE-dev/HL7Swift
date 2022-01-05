@@ -65,8 +65,6 @@
                     let content = try String(contentsOf: oruPath)
 
                     let msg = try Message(content, hl7: hl7)
-                    
-                    print(msg.specMessage!.rootGroup.pretty())
 
                 } catch let e {
                     assertionFailure(e.localizedDescription)
@@ -80,15 +78,16 @@
                 do {
                     let content = try String(contentsOf: oruPath)
                     let msg = try Message(content, hl7: hl7)
-                    let group = try msg.group()
+                    //let group = try msg.group()
+                    let group = msg.specMessage?.rootGroup
                     
-                    print(group!)
+                    print("group \(group!.pretty())")
                     
-//                    let tersePath = "/ORU_R01.PATIENT_RESULT.CONTENT/ORU_R01.VISIT.CONTENT/PV1"
-//                    let terser = Terser(msg)
-                    //let pv1 = try terser.get(tersePath)
-                    //print(pv1!)
-                    //assert(pv1?.description == "PV1|1|I|G52^G52-08^^||||213322^KRAT^DAVID^JOHN^^^5871925^^LIS_LAB^L^^^DN|||||||||||I|11036427586|||||||||||||||||||||||||20251014030201-0400||||||||")
+                    let tersePath = "/ORU_R01.PATIENT_RESULT.CONTENT/ORU_R01.VISIT.CONTENT/PV1"
+                    let terser = Terser(msg)
+                    let pv1 = try terser.get(tersePath)
+                    print("pv1 \(pv1!)")
+                    assert(pv1?.description == "PV1|1|I|G52^G52-08^^||||213322^KRAT^DAVID^JOHN^^^5871925^^LIS_LAB^L^^^DN|||||||||||I|11036427586|||||||||||||||||||||||||20251014030201-0400||||||||")
                 } catch let e {
                     assertionFailure(e.localizedDescription)
                 }
