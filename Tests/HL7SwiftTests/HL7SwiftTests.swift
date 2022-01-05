@@ -128,10 +128,10 @@
                     
                     print(message.specMessage!.rootGroup!.pretty())
                                                         
-                    assert(message["SFT"]![1]!.cells[0].text == "1.2.3")
-                    assert(message["SFT"]!["Software Certified Version or Release Number"]!.cells[0].text == "1.2.3")
-                    assert(message["ORC"]!["Filler Order Number"]!.cells[0].components[0].text == "R3464105_20181016131600")
-                    assert(message["PID"]!["Patient Name"]!.cells[0].description == "WILLS^CYRUS^MARIO^^^^L")
+                    assert(message["SFT"]![1]!.cells[0].text                                                    == "1.2.3")
+                    assert(message["SFT"]!["Software Certified Version or Release Number"]!.cells[0].text       == "1.2.3")
+                    assert(message["ORC"]!["Filler Order Number"]!.cells[0].components[0].text                  == "R3464105_20181016131600")
+                    assert(message["PID"]!["Patient Name"]!.cells[0].description                                == "WILLS^CYRUS^MARIO^^^^L")
 
                 } catch let e {
                     assertionFailure(e.localizedDescription)

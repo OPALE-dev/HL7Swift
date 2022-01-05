@@ -205,8 +205,6 @@ public struct HL7 {
         override init(_ version: Version) throws {
             try super.init(.v231)
         }
-
-        
     }
     
     class V24: Versioned {
