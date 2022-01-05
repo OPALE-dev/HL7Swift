@@ -85,7 +85,6 @@ public struct Message {
         let spec = hl7.spec(ofVersion: version)
         
         self.specMessage = spec.messages[type]
-        print("LE TYYYYYYYYYYYYYYYYYYPE \(type)")
         self.specMessage?.rootGroup.name = type
         
         for s in segments {
