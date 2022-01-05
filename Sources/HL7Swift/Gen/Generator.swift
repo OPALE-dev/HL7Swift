@@ -24,6 +24,7 @@ protocol Node {
 }
 
 
+
 /*
  A Swift code generator to ease generation of specification
  related enums, class and other structures.
@@ -41,7 +42,7 @@ public struct Generator {
             var prefix = ""
             
             for _ in 0..<level {
-                prefix += "\t"
+                prefix += "  "
             }
             
             if vivibility != .Unspecified {
