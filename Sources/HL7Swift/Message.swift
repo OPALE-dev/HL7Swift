@@ -85,6 +85,8 @@ public struct Message {
         let spec = hl7.spec(ofVersion: version)
         
         self.specMessage = spec.messages[type]
+        print("LE TYYYYYYYYYYYYYYYYYYPE \(type)")
+        self.specMessage?.rootGroup.name = type
         
         for s in segments {
             s.specMessage = self.specMessage
@@ -180,13 +182,14 @@ public struct Message {
     
     
     /// Gets the group of the message : parses the spec file 
-    func group() throws -> Group? {
+    /*func group() throws -> Group? {
         let parser = MessageSpecParser()
         
         try parser.runParser(forMessage: self)
         
         return parser.rootGroup
     }
+    */
 }
 
 extension Message: CustomStringConvertible {

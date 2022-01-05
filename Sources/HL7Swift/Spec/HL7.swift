@@ -275,7 +275,12 @@ extension Versioned:XMLParserDelegate {
         }
         else if loadSegmentsFlag {
             if elementName == "xsd:complexType" {
-                currentSequence = attributeDict["name"]
+                currentSequence = (attributeDict["name"])!
+                
+                currentSequence = shortname(currentSequence!)
+                //if self.currentMessage?.rootGroup.name == "ORU_R01" {
+                    print("[\(self.currentMessage?.rootGroup.name)] currentSequence \(currentSequence!)")
+                //}
                 
             } else if elementName == "xsd:element" {
                 if let ref = attributeDict["ref"] {
@@ -291,7 +296,13 @@ extension Versioned:XMLParserDelegate {
                             _ = currentMessage?.rootGroup?.appendSegment(segment: segment, underGroupName: currentSequence)
                         // it is a group
                         } else {
-                            _ = currentMessage?.rootGroup?.appendGroup(group: Group(name: ref + ".CONTENT", items: []), underGroupName: currentSequence)
+                            let groupName = shortname(ref)
+                            //if self.currentMessage?.rootGroup.name == "ORU_R01" {
+                                print("[\(self.currentMessage?.rootGroup.name)] put group \(groupName) under \(currentSequence)")
+                            //}
+                            
+                            
+                            _ = currentMessage?.rootGroup?.appendGroup(group: Group(name: groupName, items: []), underGroupName: currentSequence)
                         }
                     }
                 }

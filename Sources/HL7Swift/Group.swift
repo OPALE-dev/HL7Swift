@@ -124,6 +124,30 @@ public struct Group {
         
         return str
     }
+    
+    /// Returns a pretty string
+    public func prettyTree(depth: Int = 1) -> String {
+        var str = name + ":\n"
+        
+        for item in items {
+            str += String(repeating: "\t", count: depth)
+            
+            switch item {
+            case .group(let group):
+                str += group.prettyTree(depth: depth + 1)
+            case .segment(let segment):
+                str += segment.code
+                /*for f in segment.fields {
+                    str += "|\(f.longName)"
+                }
+                */
+            }
+            
+            str += "\n"
+        }
+        
+        return str
+    }
 }
 
 /// Shortens `"ORU_RO1.PATIENT_RESULT.CONTENT"` to `"PATIENT_RESULT"`
@@ -140,6 +164,23 @@ public func shortName(_ longName: String, type: String) -> String {
         }
     }
     return name
+}
+
+
+public func shortname(_ longName: String) -> String {
+    let a = longName.split(separator: ".")
+    //print("a \(a)")
+    if a.count == 2 {
+        if a[1] == "CONTENT" {
+            return String(a[0])
+        } else {
+            return String(a[1])
+        }
+    } else if a.count == 3 {
+        return String(a[1])
+    } else {
+        return String(a[0])
+    }
 }
 
 public indirect enum Item {
