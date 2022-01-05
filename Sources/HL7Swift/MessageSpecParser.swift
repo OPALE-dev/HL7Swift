@@ -39,7 +39,7 @@ class MessageSpecParser: NSObject, XMLParserDelegate {
 
         let version = forMessage.version
 
-        let path = try forMessage.type
+        let path = forMessage.type
         rootGroup = Group(name: "", items: [])
         
         print(version)
