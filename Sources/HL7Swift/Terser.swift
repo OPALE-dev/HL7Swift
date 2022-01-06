@@ -18,7 +18,7 @@ public struct Terser {
     }
     
     public func get(_ path: String) throws -> String? {
-        guard let group = try message.group() else {
+        guard let group = message.specMessage?.rootGroup else {
             return nil
         }
         var pathClone = path

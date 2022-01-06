@@ -16,11 +16,10 @@ public protocol HL7ServerDelegate {
 
 
 public class HL7Server {
+    var hl7:HL7!
+    
     var host:String     = "0.0.0.0"
     var port:Int        = 2575
-    
-    var hl7:HL7!
-    var spec:Versioned!
     
     var name:String     = "HL7SERVER"
     var facility:String = "HL7SERVER"
@@ -32,11 +31,10 @@ public class HL7Server {
     var bootstrap:ServerBootstrap!
     
     
-    public init(host: String, port: Int, version: Version, delegate: HL7ServerDelegate? = nil) throws {
+    public init(host: String, port: Int, delegate: HL7ServerDelegate? = nil) throws {
         self.hl7        = try HL7()
         self.host       = host
         self.port       = port
-        self.spec       = hl7.spec(ofVersion: version)
         self.delegate   = delegate
          
         self.group = MultiThreadedEventLoopGroup(numberOfThreads: System.coreCount)
@@ -84,7 +82,7 @@ extension HL7Server : ChannelInboundHandler, ChannelOutboundHandler {
     public func channelRead(context: ChannelHandlerContext, data: NIOAny) {
         let message = self.unwrapInboundIn(data)
         
-        if message.version != spec.version {
+        guard let spec = hl7.spec(ofVersion: message.version) else {
             Logger.error(HL7Error.unsupportedVersion(message: "Cannor read version").localizedDescription)
             return
         }
@@ -103,21 +101,31 @@ extension HL7Server : ChannelInboundHandler, ChannelOutboundHandler {
             status = delegate.server(self, ACKStatusFor: message)
         }
         
+        // build reply message against spec
+        print("build reply message against spec")
+        if let type = spec.type(forName: "ACK") {
+            let ack = try? Message(type, spec: spec, preloadSegments: ["MSH", "MSA"])
+            
+            print(ack!)
+        }
+        
         // reply ACK/NAK
         let ack = """
-        MSH|^~\\&|\(self.name)|\(self.facility)|\(remoteName)|\(remoteFacility)|||ACK|1|D|\(spec.version)||||||
+        MSH|^~\\&|\(self.name)|\(self.facility)|\(remoteName)|\(remoteFacility)|||ACK|1|D|\(spec.version.rawValue)||||||
         MSA|\(status)|OK|
         """
+        
+        print(ack)
 
         do {
             _ = context.writeAndFlush(NIOAny(try Message(ack, hl7: self.hl7)))
         } catch let e {
             context.fireErrorCaught(e)
         }
-        
-        // build reply message against spec
-
-        
+    }
+    
+    public func errorCaught(context: ChannelHandlerContext, error: Error) {
+        Logger.error(error.localizedDescription)
     }
 }
 

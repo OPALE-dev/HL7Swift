@@ -35,7 +35,6 @@ struct HL7Server: ParsableCommand, HL7ServerDelegate {
             let server = try HL7Swift.HL7Server(
                 host: self.hostname,
                 port: self.port,
-                version: .all,
                 delegate: self)
             
             try server.start()
