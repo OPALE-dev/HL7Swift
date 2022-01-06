@@ -120,7 +120,7 @@
                     assert(repetitionWithComponent == "298113743")
                     
                     // L /PATIENT_RESULT/ORDER_OBSERVATION/OBSERVATION(2)/OBX-6-6
-                    print(msg["OBX"]!.description)
+                    //print(msg["OBX"]!.)
                         
                 } catch let e {
                     assertionFailure(e.localizedDescription)
