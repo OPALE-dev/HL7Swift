@@ -7,8 +7,14 @@
 
 import Foundation
 
+let REGEX_RULE = #"(\/[A-za-z]+[0-9_\-\(\)]*)+"#
+
 /**
  Example of path : `/PATIENT_RESULT/ORDER_OBSERVATION/OBSERVATION(0)/OBX-14-1`
+ Regex rule : `(\/[A-za-z]+[0-9_\-\(\)]*)+`
+ 
+ 
+ - TODO: set a field/cell/segment, parse components, subcomponents, repetitions
  */
 public struct Terser {
     public let message: Message
@@ -18,6 +24,15 @@ public struct Terser {
     }
     
     public func geet(_ path: String) throws -> String? {
+        let result = path.range(
+            of: REGEX_RULE,
+            options: .regularExpression
+        )
+
+        if result == nil {
+            throw TerserError.incorrectTersePath(message: "Terse path doesn't respect regular expression (\\/[A-za-z0-9_\\-\\(\\)]*)+")
+        }
+        
         var comps = path.split(separator: "/")
         
         // last component is a segment
@@ -35,7 +50,7 @@ public struct Terser {
                     print("subGroup \(subGroup.name)")
                     if subGroup.name == comps[0] {
                         comps.removeFirst()
-                        return try self.geetAux(comps, currentGroup: subGroup)
+                        return self.geetAux(comps, currentGroup: subGroup)
                     }
                 case .segment(let segment):
                     print("segment \(segment)")
@@ -46,7 +61,7 @@ public struct Terser {
         return nil
     }
     
-    func geetAux(_ comps: [String.SubSequence], currentGroup: Group) throws -> String? {
+    func geetAux(_ comps: [String.SubSequence], currentGroup: Group) -> String? {
         var components = comps
         print("comps \(comps)")
         // last component is a segment
@@ -61,7 +76,7 @@ public struct Terser {
                     print("subGroup \(subGroup.name)")
                     if subGroup.name == comps[0] {
                         components.removeFirst()
-                        return try self.geetAux(components, currentGroup: subGroup)
+                        return self.geetAux(components, currentGroup: subGroup)
                     }
                 case .segment(let segment):
                     print("segment \(segment)")
@@ -141,13 +156,17 @@ public struct Terser {
 public enum TerserError: LocalizedError {
     // TODO errrr rethink error name
     case tersePathTooLong(message: String)
+    case incorrectTersePath(message: String)
 
     public var errorDescription: String? {
         switch self {
   
         case .tersePathTooLong(message: let message):
             return "Terse path is too long: \(message)"
-            
+        
+        case .incorrectTersePath(message: let message):
+            return "Terse path is incorrect: \(message)"
+          
         }
     }
 }
