@@ -53,23 +53,48 @@ public class Segment {
     
     
     public subscript(index: Int) -> Field? {
-        return fields[index]
+        get {
+            return fields[index]
+        }
+        set {
+            if let newValue = newValue {
+                fields[index] = newValue
+            }
+        }
     }
     
     public subscript(name: String) -> Field? {
-        if let specMessage = specMessage {
-            for segment in specMessage.rootGroup.segments {
-                if segment.code == self.code {
-                    for f in segment.fields {
-                        if f.longName == name {
-                            return self[f.index-1]
+        get {
+            if let specMessage = specMessage {
+                for segment in specMessage.rootGroup.segments {
+                    if segment.code == self.code {
+                        for f in segment.fields {
+                            if f.longName == name {
+                                return self.fields[f.index-1]
+                            }
+                        }
+                    }
+                }
+            }
+            
+            return nil
+        }
+        set {
+            if let specMessage = specMessage {
+                for segment in specMessage.rootGroup.segments {
+                    if segment.code == self.code {
+                        for f in segment.fields {
+                            if f.longName == name {
+                                //print("\(name) : \(f.index)")
+                                if let newValue = newValue {
+                                    self.fields[f.index-1] = newValue
+                                }
+                            }
                         }
                     }
                 }
             }
         }
-        
-        return nil
     }
 }
 

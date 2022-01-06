@@ -83,20 +83,20 @@ public struct Message {
         }
         
         let type = try getType()
-        
+
         if let spec = hl7.spec(ofVersion: version) {
             self.specMessage = spec.messages[type]
             
             for s in segments {
                 s.specMessage = self.specMessage
             }
+
         }
     }
     
     init(_ type: Typable, spec: Versioned, preloadSegments: [String]) throws {
         self.internalType = type
-        
-        self.specMessage = spec.messages[type.name]
+        self.specMessage  = spec.messages[type.name]
         
         // populate segments ?
         if self.specMessage != nil {
@@ -113,16 +113,27 @@ public struct Message {
     
     // MARK: -
     
-    /*
-     Easily get a segment of the message with a given code using subscript notation.
-     
-     Usage: `let segment = message["MSH"]`
-     
-     */
+
+    /// Easily get/set a segment of the message with a given code using subscript notation.
+    /// Usage: `let segment = message["MSH"]`
     public subscript(code: String) -> Segment? {
-        return getSegment(code)
+        get { return getSegment(code) }
+        set {
+            // delete if exist
+            if let index = segments.firstIndex(where: { seg in seg.code == code }) {
+                segments.remove(at: index)
+                
+                if let newValue = newValue {
+                    segments.insert(newValue, at: index)
+                }
+            } else {
+                if let newValue = newValue {
+                    segments.append(newValue)
+                }
+            }
+        }
     }
-    
+
     
     
     
@@ -145,10 +156,14 @@ public struct Message {
     // MARK: -
     
     /// Gets a segment with a given code
-    func getSegment(_ code: String) -> Segment? {
+    func getSegment(_ code: String, repetition: Int = 0) -> Segment? {
         for segment in segments {
             if segment.code == code {
-                return segment
+                if repetition == 0 {
+                    return segment
+                } else {
+                    return getSegment(code, repetition: repetition - 1)
+                }
             }
         }
         
