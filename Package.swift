@@ -27,6 +27,12 @@ let package = Package(
                 .process("Spec/Resources"),
             ]),
         .target(
+            name: "HL7CodeGen",
+            dependencies: [
+                "HL7Swift",
+                .product(name: "ArgumentParser", package: "swift-argument-parser")
+            ]),
+        .target(
             name: "HL7Client",
             dependencies: [
                 "HL7Swift",

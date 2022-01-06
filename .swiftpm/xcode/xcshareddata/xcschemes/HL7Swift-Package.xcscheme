@@ -76,6 +76,34 @@
                ReferencedContainer = "container:">
             </BuildableReference>
          </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "CodeGen"
+               BuildableName = "CodeGen"
+               BlueprintName = "CodeGen"
+               ReferencedContainer = "container:">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "HL7CodeGen"
+               BuildableName = "HL7CodeGen"
+               BlueprintName = "HL7CodeGen"
+               ReferencedContainer = "container:">
+            </BuildableReference>
+         </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction
@@ -110,9 +138,9 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "HL7Server"
-            BuildableName = "HL7Server"
-            BlueprintName = "HL7Server"
+            BlueprintIdentifier = "HL7CodeGen"
+            BuildableName = "HL7CodeGen"
+            BlueprintName = "HL7CodeGen"
             ReferencedContainer = "container:">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -136,9 +164,9 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "HL7Server"
-            BuildableName = "HL7Server"
-            BlueprintName = "HL7Server"
+            BlueprintIdentifier = "HL7CodeGen"
+            BuildableName = "HL7CodeGen"
+            BlueprintName = "HL7CodeGen"
             ReferencedContainer = "container:">
          </BuildableReference>
       </BuildableProductRunnable>
