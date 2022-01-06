@@ -91,10 +91,13 @@ extension HL7Server : ChannelInboundHandler, ChannelOutboundHandler {
             delegate.server(self, receive: message)
         }
         
-        // get remote name and facility
-        let remoteName = message.segments[0].fields[1].description
-        let remoteFacility = message.segments[0].fields[1].description
+        print("\n")
+        print(message[HL7.MSH]!)
+        print("\n")
         
+        // get remote name and facility (TODO: handle optionals below)
+        let remoteName = message[HL7.MSH]![HL7.V282.ACK.FieldType.Receiving_Application.rawValue]!.description
+        let remoteFacility = message[HL7.MSH]![HL7.V282.ACK.FieldType.Receiving_Facility.rawValue]!.description
         var status = AcknowledgeStatus.AA
         
         if let delegate = self.delegate {
@@ -104,9 +107,23 @@ extension HL7Server : ChannelInboundHandler, ChannelOutboundHandler {
         // build reply message against spec
         print("build reply message against spec")
         if let type = spec.type(forName: "ACK") {
-            let ack = try? Message(type, spec: spec, preloadSegments: ["MSH", "MSA"])
+            var ack = try? Message(type, spec: spec, preloadSegments: ["MSH", "MSA"])
+            ack![HL7.MSH] = message[HL7.MSH]
             
+            // MSH
+            ack![HL7.MSH]![HL7.V282.ACK.FieldType.Receiving_Facility.rawValue]! = Field(remoteFacility)
+            ack![HL7.MSH]![HL7.V282.ACK.FieldType.Receiving_Application.rawValue]! = Field(remoteName)
+            ack![HL7.MSH]![HL7.V282.ACK.FieldType.Sending_Facility.rawValue]! = Field(facility)
+            ack![HL7.MSH]![HL7.V282.ACK.FieldType.Sending_Application.rawValue]! = Field(name)
+            
+            ack![HL7.MSH]![HL7.V282.ACK.FieldType.Message_Type.rawValue]! = Field("ACK")
+            // MSA
+            ack![HL7.MSA]![HL7.V282.ACK.FieldType.Acknowledgment_Code.rawValue]! = Field(status.rawValue)
+            ack![HL7.MSA]![HL7.V282.ACK.FieldType.Message_Control_ID.rawValue]! = Field("OK")
+            
+            print("\n")
             print(ack!)
+            print("\n")
         }
         
         // reply ACK/NAK
@@ -115,7 +132,7 @@ extension HL7Server : ChannelInboundHandler, ChannelOutboundHandler {
         MSA|\(status)|OK|
         """
         
-        print(ack)
+        //print(ack)
 
         do {
             _ = context.writeAndFlush(NIOAny(try Message(ack, hl7: self.hl7)))
