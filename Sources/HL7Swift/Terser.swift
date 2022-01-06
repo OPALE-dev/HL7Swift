@@ -8,14 +8,19 @@
 import Foundation
 
 let REGEX_RULE = #"(\/[A-za-z]+[0-9_\-\(\)]*)+"#
+let FIELD_REPETITION_REGEX_RULE = #"[1-9]\([1-9]\)"#
 
 /**
  The terser can get a segment description, or a field in particular in the message, given a string.
  Example of path : `/PATIENT_RESULT/ORDER_OBSERVATION/OBSERVATION(0)/OBX-14-1`
- Regex rule : `(\/[A-za-z]+[0-9_\-\(\)]*)+`
+ Regex rule for path : `(\/[A-za-z]+[0-9_\-\(\)]*)+`
+ 
+ A path must look like this : `/group1/group2/.../group3(repetition)/segment_code-field(repetition)-component-subcomponent`.
+ The last token is the segment. The repetitions are optionals.
  
  
- - TODO: set a field/cell/segment, parse components, subcomponents, repetitions
+ - TODO: set a field/cell/segment, parse components, subcomponents, repetitions (segments and fields), better regex
+ - TODO: better handling of 0-indexes
  */
 public struct Terser {
     public let message: Message
@@ -48,13 +53,13 @@ public struct Terser {
             for item in current.items {
                 switch item {
                 case .group(let subGroup):
-                    print("subGroup \(subGroup.name)")
+                    
                     if subGroup.name == comps[0] {
                         comps.removeFirst()
-                        return self.geetAux(comps, currentGroup: subGroup)
+                        return try self.geetAux(comps, currentGroup: subGroup)
                     }
-                case .segment(let segment):
-                    print("segment \(segment)")
+                case .segment(_):
+                    print("")
                 }
             }
         }
@@ -62,12 +67,14 @@ public struct Terser {
         return nil
     }
     
-    func geetAux(_ comps: [String.SubSequence], currentGroup: Group) -> String? {
+    func geetAux(_ comps: [String.SubSequence], currentGroup: Group) throws -> String? {
         var components = comps
-        print("comps \(comps)")
+        //print("comps \(comps)")
         
         // last component is a segment
         if comps.count == 1 {
+            return scanSegmentPath(String(comps[0]))
+            /*
             let segmentString = String(comps[0])
             print("Final step \(comps)")
             
@@ -81,9 +88,36 @@ public struct Terser {
             } else if subpathComponents.count == 2 {
                 let segmentCode = String(subpathComponents[0])
                 // TODO handle 0 index
-                let segmentField = Int(subpathComponents[1])! - 1
+                let segmentField = String(subpathComponents[1])
                 
-                return message[segmentCode]![segmentField]!.description
+                let result = segmentField.range(
+                    of: FIELD_REPETITION_REGEX_RULE,
+                    options: .regularExpression
+                )
+
+                // no repetition
+                if result == nil {
+                    print(segmentCode, segmentField)
+                    return message[segmentCode]![Int(segmentField)! - 1]!.description
+                }
+                
+                
+                let scanner = Scanner(string: segmentField)
+                if #available(macOS 10.15, *) {
+                    let field = (scanner.scanInt())!
+                    let _ = scanner.scanCharacter()
+                    let repetition = (scanner.scanInt())!
+                    return message[segmentCode]![field - 1]!.cells[repetition - 1].description
+                } else {
+                    // Fallback on earlier versions
+                    var field: Int = 0
+                    scanner.scanInt(&field)
+                    scanner.scanUpTo("(", into: nil)
+                    var repetition: Int = 0
+                    scanner.scanInt(&repetition)
+                    return message[segmentCode]![field - 1]!.cells[repetition - 1].description
+                }
+                              
             
             // PV1-3-2
             } else if subpathComponents.count == 3 {
@@ -105,18 +139,19 @@ public struct Terser {
                 return message[segmentCode]![segmentField]!.cells[0].components[segmentComponent].components[segmentSubcomponent].description
     
             }
+            */
         } else {
             
             for item in currentGroup.items {
                 switch item {
                 case .group(let subGroup):
-                    print("subGroup \(subGroup.name)")
+
                     if subGroup.name == comps[0] {
                         components.removeFirst()
-                        return self.geetAux(components, currentGroup: subGroup)
+                        return try self.geetAux(components, currentGroup: subGroup)
                     }
-                case .segment(let segment):
-                    print("segment \(segment)")
+                case .segment(_):
+                    print("")
                 }
             }
         }
@@ -124,71 +159,87 @@ public struct Terser {
         return nil
     }
     
-    public func get(_ path: String, currentGroup: Group? = nil) throws -> String? {
-        let group: Group
-        let name: String
-        let remainingComponents: String
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    /**
+     Scans a segment path, eg `PID-1(2)-3-12`, which represents `code-field(repetition)-component-subcomponent`.
+     The repetition is optional
+     */
+    private func scanSegmentPath(_ segment: String) -> String? {
+        var path = segment
+        var field: Int = 0
+        var repetition: Int = 0
+        var component: Int = 0
+        var subcomponent: Int = 0
         
-        if currentGroup != nil {
-            group = currentGroup!
-        } else {
-            guard let rgroup = message.specMessage?.rootGroup else {
-                return nil
-            }
-            group = rgroup
+        // CODE
+        let code = String(path.prefix(3))
+        path.removeFirst(3)
+        
+        let scanner = Scanner(string: path)
+        
+        if path.isEmpty {
+            return message[code]?.description
         }
         
-        var pathClone = path
+        // FIELD
+        scanner.charactersToBeSkipped = CharacterSet(charactersIn: "-()") //scanUpTo("-", into: nil)
+        scanner.scanInt(&field)
+        field -= 1
         
-        // TODO regex check /
-        //let comps = path.split(separator: "/")
-        if pathClone.first == "/" { pathClone.removeFirst() }
-        if let slashIndex = pathClone.firstIndex(where: { $0 == "/" }) {
-            name = String(pathClone.prefix(upTo: slashIndex))
-            print("node \(name)")
-            remainingComponents = String(pathClone.suffix(from: slashIndex))
-            print("remains \(remainingComponents)")
+        if scanner.isAtEnd {
+            return message[code]?[field]?.description
+        }
+        
+        // REPETITION, optional
+        
+        if scanner.string.first == "(" {
+            if scanner.scanInt(&repetition) {
+                //scanner.scanUpTo(")", into: nil)
+                repetition -= 1
+            } 
             
-        } else {
-            name = pathClone
-            remainingComponents = ""
-        }
-        
-        /*
-        let comps = path.components(separatedBy: "/")
-        let name = comps[0]
-        let remainingComponents = path.dropFirst()
-        // remainingComponents
-        print("")
-         */
-        
-        
-        
-        for item in group.items {
-            switch item {
-            case .group(let subGroup):
-                print("subGroup \(subGroup.name)")
-                if subGroup.name == name {
-                    print("FOUND subGroup \(subGroup.name)")
-                    return try self.get(remainingComponents, currentGroup: subGroup)
-                }
-            case .segment(let segment):
-                print("segment \(segment.code) \(segment.description)")
-                if segment.code == name {
-                    print("FOUND \(name)")
-                    if false {
-                        print("is empty")
-                        throw TerserError.tersePathTooLong(message: "there are no remaining components")
-                    } else {
-                        return segment.description
-                    }
-                }
+            if scanner.isAtEnd {
+                return message[code]?[field]?.cells[repetition].description
             }
+        } else {
+            
+            repetition = 0
         }
         
-        return ""
+        
+        
+        // COMPONENT
+        //scanner.scanUpTo("-", into: nil)
+        scanner.scanInt(&component)
+        component -= 1
+        
+        if scanner.isAtEnd {
+            return message[code]?[field]?.cells[repetition].components[component].description
+        }
+        
+        // SUBCOMPONENT
+        //scanner.scanUpTo("-", into: nil)
+        scanner.scanInt(&subcomponent)
+        subcomponent -= 1
+        
+        if scanner.isAtEnd {
+            return message[code]?[field]?.cells[repetition].components[component].components[subcomponent].description
+        }
+        
+        // TODO throw error, path too long
+        return nil
     }
+    
 }
+
 
 public enum TerserError: LocalizedError {
     // TODO errrr rethink error name
