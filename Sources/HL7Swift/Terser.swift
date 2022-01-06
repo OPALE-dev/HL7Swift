@@ -17,22 +17,90 @@ public struct Terser {
         self.message = message
     }
     
-    public func get(_ path: String) throws -> String? {
-        guard let group = message.specMessage?.rootGroup else {
-            return nil
+    public func geet(_ path: String) throws -> String? {
+        var comps = path.split(separator: "/")
+        
+        // last component is a segment
+        if comps.count == 1 {
+            return message[String(comps[0])]?.description
+        } else {
+            
+            guard let current = message.specMessage?.rootGroup else {
+                return nil
+            }
+            
+            for item in current.items {
+                switch item {
+                case .group(let subGroup):
+                    print("subGroup \(subGroup.name)")
+                    if subGroup.name == comps[0] {
+                        comps.removeFirst()
+                        return try self.geetAux(comps, currentGroup: subGroup)
+                    }
+                case .segment(let segment):
+                    print("segment \(segment)")
+                }
+            }
         }
+        
+        return nil
+    }
+    
+    func geetAux(_ comps: [String.SubSequence], currentGroup: Group) throws -> String? {
+        var components = comps
+        print("comps \(comps)")
+        // last component is a segment
+        if comps.count == 1 {
+            print("Final step \(comps)")
+            return message[String(comps[0])]?.description
+        } else {
+            
+            for item in currentGroup.items {
+                switch item {
+                case .group(let subGroup):
+                    print("subGroup \(subGroup.name)")
+                    if subGroup.name == comps[0] {
+                        components.removeFirst()
+                        return try self.geetAux(components, currentGroup: subGroup)
+                    }
+                case .segment(let segment):
+                    print("segment \(segment)")
+                }
+            }
+        }
+        
+        return nil
+    }
+    
+    public func get(_ path: String, currentGroup: Group? = nil) throws -> String? {
+        let group: Group
+        let name: String
+        let remainingComponents: String
+        
+        if currentGroup != nil {
+            group = currentGroup!
+        } else {
+            guard let rgroup = message.specMessage?.rootGroup else {
+                return nil
+            }
+            group = rgroup
+        }
+        
         var pathClone = path
         
         // TODO regex check /
         //let comps = path.split(separator: "/")
         if pathClone.first == "/" { pathClone.removeFirst() }
-        guard let slashIndex = pathClone.firstIndex(where: { $0 == "/" }) else {
-            return nil
+        if let slashIndex = pathClone.firstIndex(where: { $0 == "/" }) {
+            name = String(pathClone.prefix(upTo: slashIndex))
+            print("node \(name)")
+            remainingComponents = String(pathClone.suffix(from: slashIndex))
+            print("remains \(remainingComponents)")
+            
+        } else {
+            name = pathClone
+            remainingComponents = ""
         }
-        let name = pathClone.prefix(upTo: slashIndex)
-        print(name)
-        let remainingComponents = pathClone.suffix(from: slashIndex)
-        print(remainingComponents)
         
         /*
         let comps = path.components(separatedBy: "/")
@@ -49,12 +117,15 @@ public struct Terser {
             case .group(let subGroup):
                 print("subGroup \(subGroup.name)")
                 if subGroup.name == name {
-                    return try self.get(pathClone)
+                    print("FOUND subGroup \(subGroup.name)")
+                    return try self.get(remainingComponents, currentGroup: subGroup)
                 }
             case .segment(let segment):
-                print("segment \(segment.code)")
+                print("segment \(segment.code) \(segment.description)")
                 if segment.code == name {
-                    if remainingComponents.isEmpty {
+                    print("FOUND \(name)")
+                    if false {
+                        print("is empty")
                         throw TerserError.tersePathTooLong(message: "there are no remaining components")
                     } else {
                         return segment.description

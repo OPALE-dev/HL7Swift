@@ -21,9 +21,6 @@ import Foundation
  */
 public struct Group {
     public var name: String = ""
-    public lazy var shortName: String = {
-        return String(self.name.split(separator: ".")[1])
-    }()
     public var items: [Item] = []
     public var segments: [Segment] = []
     
@@ -148,25 +145,33 @@ public struct Group {
         
         return str
     }
+    
+    /// Returns a pretty string
+    public func prettyTree(printFields: Bool = false, depth: Int = 1) -> String {
+        var str = name + ":\n"
+        
+        for item in items {
+            str += String(repeating: "\t", count: depth)
+            
+            switch item {
+            case .group(let group):
+                str += group.prettyTree(printFields: printFields, depth: depth + 1)
+            case .segment(let segment):
+                if printFields {
+                    str += segment.description
+                } else {
+                    str += segment.code
+                }
+            }
+            
+            str += "\n"
+        }
+        
+        return str
+    }
 }
 
 /// Shortens `"ORU_RO1.PATIENT_RESULT.CONTENT"` to `"PATIENT_RESULT"`
-public func shortName(_ longName: String, type: String) -> String {
-    var name = longName
-    if name.hasPrefix(type) {
-        name.removeFirst(type.count + 1)
-    }
-    if name.hasSuffix("CONTENT") {
-        if name.count == 7 {
-            name.removeLast(7)
-        } else {
-            name.removeLast(8)
-        }
-    }
-    return name
-}
-
-
 public func shortname(_ longName: String) -> String {
     let a = longName.split(separator: ".")
     //print("a \(a)")
