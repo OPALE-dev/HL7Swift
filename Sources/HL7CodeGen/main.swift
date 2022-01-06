@@ -11,7 +11,7 @@ import ArgumentParser
 
 struct HL7CodeGen: ParsableCommand {
     mutating func run() throws {
-        Generator().generateHL7Spec()
+        Generator().generateHL7Spec(at: "~/HL7CodeGen")
     }
 }
 
