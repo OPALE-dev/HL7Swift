@@ -28,6 +28,10 @@ public class Segment {
     var fields: [Field] = []
     var specMessage:SpecMessage? = nil
     
+    var isHeader:Bool {
+        code == "MSH" || code == "FHS" || code == "BHS"
+    }
+    
     init(_ str: String, specMessage:SpecMessage? = nil) {
         self.specMessage = specMessage
         
@@ -41,7 +45,7 @@ public class Segment {
         
         code = String(strCloneSplit.remove(at: 0))
                     
-        if code == "MSH" || code == "FHS" || code == "BHS" {
+        if isHeader {
             fields.append(Field([Cell(String(strCloneSplit.remove(at: 0)), isEncoding: true)]))
         }
         
@@ -70,7 +74,7 @@ public class Segment {
                     if segment.code == self.code {
                         for f in segment.fields {
                             if f.longName == name {
-                                return self.fields[f.index-1]
+                                return self.fields[isHeader ? f.index-2 : f.index-1]
                             }
                         }
                     }
@@ -87,7 +91,7 @@ public class Segment {
                             if f.longName == name {
                                 //print("\(name) : \(f.index)")
                                 if let newValue = newValue {
-                                    self.fields[f.index-1] = newValue
+                                    self.fields[isHeader ? f.index-2 : f.index-1] = newValue
                                 }
                             }
                         }
