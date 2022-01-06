@@ -138,4 +138,16 @@
                 }
             }
         }
+        
+        func testTypable() {
+            let type = HL7.V251.ACK()
+            let spec = try? HL7.V251(.v251)
+            
+            let generated = spec?.type(forName: "ACK") as! HL7.V251.ACK
+
+            print(type)
+            print(generated)
+            
+            print(Swift.type(of: type).FieldType.Country_Code)
+        }
     }

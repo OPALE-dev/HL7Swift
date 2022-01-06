@@ -153,13 +153,4 @@ final class HL7SwiftGenTests: XCTestCase {
                 try? namespaceExtension.generate().write(to: URL(fileURLWithPath: filePath), atomically: false, encoding: .utf8)
             }
         }
-    
-    
-    func testFiteFait() {
-        //let type = HL7.V251.ACK(name: "ACK")
-//        let spec = try? HL7.V251(.v251)
-//        let type = spec?.type(forName: "ACK") as! HL7.V251.ACK
-//
-//        print(Swift.type(of: type).FieldType.test)
-    }
 }
