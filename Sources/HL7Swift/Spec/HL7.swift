@@ -160,9 +160,15 @@ public struct HL7 {
             return v282
         }
     }
+
+    struct UnknowMessageType: Typable {
+        var name: String = "Unknow"
+    }
     
-    struct MessageType: Typable {
-        var name: String
+    class UnknowVersion: Versioned {
+        override init(_ version: Version) throws {
+            try super.init(.v21)
+        }
     }
     
     func parse(_ str:String) throws -> Message {
@@ -181,90 +187,6 @@ public struct HL7 {
         
         return nil
     }
-    
-    
-    
-    
-    
-    
-    class Unknow: Versioned {
-        override init(_ version: Version) throws {
-            try super.init(.v21)
-        }
-    }
-    
-    
-//    class V21: Versioned {
-//        override init(_ version: Version) throws {
-//            try super.init(.v21)
-//        }
-//    }
-    
-//    class V23: Versioned {
-//        override init(_ version: Version) throws {
-//            try super.init(.v23)
-//        }
-//    }
-
-//    class V231: Versioned {
-//        override init(_ version: Version) throws {
-//            try super.init(.v231)
-//        }
-//    }
-    
-//    class V24: Versioned {
-//        override init(_ version: Version) throws {
-//            try super.init(.v24)
-//        }
-//    }
-    
-    class V25: Versioned {
-        override init(_ version: Version) throws {
-            try super.init(.v25)
-        }
-    }
-    
-//    class V251: Versioned {
-//        override init(_ version: Version) throws {
-//            try super.init(.v251)
-//        }
-//    }
-    
-    class V26: Versioned {
-        override init(_ version: Version) throws {
-            try super.init(.v26)
-        }
-    }
-    
-    class V27: Versioned {
-        override init(_ version: Version) throws {
-            try super.init(.v27)
-        }
-    }
-    
-    class V271: Versioned {
-        override init(_ version: Version) throws {
-            try super.init(.v271)
-        }
-    }
-    
-    class V28: Versioned {
-        override init(_ version: Version) throws {
-            try super.init(.v28)
-        }
-    }
-    
-    class V281: Versioned {
-        override init(_ version: Version) throws {
-            try super.init(.v281)
-        }
-    }
-    
-    class V282: Versioned {
-        override init(_ version: Version) throws {
-            try super.init(.v282)
-        }
-    }
 }
 
 
@@ -273,10 +195,11 @@ extension Versioned:XMLParserDelegate {
     public func parser(_ parser: XMLParser, didStartElement elementName: String, namespaceURI: String?, qualifiedName qName: String?, attributes attributeDict: [String : String]) {
         if loadMessagesFlag {
             if elementName == "xsd:element" {
-                if let ref = attributeDict["ref"] {
+                if let ref = attributeDict["ref"] {                        
                     if let type = type(forName: ref) {
                         messages[ref] = SpecMessage(type: type, version: version)
                     }
+
                 }
             }
         }

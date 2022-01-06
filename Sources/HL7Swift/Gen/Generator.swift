@@ -84,7 +84,7 @@ public struct Generator {
             for messageType in hl7.spec(ofVersion: version).messages.keys.sorted() {
                 typeSwitch.nodes.append(Generator.Case(name: "\"\(messageType)\"", value: "return \(messageType)()", separator: ":"))
                 
-                //break
+                //break // Debug first message type
             }
             
             function.nodes.append(typeSwitch)
@@ -97,9 +97,9 @@ public struct Generator {
                 
                 typableStruct.nodes.append(nameInstr)
                 
-                var fieldTypeEnum = Generator.Enum(name: "FieldType", type: "String")
-                
                 if let message = hl7.spec(ofVersion: version ).messages[messageType] {
+                    var fieldTypeEnum = Generator.Enum(name: "FieldType", type: "String")
+                    
                     for s in message.rootGroup.segments {
                         for f in s.fields {
                             let symbol = f.longName
@@ -130,12 +130,17 @@ public struct Generator {
 
                         }
                     }
+                    
+                    // do not append empty enum!
+                    if message.rootGroup.segments.count > 0 {
+                        typableStruct.nodes.append(fieldTypeEnum)
+                    }
+                    
                 }
-                        
-                typableStruct.nodes.append(fieldTypeEnum)
+                
                 implementation.nodes.append(typableStruct)
                 
-                 //break
+                 //break // Debug first message type
             }
             
             namespaceExtension.nodes.append(implementation)

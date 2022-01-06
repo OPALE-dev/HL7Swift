@@ -42,7 +42,7 @@ public struct Message {
     }
     
     public var type:Typable {
-        return specMessage?.type ?? HL7.MessageType(name: "Unknow")
+        return specMessage?.type ?? HL7.UnknowMessageType()
     }
     
     
