@@ -49,7 +49,7 @@ public struct Version: RawRepresentable, Hashable {
     public static let v282   = Version(rawValue: "2.8.2")!
     public static let last   = v282
     
-    internal static func klass(forVersion type: Version) -> Versionable.Type {
+    public static func klass(forVersion type: Version) -> Versionable.Type {
         switch type {
         case v21:    return HL7.V21.self as Versionable.Type
         case v23:    return HL7.V23.self as Versionable.Type

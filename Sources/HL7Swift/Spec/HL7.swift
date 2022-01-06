@@ -273,8 +273,10 @@ extension Versioned:XMLParserDelegate {
     public func parser(_ parser: XMLParser, didStartElement elementName: String, namespaceURI: String?, qualifiedName qName: String?, attributes attributeDict: [String : String]) {
         if loadMessagesFlag {
             if elementName == "xsd:element" {
-                if let ref = attributeDict["ref"] {                        
-                    messages[ref] = SpecMessage(type: HL7.MessageType(name: ref), version: version)
+                if let ref = attributeDict["ref"] {
+                    if let type = type(forName: ref) {
+                        messages[ref] = SpecMessage(type: type, version: version)
+                    }
                 }
             }
         }
