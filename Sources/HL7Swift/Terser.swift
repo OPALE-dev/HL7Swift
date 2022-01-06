@@ -10,6 +10,7 @@ import Foundation
 let REGEX_RULE = #"(\/[A-za-z]+[0-9_\-\(\)]*)+"#
 
 /**
+ The terser can get a segment description, or a field in particular in the message, given a string.
  Example of path : `/PATIENT_RESULT/ORDER_OBSERVATION/OBSERVATION(0)/OBX-14-1`
  Regex rule : `(\/[A-za-z]+[0-9_\-\(\)]*)+`
  
@@ -64,10 +65,46 @@ public struct Terser {
     func geetAux(_ comps: [String.SubSequence], currentGroup: Group) -> String? {
         var components = comps
         print("comps \(comps)")
+        
         // last component is a segment
         if comps.count == 1 {
+            let segmentString = String(comps[0])
             print("Final step \(comps)")
-            return message[String(comps[0])]?.description
+            
+            let subpathComponents = segmentString.split(separator: "-")
+            
+            // PV1
+            if subpathComponents.count == 1 {
+                return message[segmentString]?.description
+                
+            // PV1-1
+            } else if subpathComponents.count == 2 {
+                let segmentCode = String(subpathComponents[0])
+                // TODO handle 0 index
+                let segmentField = Int(subpathComponents[1])! - 1
+                
+                return message[segmentCode]![segmentField]!.description
+            
+            // PV1-3-2
+            } else if subpathComponents.count == 3 {
+                let segmentCode = String(subpathComponents[0])
+                // TODO handle 0 index
+                let segmentField = Int(subpathComponents[1])! - 1
+                let segmentComponent = Int(subpathComponents[2])! - 1
+                
+                return message[segmentCode]![segmentField]!.cells[0].components[segmentComponent].description
+            
+            // SFT-1-6-3
+            } else if subpathComponents.count == 4 {
+                let segmentCode = String(subpathComponents[0])
+                // TODO handle 0 index
+                let segmentField = Int(subpathComponents[1])! - 1
+                let segmentComponent = Int(subpathComponents[2])! - 1
+                let segmentSubcomponent = Int(subpathComponents[3])! - 1
+                
+                return message[segmentCode]![segmentField]!.cells[0].components[segmentComponent].components[segmentSubcomponent].description
+    
+            }
         } else {
             
             for item in currentGroup.items {

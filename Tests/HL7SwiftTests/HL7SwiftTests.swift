@@ -90,7 +90,8 @@
                     
                     // Get segment
                     let pv1 = try terser.geet("/PATIENT_RESULT/PATIENT/VISIT/PV1")
-                    assert(pv1?.description == "PV1|1|I|G52^G52-08^^||||213322^KRAT^DAVID^JOHN^^^5871925^^LIS_LAB^L^^^DN|||||||||||I|11036427586|||||||||||||||||||||||||20251014030201-0400||||||||")
+                    let pv1Description = "PV1|1|I|G52^G52-08^^||||213322^KRAT^DAVID^JOHN^^^5871925^^LIS_LAB^L^^^DN|||||||||||I|11036427586|||||||||||||||||||||||||20251014030201-0400||||||||"
+                    assert(pv1?.description == pv1Description)
                     
                     // Regex assertions
                     XCTAssertThrowsError(try terser.geet(""))
@@ -102,6 +103,22 @@
                     assert(nonexistantPath == nil)
                     let nonexistantPath2 = try terser.geet("/PATIENT_RESULT/PATIENT/VISIT/PV0")
                     assert(nonexistantPath2 == nil)
+                    
+                    // 1 /PATIENT_RESULT/PATIENT/VISIT/PV1-1
+                    print(msg["PV1"]![0]!.description)
+                    let field = try terser.geet("/PATIENT_RESULT/PATIENT/VISIT/PV1-1")
+                    assert(field == "1")
+                    // G52-08 /PATIENT_RESULT/PATIENT/VISIT/PV1-3-2
+                    print(msg["PV1"]![2]!.cells[0].components[1].description)
+                    let component = try terser.geet("/PATIENT_RESULT/PATIENT/VISIT/PV1-3-2")
+                    assert(component == "G52-08")
+                    // ISO /PATIENT_RESULT/PATIENT/SFT-1-6-3
+                    print(msg["SFT"]![0]!.cells[0].components[5].components[2].description)
+                    let subcomponent = try terser.geet("/PATIENT_RESULT/PATIENT/SFT-1-6-3")
+                    assert(subcomponent == "ISO")
+                    // L /PATIENT_RESULT/ORDER_OBSERVATION/OBSERVATION(2)/OBX-6-6
+                    print(msg["OBX"]!.description)
+                        
                 } catch let e {
                     assertionFailure(e.localizedDescription)
                 }
