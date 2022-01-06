@@ -79,11 +79,6 @@
                     let content = try String(contentsOf: oruPath)
                     let msg = try Message(content, hl7: hl7)
                     
-
-                    //debug
-                    //let group = msg.specMessage?.rootGroup
-                    //print("group \(group!.prettyTree(printFields: true))")
-                    
                     // Initialisation of terser
                     let terser = Terser(msg)
                     
@@ -105,22 +100,18 @@
                     assert(nonexistantPath2 == nil)
                     
                     // 1 /PATIENT_RESULT/PATIENT/VISIT/PV1-1
-                    // print(msg["PV1"]![0]!.description)
                     let field = try terser.geet("/PATIENT_RESULT/PATIENT/VISIT/PV1-1")
                     assert(field == "1")
                     
                     // G52-08 /PATIENT_RESULT/PATIENT/VISIT/PV1-3-2
-                    // print(msg["PV1"]![2]!.cells[0].components[1].description)
                     let component = try terser.geet("/PATIENT_RESULT/PATIENT/VISIT/PV1-3-2")
                     assert(component == "G52-08")
                     
                     // ISO /PATIENT_RESULT/PATIENT/SFT-1-6-3
-                    // print(msg["SFT"]![0]!.cells[0].components[5].components[2].description)
                     let subcomponent = try terser.geet("/PATIENT_RESULT/PATIENT/SFT-1-6-3")
                     assert(subcomponent == "ISO")
                     
                     // 298113743^^^SSN^SS /PATIENT_RESULT/PATIENT/PID-3(2)
-                    // print(msg["PID"]![2]!.cells[1].description)
                     let repetition = try terser.geet("/PATIENT_RESULT/PATIENT/PID-3(2)")
                     assert(repetition == "298113743^^^SSN^SS")
                     
