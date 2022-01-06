@@ -44,7 +44,7 @@ public struct Generator {
         
     }
     
-    public func generateHL7Spec() {
+    public func generateHL7Spec(at path:String) {
         let hl7 = try! HL7()
         
         let versions = [
@@ -61,7 +61,7 @@ public struct Generator {
             Version.v281,
             Version.v282]
         
-        let forlderPath = ("~/HL7SwiftVersion" as NSString).expandingTildeInPath
+        let forlderPath = (path as NSString).expandingTildeInPath
         
         try? FileManager.default.createDirectory(atPath: forlderPath, withIntermediateDirectories: true, attributes: nil)
         
