@@ -79,22 +79,29 @@
                     let content = try String(contentsOf: oruPath)
                     let msg = try Message(content, hl7: hl7)
                     
+
+                    //debug
                     let group = msg.specMessage?.rootGroup
-                    
                     print("group \(group!.prettyTree(printFields: true))")
                     
-                    let tersePath = "/PATIENT_RESULT/PATIENT/VISIT/PV1"
+                    // Initialisation of terser
                     let terser = Terser(msg)
-                    let pv1 = try terser.geet(tersePath)
                     
-                    // je parcours mes groupes
-                    // pour trouver le champ correspondant -> PV1/Patient_Name -> INDEX
                     
-                    // checher dans la classe Message, pour le segment correposndant, le champs à l'INDEX du groupe
-                    
-                    //print(msg.description)
-                    print("pv1 \(pv1!)")
+                    // Get segment
+                    let pv1 = try terser.geet("/PATIENT_RESULT/PATIENT/VISIT/PV1")
                     assert(pv1?.description == "PV1|1|I|G52^G52-08^^||||213322^KRAT^DAVID^JOHN^^^5871925^^LIS_LAB^L^^^DN|||||||||||I|11036427586|||||||||||||||||||||||||20251014030201-0400||||||||")
+                    
+                    // Regex assertions
+                    XCTAssertThrowsError(try terser.geet(""))
+                    XCTAssertThrowsError(try terser.geet("random"))
+                    XCTAssertThrowsError(try terser.geet("/"))
+                    
+                    // Wrong paths
+                    let nonexistantPath = try terser.geet("/something")
+                    assert(nonexistantPath == nil)
+                    let nonexistantPath2 = try terser.geet("/PATIENT_RESULT/PATIENT/VISIT/PV0")
+                    assert(nonexistantPath2 == nil)
                 } catch let e {
                     assertionFailure(e.localizedDescription)
                 }
