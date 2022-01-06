@@ -109,7 +109,6 @@ public struct Message {
     
     
     
-    
     /// Validates a message
     func validate() -> Bool {
         if self.specMessage == nil {
@@ -129,10 +128,14 @@ public struct Message {
     // MARK: -
     
     /// Gets a segment with a given code
-    func getSegment(_ code: String) -> Segment? {
+    func getSegment(_ code: String, repetition: Int = 0) -> Segment? {
         for segment in segments {
             if segment.code == code {
-                return segment
+                if repetition == 0 {
+                    return segment
+                } else {
+                    return getSegment(code, repetition: repetition - 1)
+                }
             }
         }
         
