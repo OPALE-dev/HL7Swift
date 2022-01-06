@@ -124,10 +124,8 @@ public struct Terser {
         }
         
         // REPETITION, optional
-        print(scanner.string)
         if scanner.scanString("(", into: nil) {
             if scanner.scanInt(&repetition) {
-                //scanner.scanUpTo(")", into: nil)
                 scanner.scanString(")", into: nil)
                 repetition -= 1
             } 
