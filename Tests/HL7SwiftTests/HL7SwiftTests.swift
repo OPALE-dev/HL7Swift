@@ -115,11 +115,9 @@
                     let repetition = try terser.geet("/PATIENT_RESULT/PATIENT/PID-3(2)")
                     assert(repetition == "298113743^^^SSN^SS")
                     
+                    // 298113743 /PATIENT_RESULT/PATIENT/PID-3(2)-1
                     let repetitionWithComponent = try terser.geet("/PATIENT_RESULT/PATIENT/PID-3(2)-1")
                     assert(repetitionWithComponent == "298113743")
-                    
-                    // 298113743 /PATIENT_RESULT/PATIENT/PID-3(2)-1
-                    print(msg["PID"]![2]!.cells[1].components[0].description)
                     
                     // L /PATIENT_RESULT/ORDER_OBSERVATION/OBSERVATION(2)/OBX-6-6
                     print(msg["OBX"]!.description)
