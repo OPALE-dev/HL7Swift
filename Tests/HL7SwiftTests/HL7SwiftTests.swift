@@ -162,12 +162,10 @@
                                                                                    
                     let intSubscript = message[HL7.SFT]![1]!.cells[0].text
                     assert(intSubscript == "1.2.3")
-                    
+                                        
                     message[HL7.MSH]![HL7.V251.ORU_R01.FieldType.Message_Type.rawValue]! = Field("ACK")
                     let mshTest = message[HL7.MSH]![HL7.V251.ORU_R01.FieldType.Message_Type.rawValue]!.cells[0].text
                     assert(mshTest == "ACK")
-                    
-                    print(message)
                     
                     let stringSubscript = message[HL7.SFT]!["Software Certified Version or Release Number"]!.cells[0].text
                     message[HL7.SFT]!["Software Certified Version or Release Number"]! = Field(stringSubscript)

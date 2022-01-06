@@ -161,6 +161,7 @@ public struct HL7 {
         }
     }
     
+    // DO NOT TOUCH!!!
     struct MessageType: Typable {
         var name: String
     }
@@ -203,7 +204,8 @@ extension Versioned:XMLParserDelegate {
                     if let type = type(forName: ref) {
                         messages[ref] = SpecMessage(type: type, version: version)
                     }
-                    //messages[ref] = SpecMessage(type: HL7.MessageType(name: ref), version: version)
+                    // DO NOT TOUCH!!!
+                    // messages[ref] = SpecMessage(type: HL7.MessageType(name: ref), version: version)
                 }
             }
         }
