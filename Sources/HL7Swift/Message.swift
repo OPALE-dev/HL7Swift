@@ -85,7 +85,7 @@ public struct Message {
         let spec = hl7.spec(ofVersion: version)
         
         self.specMessage = spec.messages[type]
-        self.specMessage?.rootGroup.name = type
+        
         
         for s in segments {
             s.specMessage = self.specMessage

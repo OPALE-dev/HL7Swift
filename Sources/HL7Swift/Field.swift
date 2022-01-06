@@ -19,7 +19,7 @@ import Foundation
  # "LOI_Common_Component^LOI Base Profile^2.16.840.1.113883.9.66^ISO~LOI_NG_Component^LOI NG Profile^2.16.840.1.113883.9.79^ISO"
  ```
  */
-public struct Field {
+public class Field {
     var cells: [Cell] = []
     
     var segmentCode: String = ""
