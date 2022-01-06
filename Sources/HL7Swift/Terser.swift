@@ -69,77 +69,11 @@ public struct Terser {
     
     func geetAux(_ comps: [String.SubSequence], currentGroup: Group) throws -> String? {
         var components = comps
-        //print("comps \(comps)")
         
         // last component is a segment
         if comps.count == 1 {
             return scanSegmentPath(String(comps[0]))
-            /*
-            let segmentString = String(comps[0])
-            print("Final step \(comps)")
-            
-            let subpathComponents = segmentString.split(separator: "-")
-            
-            // PV1
-            if subpathComponents.count == 1 {
-                return message[segmentString]?.description
-                
-            // PV1-1
-            } else if subpathComponents.count == 2 {
-                let segmentCode = String(subpathComponents[0])
-                // TODO handle 0 index
-                let segmentField = String(subpathComponents[1])
-                
-                let result = segmentField.range(
-                    of: FIELD_REPETITION_REGEX_RULE,
-                    options: .regularExpression
-                )
-
-                // no repetition
-                if result == nil {
-                    print(segmentCode, segmentField)
-                    return message[segmentCode]![Int(segmentField)! - 1]!.description
-                }
-                
-                
-                let scanner = Scanner(string: segmentField)
-                if #available(macOS 10.15, *) {
-                    let field = (scanner.scanInt())!
-                    let _ = scanner.scanCharacter()
-                    let repetition = (scanner.scanInt())!
-                    return message[segmentCode]![field - 1]!.cells[repetition - 1].description
-                } else {
-                    // Fallback on earlier versions
-                    var field: Int = 0
-                    scanner.scanInt(&field)
-                    scanner.scanUpTo("(", into: nil)
-                    var repetition: Int = 0
-                    scanner.scanInt(&repetition)
-                    return message[segmentCode]![field - 1]!.cells[repetition - 1].description
-                }
-                              
-            
-            // PV1-3-2
-            } else if subpathComponents.count == 3 {
-                let segmentCode = String(subpathComponents[0])
-                // TODO handle 0 index
-                let segmentField = Int(subpathComponents[1])! - 1
-                let segmentComponent = Int(subpathComponents[2])! - 1
-                
-                return message[segmentCode]![segmentField]!.cells[0].components[segmentComponent].description
-            
-            // SFT-1-6-3
-            } else if subpathComponents.count == 4 {
-                let segmentCode = String(subpathComponents[0])
-                // TODO handle 0 index
-                let segmentField = Int(subpathComponents[1])! - 1
-                let segmentComponent = Int(subpathComponents[2])! - 1
-                let segmentSubcomponent = Int(subpathComponents[3])! - 1
-                
-                return message[segmentCode]![segmentField]!.cells[0].components[segmentComponent].components[segmentSubcomponent].description
-    
-            }
-            */
+ 
         } else {
             
             for item in currentGroup.items {
@@ -158,15 +92,6 @@ public struct Terser {
         
         return nil
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
     
     /**
      Scans a segment path, eg `PID-1(2)-3-12`, which represents `code-field(repetition)-component-subcomponent`.
@@ -209,15 +134,9 @@ public struct Terser {
             if scanner.isAtEnd {
                 return message[code]?[field]?.cells[repetition].description
             }
-        } else {
-            
-            repetition = 0
-        }
-        
-        
+        }        
         
         // COMPONENT
-        //scanner.scanUpTo("-", into: nil)
         scanner.scanInt(&component)
         component -= 1
         
@@ -226,7 +145,6 @@ public struct Terser {
         }
         
         // SUBCOMPONENT
-        //scanner.scanUpTo("-", into: nil)
         scanner.scanInt(&subcomponent)
         subcomponent -= 1
         
