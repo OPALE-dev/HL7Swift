@@ -17,10 +17,15 @@ protocol Versionable {
     var version:Version { get }
 
     func loadXML() throws
+    func type(forName name:String) -> Typable?
 }
 
 
-public class Versioned: NSObject, Versionable {
+public class Versioned: NSObject, Versionable {    
+    func type(forName name:String) -> Typable? {
+        return nil
+    }
+    
     var version: Version
     
     var messages:[String:SpecMessage] = [:]
@@ -36,7 +41,7 @@ public class Versioned: NSObject, Versionable {
     var currentMessage:SpecMessage? = nil
     
     init(_ version: Version) throws {
-        self.version = .last
+        self.version = version
         
         super.init()
         
@@ -51,21 +56,21 @@ public class Versioned: NSObject, Versionable {
     
     
     private func loadMessages(forVersion version: Version) throws {
-        let xmlURL = Bundle.module.url(forResource: "messages", withExtension: "xsd", subdirectory: "v\(version.rawValue)")!
-        
-        let xmlParser = XMLParser(contentsOf: xmlURL)!
-        
-        xmlParser.delegate = self
-        
-        loadMessagesFlag = true
-        currentVersion = version
-        
-        if !xmlParser.parse() {
-            throw HL7Error.parserError(message: "Cannot parse")
-        }
-                
-        for (_, message) in messages {
-            try loadSegments(forMessage: message, version: version)
+        if let xmlURL = Bundle.module.url(forResource: "messages", withExtension: "xsd", subdirectory: "v\(version.rawValue)") {
+            let xmlParser = XMLParser(contentsOf: xmlURL)!
+            
+            xmlParser.delegate = self
+            
+            loadMessagesFlag = true
+            currentVersion = version
+            
+            if !xmlParser.parse() {
+                throw HL7Error.parserError(message: "Cannot parse")
+            }
+                    
+            for (_, message) in messages {
+                try loadSegments(forMessage: message, version: version)
+            }
         }
     }
     
@@ -189,29 +194,29 @@ public struct HL7 {
     }
     
     
-    class V21: Versioned {
-        override init(_ version: Version) throws {
-            try super.init(.v21)
-        }
-    }
+//    class V21: Versioned {
+//        override init(_ version: Version) throws {
+//            try super.init(.v21)
+//        }
+//    }
     
-    class V23: Versioned {
-        override init(_ version: Version) throws {
-            try super.init(.v23)
-        }
-    }
+//    class V23: Versioned {
+//        override init(_ version: Version) throws {
+//            try super.init(.v23)
+//        }
+//    }
 
-    class V231: Versioned {
-        override init(_ version: Version) throws {
-            try super.init(.v231)
-        }
-    }
+//    class V231: Versioned {
+//        override init(_ version: Version) throws {
+//            try super.init(.v231)
+//        }
+//    }
     
-    class V24: Versioned {
-        override init(_ version: Version) throws {
-            try super.init(.v24)
-        }
-    }
+//    class V24: Versioned {
+//        override init(_ version: Version) throws {
+//            try super.init(.v24)
+//        }
+//    }
     
     class V25: Versioned {
         override init(_ version: Version) throws {
@@ -219,11 +224,11 @@ public struct HL7 {
         }
     }
     
-    class V251: Versioned {
-        override init(_ version: Version) throws {
-            try super.init(.v251)
-        }
-    }
+//    class V251: Versioned {
+//        override init(_ version: Version) throws {
+//            try super.init(.v251)
+//        }
+//    }
     
     class V26: Versioned {
         override init(_ version: Version) throws {
