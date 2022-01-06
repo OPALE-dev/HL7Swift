@@ -36,13 +36,14 @@ public struct Message {
 
     var spec:HL7!
     var specMessage:SpecMessage?
+    var internalType:Typable?
     
     public var version:Version {
         return specMessage!.version
     }
     
     public var type:Typable {
-        return specMessage?.type ?? HL7.UnknowMessageType()
+        return specMessage?.type ?? internalType ?? HL7.UnknowMessageType()
     }
     
     
@@ -82,16 +83,32 @@ public struct Message {
         }
         
         let type = try getType()
-        let spec = hl7.spec(ofVersion: version)
         
-        self.specMessage = spec.messages[type]
-        
-        for s in segments {
-            s.specMessage = self.specMessage
+        if let spec = hl7.spec(ofVersion: version) {
+            self.specMessage = spec.messages[type]
+            
+            for s in segments {
+                s.specMessage = self.specMessage
+            }
         }
     }
     
-    
+    init(_ type: Typable, spec: Versioned, preloadSegments: [String]) throws {
+        self.internalType = type
+        
+        self.specMessage = spec.messages[type.name]
+        
+        // populate segments ?
+        if self.specMessage != nil {
+            for s in self.specMessage!.rootGroup.segments {
+                for ps in preloadSegments {
+                    if s.code == ps {
+                        segments.append(s)
+                    }
+                }
+            }
+        }
+    }
     
     
     // MARK: -
@@ -176,16 +193,6 @@ public struct Message {
         }
         
         return Version(rawValue: vString)
-    }
-    
-    
-    /// Gets the group of the message : parses the spec file 
-    func group() throws -> Group? {
-        let parser = MessageSpecParser()
-        
-        try parser.runParser(forMessage: self)
-        
-        return parser.rootGroup
     }
 }
 

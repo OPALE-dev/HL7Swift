@@ -34,7 +34,6 @@ public struct Version: RawRepresentable, Hashable {
         self.rawValue = rawValue
     }
     
-    public static let all    = Version(rawValue: "*")!
     public static let v21    = Version(rawValue: "2.1")!
     public static let v23    = Version(rawValue: "2.3")!
     public static let v231   = Version(rawValue: "2.3.1")!

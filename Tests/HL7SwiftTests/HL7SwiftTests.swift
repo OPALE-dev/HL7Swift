@@ -1,6 +1,7 @@
     import XCTest
     import HL7Swift
     @testable import HL7Swift
+    
 
     final class HL7SwiftTests: XCTestCase {
         var hl7:HL7!
@@ -80,7 +81,7 @@
                 do {
                     let content = try String(contentsOf: oruPath)
                     let msg = try Message(content, hl7: hl7)
-                    let group = try msg.group()
+                    let group = msg.specMessage?.rootGroup
                     
                     print(group!)
                     
@@ -126,7 +127,9 @@
                 do {
                     let message = try Message(withFileAt: url, hl7: hl7)
                     
-                    print(message.specMessage!.rootGroup!.pretty())
+                    //print(message.specMessage!.rootGroup!.pretty())
+                    
+                    print(message[HL7.PID]![HL7.V251.ORU_R01.Patient_Name]!)
                                                         
                     assert(message["SFT"]![1]!.cells[0].text                                                    == "1.2.3")
                     assert(message["SFT"]!["Software Certified Version or Release Number"]!.cells[0].text       == "1.2.3")
@@ -145,9 +148,30 @@
             
             let generated = spec?.type(forName: "ACK") as! HL7.V251.ACK
 
-            print(type)
-            print(generated)
+            assert("\(generated.self)" == "\(type.self)")
             
-            print(Swift.type(of: type).FieldType.Country_Code)
+            assert(Swift.type(of: type).Country_Code == HL7.V251.ACK.Country_Code)
+        }
+        
+        
+        func testSegmentCodesList() {
+            var segments:[String] = []
+            let spec = hl7.spec(ofVersion: .v282)
+            
+            for (_,m) in spec!.messages {
+                for s in m.rootGroup.segments {
+                    if !segments.contains(s.code) {
+                        segments.append(s.code)
+                    }
+                }
+            }
+            
+            var string = ""
+            
+            for s in segments.sorted() {
+                string += "static let \(s) = \"\(s)\"\n"
+            }
+            
+            print(string)
         }
     }

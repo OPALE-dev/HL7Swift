@@ -81,7 +81,7 @@ public struct Generator {
             
             var typeSwitch = Generator.Switch(name: "name", defaultCase: "default: return nil")
                             
-            for messageType in hl7.spec(ofVersion: version).messages.keys.sorted() {
+            for messageType in hl7.spec(ofVersion: version)!.messages.keys.sorted() {
                 typeSwitch.nodes.append(Generator.Case(name: "\"\(messageType)\"", value: "return \(messageType)()", separator: ":"))
                 
                 //break // Debug first message type
@@ -91,49 +91,51 @@ public struct Generator {
             
             implementation.nodes.append(function)
             
-            for messageType in hl7.spec(ofVersion: version).messages.keys.sorted() {
+            for messageType in hl7.spec(ofVersion: version)!.messages.keys.sorted() {
                 var typableStruct = Generator.Class(name: messageType, protocols: ["Typable"])
                 let nameInstr = Generator.Instruction(name: "var name:String = \"\(messageType)\"")
                 
                 typableStruct.nodes.append(nameInstr)
                 
-                if let message = hl7.spec(ofVersion: version ).messages[messageType] {
-                    var fieldTypeEnum = Generator.Enum(name: "FieldType", type: "String")
+                if let message = hl7.spec(ofVersion: version )!.messages[messageType] {
+                    //var fieldTypeEnum = Generator.Enum(name: "FieldType", type: "String")
                     
-                    for s in message.rootGroup.segments {
-                        for f in s.fields {
-                            let symbol = f.longName
-                                .replacingOccurrences(of: " ", with: "_")
-                                .replacingOccurrences(of: "/", with: "_")
-                                .replacingOccurrences(of: "+", with: "_")
-                                .replacingOccurrences(of: "-", with: "_")
-                                .replacingOccurrences(of: "–", with: "_")
-                                .replacingOccurrences(of: "'", with: "")
-                                .replacingOccurrences(of: "’", with: "")
-                                .replacingOccurrences(of: ".", with: "_")
-                                .replacingOccurrences(of: ",", with: "")
-                                .replacingOccurrences(of: "(", with: "")
-                                .replacingOccurrences(of: ")", with: "")
-                                .replacingOccurrences(of: "\"", with: "")
-                                .replacingOccurrences(of: "&", with: "And")
-                                .replacingOccurrences(of: "*", with: "All")
-                                .replacingOccurrences(of: "#", with: "Dash")
-                            
-                            let value = f.longName.replacingOccurrences(of: "\"", with: "")
-
-                            // TODO: find a placeholder for « Type » field (reserved word in Swift)
-                            if symbol != "Type" {
-                                fieldTypeEnum.append(
-                                    Generator.Case(name: symbol, value: "\"\(value)\"")
-                                )
-                            }
-
-                        }
-                    }
+                    
                     
                     // do not append empty enum!
                     if message.rootGroup.segments.count > 0 {
-                        typableStruct.nodes.append(fieldTypeEnum)
+                        for s in message.rootGroup.segments {
+                            for f in s.fields {
+                                let symbol = f.longName
+                                    .replacingOccurrences(of: " ", with: "_")
+                                    .replacingOccurrences(of: "/", with: "_")
+                                    .replacingOccurrences(of: "+", with: "_")
+                                    .replacingOccurrences(of: "-", with: "_")
+                                    .replacingOccurrences(of: "–", with: "_")
+                                    .replacingOccurrences(of: "'", with: "")
+                                    .replacingOccurrences(of: "’", with: "")
+                                    .replacingOccurrences(of: ".", with: "_")
+                                    .replacingOccurrences(of: ",", with: "")
+                                    .replacingOccurrences(of: "(", with: "")
+                                    .replacingOccurrences(of: ")", with: "")
+                                    .replacingOccurrences(of: "\"", with: "")
+                                    .replacingOccurrences(of: "&", with: "And")
+                                    .replacingOccurrences(of: "*", with: "All")
+                                    .replacingOccurrences(of: "#", with: "Dash")
+                                
+                                let value = f.longName.replacingOccurrences(of: "\"", with: "")
+
+                                // TODO: find a placeholder for « Type » field (reserved word in Swift)
+                                if symbol != "Type" {
+                                    typableStruct.append(
+                                        Generator.Instruction(name: "static let \(symbol) = \"\(value)\"")
+                                    )
+                                }
+
+                            }
+                        }
+                        
+                        //typableStruct.nodes.append(fieldTypeEnum)
                     }
                     
                 }
