@@ -115,7 +115,7 @@ public struct Terser {
         }
         
         // FIELD
-        scanner.charactersToBeSkipped = CharacterSet(charactersIn: "-()") //scanUpTo("-", into: nil)
+        scanner.charactersToBeSkipped = CharacterSet(charactersIn: "-") //scanUpTo("-", into: nil)
         scanner.scanInt(&field)
         field -= 1
         
@@ -124,10 +124,11 @@ public struct Terser {
         }
         
         // REPETITION, optional
-        
-        if scanner.string.first == "(" {
+        print(scanner.string)
+        if scanner.scanString("(", into: nil) {
             if scanner.scanInt(&repetition) {
                 //scanner.scanUpTo(")", into: nil)
+                scanner.scanString(")", into: nil)
                 repetition -= 1
             } 
             

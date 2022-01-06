@@ -121,8 +121,8 @@
                     
                     // 298113743^^^SSN^SS /PATIENT_RESULT/PATIENT/PID-3(2)
                     // print(msg["PID"]![2]!.cells[1].description)
-                    //let repetition = try terser.geet("/PATIENT_RESULT/PATIENT/PID-3(2)")
-                    //assert(repetition == "298113743^^^SSN^SS")
+                    let repetition = try terser.geet("/PATIENT_RESULT/PATIENT/PID-3(2)")
+                    assert(repetition == "298113743^^^SSN^SS")
                     
                     let repetitionWithComponent = try terser.geet("/PATIENT_RESULT/PATIENT/PID-3(2)-1")
                     assert(repetitionWithComponent == "298113743")
