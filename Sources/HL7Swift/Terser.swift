@@ -29,7 +29,7 @@ public struct Terser {
         self.message = message
     }
     
-    public func geet(_ path: String) throws -> String? {
+    public func get(_ path: String) throws -> String? {
         let result = path.range(
             of: REGEX_RULE,
             options: .regularExpression
@@ -56,7 +56,7 @@ public struct Terser {
                     
                     if subGroup.name == comps[0] {
                         comps.removeFirst()
-                        return try self.geetAux(comps, currentGroup: subGroup)
+                        return try self.getAux(comps, currentGroup: subGroup)
                     }
                 case .segment(_):
                     print("")
@@ -67,7 +67,7 @@ public struct Terser {
         return nil
     }
     
-    func geetAux(_ comps: [String.SubSequence], currentGroup: Group) throws -> String? {
+    func getAux(_ comps: [String.SubSequence], currentGroup: Group) throws -> String? {
         var components = comps
         
         // last component is a segment
@@ -82,7 +82,7 @@ public struct Terser {
 
                     if subGroup.name == comps[0] {
                         components.removeFirst()
-                        return try self.geetAux(components, currentGroup: subGroup)
+                        return try self.getAux(components, currentGroup: subGroup)
                     }
                 case .segment(_):
                     print("")

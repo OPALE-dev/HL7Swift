@@ -84,39 +84,39 @@
                     
                     
                     // Get segment
-                    let pv1 = try terser.geet("/PATIENT_RESULT/PATIENT/VISIT/PV1")
+                    let pv1 = try terser.get("/PATIENT_RESULT/PATIENT/VISIT/PV1")
                     let pv1Description = "PV1|1|I|G52^G52-08^^||||213322^KRAT^DAVID^JOHN^^^5871925^^LIS_LAB^L^^^DN|||||||||||I|11036427586|||||||||||||||||||||||||20251014030201-0400||||||||"
                     assert(pv1?.description == pv1Description)
                     
                     // Regex assertions
-                    XCTAssertThrowsError(try terser.geet(""))
-                    XCTAssertThrowsError(try terser.geet("random"))
-                    XCTAssertThrowsError(try terser.geet("/"))
+                    XCTAssertThrowsError(try terser.get(""))
+                    XCTAssertThrowsError(try terser.get("random"))
+                    XCTAssertThrowsError(try terser.get("/"))
                     
                     // Wrong paths
-                    let nonexistantPath = try terser.geet("/something")
+                    let nonexistantPath = try terser.get("/something")
                     assert(nonexistantPath == nil)
-                    let nonexistantPath2 = try terser.geet("/PATIENT_RESULT/PATIENT/VISIT/PV0")
+                    let nonexistantPath2 = try terser.get("/PATIENT_RESULT/PATIENT/VISIT/PV0")
                     assert(nonexistantPath2 == nil)
                     
                     // 1 /PATIENT_RESULT/PATIENT/VISIT/PV1-1
-                    let field = try terser.geet("/PATIENT_RESULT/PATIENT/VISIT/PV1-1")
+                    let field = try terser.get("/PATIENT_RESULT/PATIENT/VISIT/PV1-1")
                     assert(field == "1")
                     
                     // G52-08 /PATIENT_RESULT/PATIENT/VISIT/PV1-3-2
-                    let component = try terser.geet("/PATIENT_RESULT/PATIENT/VISIT/PV1-3-2")
+                    let component = try terser.get("/PATIENT_RESULT/PATIENT/VISIT/PV1-3-2")
                     assert(component == "G52-08")
                     
                     // ISO /PATIENT_RESULT/PATIENT/SFT-1-6-3
-                    let subcomponent = try terser.geet("/PATIENT_RESULT/PATIENT/SFT-1-6-3")
+                    let subcomponent = try terser.get("/PATIENT_RESULT/PATIENT/SFT-1-6-3")
                     assert(subcomponent == "ISO")
                     
                     // 298113743^^^SSN^SS /PATIENT_RESULT/PATIENT/PID-3(2)
-                    let repetition = try terser.geet("/PATIENT_RESULT/PATIENT/PID-3(2)")
+                    let repetition = try terser.get("/PATIENT_RESULT/PATIENT/PID-3(2)")
                     assert(repetition == "298113743^^^SSN^SS")
                     
                     // 298113743 /PATIENT_RESULT/PATIENT/PID-3(2)-1
-                    let repetitionWithComponent = try terser.geet("/PATIENT_RESULT/PATIENT/PID-3(2)-1")
+                    let repetitionWithComponent = try terser.get("/PATIENT_RESULT/PATIENT/PID-3(2)-1")
                     assert(repetitionWithComponent == "298113743")
                     
                     // L /PATIENT_RESULT/ORDER_OBSERVATION/OBSERVATION(2)/OBX-6-6
