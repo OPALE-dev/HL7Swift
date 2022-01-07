@@ -176,7 +176,7 @@ _TBD_
 
 MIT License
 
-Copyright (c) 2021 - OPALE <contact@opale.pro>
+Copyright (c) 2021 - OPALE, https://www.opale.fr
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
