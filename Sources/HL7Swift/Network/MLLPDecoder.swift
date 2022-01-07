@@ -16,9 +16,11 @@ public struct MLLPDecoder: ByteToMessageDecoder {
     var endFound = false
     
     var hl7:HL7!
+    var responder:HL7Responder!
     
-    init(withHL7 hl7: HL7) {
-        self.hl7 = hl7
+    init(withHL7 hl7: HL7, responder: HL7Responder) {
+        self.hl7        = hl7
+        self.responder  = responder
     }
     
     public mutating func decode(context: ChannelHandlerContext, buffer: inout ByteBuffer) -> DecodingState {
@@ -53,11 +55,15 @@ public struct MLLPDecoder: ByteToMessageDecoder {
         }
         
         if endFound {
-            do {                
-                context.fireChannelRead(wrapInboundOut(try Message(messageString, hl7: hl7)))
+            do {
+                let message = try Message(messageString, hl7: hl7)
+                context.fireChannelRead(wrapInboundOut(message))
                 
             } catch let e {
                 context.fireErrorCaught(e)
+                
+                // reply NAK
+                try? responder.replyNAK(withMessage: e.localizedDescription, inContext: context)
             }
 
             // reset states
