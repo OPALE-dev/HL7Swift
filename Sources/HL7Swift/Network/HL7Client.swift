@@ -29,6 +29,8 @@ public class HL7CLient {
     // MARK: -
     
     public func connect() -> EventLoopFuture<Void> {
+        let responder = HL7Responder(hl7: hl7, spec: hl7.spec(ofVersion: .v282)!, facility: "HL7SWIFT", app: "HL7CLIENT")
+
         let group = MultiThreadedEventLoopGroup(numberOfThreads: 1)
         
         let bootstrap = ClientBootstrap(group: group)
@@ -37,7 +39,7 @@ public class HL7CLient {
             .channelInitializer { channel in
                 channel.pipeline.addHandlers([
                     MessageToByteHandler(MLLPEncoder()),
-                    ByteToMessageHandler(MLLPDecoder(withHL7: self.hl7)),
+                    ByteToMessageHandler(MLLPDecoder(withHL7: self.hl7, responder: responder)),
                     self
                 ])
         }

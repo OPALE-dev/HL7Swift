@@ -25,6 +25,7 @@ public class HL7Server {
     var facility:String = "HL7SERVER"
 
     var delegate:HL7ServerDelegate?
+    var responder:HL7Responder!
     
     var channel: Channel!
     var group:MultiThreadedEventLoopGroup!
@@ -36,6 +37,8 @@ public class HL7Server {
         self.host       = host
         self.port       = port
         self.delegate   = delegate
+        
+        self.responder = HL7Responder(hl7: hl7, spec: hl7.spec(ofVersion: .v282)!, facility: facility, app: name)
          
         self.group = MultiThreadedEventLoopGroup(numberOfThreads: System.coreCount)
         self.bootstrap = ServerBootstrap(group: group)
@@ -44,7 +47,7 @@ public class HL7Server {
             .childChannelInitializer { channel in
                 return channel.pipeline.addHandlers([
                     MessageToByteHandler(MLLPEncoder()),
-                    ByteToMessageHandler(MLLPDecoder(withHL7: self.hl7)),
+                    ByteToMessageHandler(MLLPDecoder(withHL7: self.hl7, responder: self.responder)),
                     self
                 ])
             }
@@ -84,6 +87,9 @@ extension HL7Server : ChannelInboundHandler, ChannelOutboundHandler {
         
         guard let spec = hl7.spec(ofVersion: message.version) else {
             Logger.error(HL7Error.unsupportedVersion(message: "Cannor read version").localizedDescription)
+            
+            try? responder.replyNAK(withMessage: "Cannor read version", inContext: context)
+            
             return
         }
         
@@ -105,6 +111,7 @@ extension HL7Server : ChannelInboundHandler, ChannelOutboundHandler {
         // reply ACK/NAK
         if let type = spec.type(forName: "ACK") {
             if var ack = try? Message(type, spec: spec, preloadSegments: ["MSH", "MSA"]) {
+                // swap MSH with original message
                 ack[HL7.MSH] = message[HL7.MSH]
                 
                 // MSH
@@ -123,12 +130,13 @@ extension HL7Server : ChannelInboundHandler, ChannelOutboundHandler {
                 _ = context.writeAndFlush(NIOAny(ack))
             }
         }
-        
-        // TODO: NAK if error
     }
     
     public func errorCaught(context: ChannelHandlerContext, error: Error) {
         Logger.error(error.localizedDescription)
+        
+        // TODO: test test test
+        try? responder.replyNAK(withMessage: error.localizedDescription, inContext: context)
     }
 }
 
