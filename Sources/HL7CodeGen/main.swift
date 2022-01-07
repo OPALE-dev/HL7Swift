@@ -7,11 +7,12 @@
 
 import Foundation
 import HL7Swift
+import SwiftGenerator
 import ArgumentParser
 
 struct HL7CodeGen: ParsableCommand {
     mutating func run() throws {
-        Generator().generateHL7Spec(at: "~/HL7CodeGen")
+        Generator.HL7Generator().generateHL7Spec(at: "~/HL7CodeGen")
     }
 }
 
