@@ -94,8 +94,8 @@ extension HL7Server : ChannelInboundHandler, ChannelOutboundHandler {
         Logger.info("### Receive HL7 (\(spec.version.rawValue)) message:\n\n\(message)\n")
         
         // get remote name and facility (TODO: handle optionals below)
-        let remoteName = message[HL7.MSH]![HL7.V282.ACK.FieldType.Sending_Application.rawValue]!.description
-        let remoteFacility = message[HL7.MSH]![HL7.V282.ACK.FieldType.Sending_Facility.rawValue]!.description
+        let remoteName = message[HL7.MSH]![HL7.Sending_Application]!.description
+        let remoteFacility = message[HL7.MSH]![HL7.Sending_Facility]!.description
         var status = AcknowledgeStatus.AA
         
         if let delegate = self.delegate {
@@ -108,15 +108,15 @@ extension HL7Server : ChannelInboundHandler, ChannelOutboundHandler {
                 ack[HL7.MSH] = message[HL7.MSH]
                 
                 // MSH
-                ack[HL7.MSH]![HL7.V282.ACK.FieldType.Receiving_Facility.rawValue]! = Field(remoteFacility)
-                ack[HL7.MSH]![HL7.V282.ACK.FieldType.Receiving_Application.rawValue]! = Field(remoteName)
-                ack[HL7.MSH]![HL7.V282.ACK.FieldType.Sending_Facility.rawValue]! = Field(facility)
-                ack[HL7.MSH]![HL7.V282.ACK.FieldType.Sending_Application.rawValue]! = Field(name)
+                ack[HL7.MSH]![HL7.Receiving_Facility]! = Field(remoteFacility)
+                ack[HL7.MSH]![HL7.Receiving_Application]! = Field(remoteName)
+                ack[HL7.MSH]![HL7.Sending_Facility]! = Field(facility)
+                ack[HL7.MSH]![HL7.Sending_Application]! = Field(name)
                 
-                ack[HL7.MSH]![HL7.V282.ACK.FieldType.Message_Type.rawValue]! = Field("ACK")
+                ack[HL7.MSH]![HL7.Message_Type]! = Field("ACK")
                 // MSA
-                ack[HL7.MSA]![HL7.V282.ACK.FieldType.Acknowledgment_Code.rawValue]! = Field(status.rawValue)
-                ack[HL7.MSA]![HL7.V282.ACK.FieldType.Message_Control_ID.rawValue]! = Field("OK")
+                ack[HL7.MSA]![HL7.Acknowledgment_Code]! = Field(status.rawValue)
+                ack[HL7.MSA]![HL7.Message_Control_ID]! = Field("OK")
                 
                 Logger.info("### Reply ACK (\(ack.version.rawValue)):\n\n\(ack)\n")
                 

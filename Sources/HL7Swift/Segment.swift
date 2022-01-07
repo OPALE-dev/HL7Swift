@@ -55,26 +55,34 @@ public class Segment {
     }
     
     
-    
+    /// Subscript that get/set segment fields by their index (1-n) as defined in the HL7 specification.
     public subscript(index: Int) -> Field? {
         get {
-            return fields[index]
+            if index == 0 {
+                return nil
+            }
+            return fields[isHeader ? index-2 : index-1]
         }
         set {
             if let newValue = newValue {
-                fields[index] = newValue
+                fields[isHeader ? index-2 : index-1] = newValue
             }
         }
     }
     
+    /// Subscript that get/set segment fields by their specification long names as defined in the HL7 specification.
     public subscript(name: String) -> Field? {
         get {
             if let specMessage = specMessage {
+                // we loop over all known segments in the spec (specMessage.rootGroup)
                 for segment in specMessage.rootGroup.segments {
-                    if segment.code == self.code {
+                    if segment.code == code {
+                        // we search for a matching field in the spec
                         for f in segment.fields {
                             if f.longName == name {
-                                return self.fields[isHeader ? f.index-2 : f.index-1]
+                                // if found, return field by index
+                                // be careful of header segment (-2)
+                                return fields[isHeader ? f.index-2 : f.index-1]
                             }
                         }
                     }
@@ -84,14 +92,15 @@ public class Segment {
             return nil
         }
         set {
+            // same as getter
             if let specMessage = specMessage {
                 for segment in specMessage.rootGroup.segments {
-                    if segment.code == self.code {
+                    if segment.code == code {
                         for f in segment.fields {
                             if f.longName == name {
-                                //print("\(name) : \(f.index)")
                                 if let newValue = newValue {
-                                    self.fields[isHeader ? f.index-2 : f.index-1] = newValue
+                                    // be careful of header segment (-2)
+                                    fields[isHeader ? f.index-2 : f.index-1] = newValue
                                 }
                             }
                         }
