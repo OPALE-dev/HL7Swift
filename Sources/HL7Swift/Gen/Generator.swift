@@ -44,7 +44,16 @@ public struct Generator {
         
     }
     
+    /**
+     This function generates `Versionable` implementations based on the HL7 specification.
+     It writes at `path` a set of `Versioned` subclasses, one for each embedded version of the specification (named, `V21`, `V23`, `V231`, etc).
+     Each `Versioned` subclass provides a set of `Typable` classes that represents HL7 message types (`ADT_A01`, `ORU_R01`, etc).
+     Each `Versioned` subclass provides a `type(forName:)` method that returns the desired `Typable` class for a given string.
+     Everything is declared as extension of the `HL7` (sort of) namespace.
+     */
     public func generateHL7Spec(at path:String) {
+        HL7.generator = true
+        
         let hl7 = try! HL7()
         
         let versions = [
@@ -96,50 +105,7 @@ public struct Generator {
                 let nameInstr = Generator.Instruction(name: "var name:String = \"\(messageType)\"")
                 
                 typableStruct.nodes.append(nameInstr)
-                
-                if let message = hl7.spec(ofVersion: version )!.messages[messageType] {
-                    //var fieldTypeEnum = Generator.Enum(name: "FieldType", type: "String")
-                    
-                    
-                    
-                    // do not append empty enum!
-                    if message.rootGroup.segments.count > 0 {
-                        for s in message.rootGroup.segments {
-                            for f in s.fields {
-                                let symbol = f.longName
-                                    .replacingOccurrences(of: " ", with: "_")
-                                    .replacingOccurrences(of: "/", with: "_")
-                                    .replacingOccurrences(of: "+", with: "_")
-                                    .replacingOccurrences(of: "-", with: "_")
-                                    .replacingOccurrences(of: "–", with: "_")
-                                    .replacingOccurrences(of: "'", with: "")
-                                    .replacingOccurrences(of: "’", with: "")
-                                    .replacingOccurrences(of: ".", with: "_")
-                                    .replacingOccurrences(of: ",", with: "")
-                                    .replacingOccurrences(of: "(", with: "")
-                                    .replacingOccurrences(of: ")", with: "")
-                                    .replacingOccurrences(of: "\"", with: "")
-                                    .replacingOccurrences(of: "&", with: "And")
-                                    .replacingOccurrences(of: "*", with: "All")
-                                    .replacingOccurrences(of: "#", with: "Dash")
                                 
-                                let value = f.longName.replacingOccurrences(of: "\"", with: "")
-
-                                // TODO: find a placeholder for « Type » field (reserved word in Swift)
-                                if symbol != "Type" {
-                                    typableStruct.append(
-                                        Generator.Instruction(name: "static let \(symbol) = \"\(value)\"")
-                                    )
-                                }
-
-                            }
-                        }
-                        
-                        //typableStruct.nodes.append(fieldTypeEnum)
-                    }
-                    
-                }
-                
                 implementation.nodes.append(typableStruct)
                 
                  //break // Debug first message type

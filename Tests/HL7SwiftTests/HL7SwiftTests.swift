@@ -159,27 +159,29 @@
             if let url = Bundle.module.url(forResource: "ORU_R01 - 3", withExtension: "txt") {
                 do {
                     let message = try Message(withFileAt: url, hl7: hl7)
+                    
+                    // SFT|Lab Information System^L^^^^LIS&2.16.840.1.113883.3.111&ISO^XX^^^123544|1.2.3|LIS|1.2.34||20150328|
                                                                                    
-                    let intSubscript = message[HL7.SFT]![1]!.cells[0].text
+                    let intSubscript = message[HL7.SFT]![2]!.cells[0].text
                     assert(intSubscript == "1.2.3")
                                         
-                    message[HL7.MSH]![HL7.V251.ORU_R01.FieldType.Message_Type.rawValue]! = Field("ACK")
-                    let mshTest = message[HL7.MSH]![HL7.V251.ORU_R01.FieldType.Message_Type.rawValue]!.cells[0].text
+                    message[HL7.MSH]![HL7.Message_Type]! = Field("ACK")
+                    let mshTest = message[HL7.MSH]![HL7.Message_Type]!.cells[0].text
                     assert(mshTest == "ACK")
                     
                     let stringSubscript = message[HL7.SFT]!["Software Certified Version or Release Number"]!.cells[0].text
                     message[HL7.SFT]!["Software Certified Version or Release Number"]! = Field(stringSubscript)
                     assert(stringSubscript == "1.2.3")
                     
-                    let symbolSubscript = message[HL7.SFT]![HL7.V251.ORU_R01.FieldType.Software_Certified_Version_or_Release_Number.rawValue]!.cells[0].text
-                    message[HL7.SFT]![HL7.V251.ORU_R01.FieldType.Software_Certified_Version_or_Release_Number.rawValue]! = Field(symbolSubscript)
-                    assert(symbolSubscript == "1.2.3")
+                    let symbolSubscript = message[HL7.SFT]?[HL7.Software_Certified_Version_or_Release_Number]?.cells[0].text
+                    message[HL7.SFT]![HL7.Software_Certified_Version_or_Release_Number]! = Field(symbolSubscript!)
+                    assert(symbolSubscript! == "1.2.3")
                     
-                    let stringSegment = message["PID"]!["Patient Name"]!.cells[0].description
-                    message["PID"]!["Patient Name"]! = Field(stringSegment)
+                    let stringSegment = message["PID"]?["Patient Name"]?.cells[0].description
+                    message["PID"]?["Patient Name"]? = Field(stringSegment!)
                     assert(stringSegment == "WILLS^CYRUS^MARIO^^^^L")
                     
-                    let symbolSegment = message[HL7.PID]![HL7.V251.ORU_R01.FieldType.Patient_Name.rawValue]!.cells[0].description
+                    let symbolSegment = message[HL7.PID]![HL7.Patient_Name]!.cells[0].description
                     assert(symbolSegment == "WILLS^CYRUS^MARIO^^^^L")
                     
                 } catch let e {
@@ -195,28 +197,67 @@
             let generated = spec?.type(forName: "ACK") as! HL7.V251.ACK
 
             assert("\(generated.self)" == "\(type.self)")
-            assert(Swift.type(of: type).FieldType.Country_Code.rawValue == HL7.V251.ACK.FieldType.Country_Code.rawValue)
         }
         
         
-        func testSegmentCodesList() {
-            var segments:[String] = []
-            let spec = hl7.spec(ofVersion: .v282)
-            
-            for (_,m) in spec!.messages {
-                for s in m.rootGroup.segments {
-                    if !segments.contains(s.code) {
-                        segments.append(s.code)
-                    }
-                }
-            }
-            
-            var string = ""
-            
-            for s in segments.sorted() {
-                string += "static let \(s) = \"\(s)\"\n"
-            }
-            
-            print(string)
-        }
+//        func testSegmentCodesList() {
+//            var segments:[String] = []
+//            let spec = hl7.spec(ofVersion: .v282)
+//
+//            for (_,m) in spec!.messages {
+//                for s in m.rootGroup.segments {
+//                    if !segments.contains(s.code) {
+//                        segments.append(s.code)
+//                    }
+//                }
+//            }
+//
+//            var string = ""
+//
+//            for s in segments.sorted() {
+//                string += "static let \(s) = \"\(s)\"\n"
+//            }
+//
+//            print(string)
+//        }
+//
+//
+//        func testFieldList() {
+//            var symbols:[String] = []
+//
+//            let hl7 = try! HL7()
+//
+//            let versions = [
+//                Version.v21 ,
+//                Version.v23,
+//                Version.v231,
+//                Version.v24,
+//                Version.v25,
+//                Version.v251,
+//                Version.v26,
+//                Version.v27,
+//                Version.v271,
+//                Version.v28,
+//                Version.v281,
+//                Version.v282]
+//
+//            for version in versions {
+//                for messageType in hl7.spec(ofVersion: version)!.messages.keys.sorted() {
+//                    if let message = hl7.spec(ofVersion: version )!.messages[messageType] {
+//                        for s in message.rootGroup.segments {
+//                            for f in s.fields {
+//                                let symbol = f.longName.symbolyze()
+//                                let value  = f.longName.replacingOccurrences(of: "\"", with: "")
+//
+//                                if !symbols.contains(symbol) {
+//                                    symbols.append(symbol)
+//
+//                                    print("static let \(symbol) = \"\(value)\"")
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        }
     }
