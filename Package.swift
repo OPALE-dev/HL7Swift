@@ -10,6 +10,9 @@ let package = Package(
         .library(
             name: "HL7Swift",
             targets: ["HL7Swift"]),
+        .library(
+            name: "SwiftGenerator",
+            targets: ["SwiftGenerator"]),
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
@@ -27,9 +30,13 @@ let package = Package(
                 .process("Spec/Resources"),
             ]),
         .target(
+            name: "SwiftGenerator"
+        ),
+        .target(
             name: "HL7CodeGen",
             dependencies: [
                 "HL7Swift",
+                "SwiftGenerator",
                 .product(name: "ArgumentParser", package: "swift-argument-parser")
             ]),
         .target(
@@ -46,7 +53,7 @@ let package = Package(
             ]),
         .testTarget(
             name: "HL7SwiftTests",
-            dependencies: ["HL7Swift"],
+            dependencies: ["HL7Swift", "SwiftGenerator"],
             resources: [
                 .process("Resources"),
             ]
