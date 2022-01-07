@@ -27,9 +27,10 @@ _Also, this is a WIP, so it is still subject to many breaking API changes that w
 - Handle exceptions
 - Convert to XML
 - Read message with the correct encoding
-- Enum for message type ? (YES!)
 - Terser for groups
 - Tests groups generation for all tests messages (get all specs too)
+- Implement HL7 v3
+- Impelment HL7 FHIR
 
 ## Getting Started
 
