@@ -195,6 +195,8 @@
             let spec = try? HL7.V251(.v251)
             
             let generated = spec?.type(forName: "ACK") as! HL7.V251.ACK
+            
+            print(type)
 
             assert("\(generated.self)" == "\(type.self)")
         }
