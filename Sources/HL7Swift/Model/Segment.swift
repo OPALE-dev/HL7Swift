@@ -62,6 +62,7 @@ public class Segment {
                 return nil
             }
             return fields[isHeader ? index-2 : index-1]
+            //return fields[index]
         }
         set {
             if let newValue = newValue {
