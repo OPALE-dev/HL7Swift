@@ -4,7 +4,7 @@ HL7Swift is a minimal implementation of the HL7 2.x standard written in Swift. I
 
 ## Disclaimer
 
-HL7Swift is *not* a production ready library and is not intented to be used as such. It focuses on the computing aspects of the HL7 standard, and provides a powerful set of tools to deal with HL7 messages at the atomic level. The authors of this source code cannot be held responsible for its misuses or malfunctions, as it is defined in the license below.
+HL7Swift is *not* a production ready library and is not intented to be used as such. It focuses on the computing aspects of the HL7 standard, and provides a powerful set of tools to deal with HL7 specification. The authors of this source code cannot be held responsible for its misuses or malfunctions, as it is defined in the license below.
 
 _Also, this is a WIP, so it is still subject to many breaking API changes that will make your life very very hard._
 
