@@ -34,8 +34,8 @@ public struct Message {
     var segments: [Segment] = []
     var sep:Character = "\r"
 
-    var spec:HL7!
-    var specMessage:SpecMessage?
+    public var spec:HL7!
+    public var specMessage:SpecMessage?
     var internalType:Typable?
     
     public var version:Version!

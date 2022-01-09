@@ -13,7 +13,7 @@ public class SpecMessage: CustomStringConvertible {
     }
     
     var type:Typable!
-    var rootGroup: Group!
+    public var rootGroup: Group!
     var version: Version!
     
     init(type: Typable, version: Version) {
