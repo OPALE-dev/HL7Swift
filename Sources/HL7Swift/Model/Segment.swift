@@ -24,11 +24,11 @@ import Foundation
  ```
  */
 public class Segment {
-    var code: String = ""
-    var fields: [Field] = []
+    public var code: String = ""
+    public var fields: [Field] = []
     var specMessage:SpecMessage? = nil
     
-    var isHeader:Bool {
+    public var isHeader:Bool {
         code == "MSH" || code == "FHS" || code == "BHS"
     }
     
