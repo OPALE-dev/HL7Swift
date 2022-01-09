@@ -38,9 +38,7 @@ public struct Message {
     var specMessage:SpecMessage?
     var internalType:Typable?
     
-    public var version:Version {
-        return specMessage!.version
-    }
+    public var version:Version!
     
     public var type:Typable {
         return specMessage?.type ?? internalType ?? HL7.UnknowMessageType()
@@ -81,6 +79,8 @@ public struct Message {
         guard let version = try getVersion() else {
             throw HL7Error.unsupportedVersion(message: "Unknow")
         }
+        
+        self.version = version
         
         let type = try getType()
 
