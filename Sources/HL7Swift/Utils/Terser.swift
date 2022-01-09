@@ -118,7 +118,7 @@ public struct Terser {
         // FIELD
         scanner.charactersToBeSkipped = CharacterSet(charactersIn: "-") //scanUpTo("-", into: nil)
         scanner.scanInt(&field)
-        field -= 1
+        //field -= 1 // index offset is now managed by segment subscript itself
         
         if scanner.isAtEnd {
             return message[code]?[field]?.description
