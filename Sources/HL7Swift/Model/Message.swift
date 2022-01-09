@@ -47,7 +47,7 @@ public struct Message {
     }
     
     
-    init(withFileAt url: URL, hl7: HL7) throws {
+    public init(withFileAt url: URL, hl7: HL7) throws {
         do {
             let content = try String(contentsOf: url)
                                 
@@ -59,12 +59,12 @@ public struct Message {
     }
     
     
-    init(withFileAt path: String, hl7: HL7) throws {
+    public init(withFileAt path: String, hl7: HL7) throws {
         try self.init(withFileAt: URL(fileURLWithPath: path), hl7: hl7)
     }
     
     
-    init(_ str: String, hl7: HL7) throws {
+    public init(_ str: String, hl7: HL7) throws {
         // The separator depends on the implementation, not on the standard
         if str.split(separator: "\r").count > 1 {
             sep = "\r"
@@ -94,7 +94,7 @@ public struct Message {
         }
     }
     
-    init(_ type: Typable, spec: Versioned, preloadSegments: [String]) throws {
+    public init(_ type: Typable, spec: Versioned, preloadSegments: [String]) throws {
         self.internalType = type
         self.specMessage  = spec.messages[type.name]
         
