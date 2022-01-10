@@ -181,13 +181,13 @@ public struct Message {
         }
         
         // ACK / NAK
-        if segment.fields[7].cells[0].components.isEmpty {
-            str = segment.fields[7].cells[0].text
+        if segment.fields[8].cells[0].components.isEmpty {
+            str = segment.fields[8].cells[0].text
         } else {
-            if segment.fields[7].cells[0].components.count == 3 {
-                str = segment.fields[7].cells[0].components[2].text
+            if segment.fields[8].cells[0].components.count == 3 {
+                str = segment.fields[8].cells[0].components[2].text
             } else {
-                str = segment.fields[7].cells[0].components[0].text + "_" + segment.fields[7].cells[0].components[1].text
+                str = segment.fields[8].cells[0].components[0].text + "_" + segment.fields[8].cells[0].components[1].text
             }
         }
         
@@ -201,10 +201,10 @@ public struct Message {
             throw HL7Error.unsupportedMessage(message: "MSH segment not found")
         }
         
-        var vString = segment.fields[10].cells[0].text
+        var vString = segment.fields[11].cells[0].text
         
         if vString == "" {
-            vString = segment.fields[10].cells[0].components[0].text
+            vString = segment.fields[11].cells[0].components[0].text
         }
         
         return Version(rawValue: vString)

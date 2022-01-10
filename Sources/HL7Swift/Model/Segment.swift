@@ -41,16 +41,20 @@ public class Segment {
             return
         }
         
-        var strCloneSplit = str.split(separator: "|", maxSplits: 50, omittingEmptySubsequences: false)
+        // separator can be dynamic
+        if let separator = str.prefix(4).last {
+            var strCloneSplit = str.split(separator: separator, maxSplits: 50, omittingEmptySubsequences: false)
         
-        code = String(strCloneSplit.remove(at: 0))
-                    
-        if isHeader {
-            fields.append(Field([Cell(String(strCloneSplit.remove(at: 0)), isEncoding: true)]))
-        }
-        
-        for field in strCloneSplit {
-            fields.append(Field(String(field)))
+            code = String(strCloneSplit.remove(at: 0))
+                        
+            if isHeader {
+                fields.append(Field([Cell(String(separator))])) // append separator field (MSH-1)
+                fields.append(Field([Cell(String(strCloneSplit.remove(at: 0)), isEncoding: true)]))
+            }
+            
+            for field in strCloneSplit {
+                fields.append(Field(String(field)))
+            }
         }
     }
     
@@ -61,12 +65,11 @@ public class Segment {
             if index == 0 {
                 return nil
             }
-            return fields[isHeader ? index-2 : index-1]
-            //return fields[index]
+            return fields[index-1]
         }
         set {
             if let newValue = newValue {
-                fields[isHeader ? index-2 : index-1] = newValue
+                fields[index-1] = newValue
             }
         }
     }
@@ -83,7 +86,7 @@ public class Segment {
                             if f.longName == name {
                                 // if found, return field by index
                                 // be careful of header segment (-2)
-                                return fields[isHeader ? f.index-2 : f.index-1]
+                                return fields[f.index-1]
                             }
                         }
                     }
@@ -101,7 +104,7 @@ public class Segment {
                             if f.longName == name {
                                 if let newValue = newValue {
                                     // be careful of header segment (-2)
-                                    fields[isHeader ? f.index-2 : f.index-1] = newValue
+                                    fields[f.index-1] = newValue
                                 }
                             }
                         }
@@ -115,6 +118,11 @@ public class Segment {
 extension Segment: CustomStringConvertible {
     public var description: String {
         var str = code + "|"
+        
+        if isHeader {
+            // remove separator field
+            fields.remove(at: 0)
+        }
 
         for field in fields {
             str += field.description + "|"
