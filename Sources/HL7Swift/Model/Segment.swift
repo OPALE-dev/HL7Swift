@@ -117,6 +117,8 @@ public class Segment {
 
 extension Segment: CustomStringConvertible {
     public var description: String {
+        var fields = Array(fields)
+        
         var str = code + "|"
         
         if isHeader {
