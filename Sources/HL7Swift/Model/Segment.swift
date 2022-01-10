@@ -62,9 +62,10 @@ public class Segment {
     /// Subscript that get/set segment fields by their index (1-n) as defined in the HL7 specification.
     public subscript(index: Int) -> Field? {
         get {
-            if index == 0 {
+            if index == 0 || index > fields.count {
                 return nil
             }
+            
             return fields[index-1]
         }
         set {
