@@ -118,7 +118,10 @@ extension HL7CLient: ChannelInboundHandler {
     public func channelRead(context: ChannelHandlerContext, data: NIOAny) {
         let response = self.unwrapInboundIn(data)
         
-        let type = response.type
+        guard let type = response.type else {
+            promise?.fail(HL7Error.unsupportedMessage(message: "Cannot read message type"))
+            return
+        }
         
         if type.name == "ACK" || type.name == "NAK" {
             promise?.succeed(response)
