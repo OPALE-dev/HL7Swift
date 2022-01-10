@@ -7,7 +7,7 @@
 
 import Foundation
 
-extension String {
+public extension String {
     func symbolyze() -> String {
         return  self.replacingOccurrences(of: " ", with: "_")
                     .replacingOccurrences(of: "/", with: "_")
