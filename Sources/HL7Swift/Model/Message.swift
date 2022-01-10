@@ -39,10 +39,7 @@ public struct Message {
     var internalType:Typable?
     
     public var version:Version!
-    
-    public var type:Typable {
-        return specMessage?.type ?? internalType ?? HL7.UnknowMessageType()
-    }
+    public var type:Typable!
     
     
     public init(withFileAt url: URL, hl7: HL7) throws {
@@ -86,11 +83,16 @@ public struct Message {
 
         if let spec = hl7.spec(ofVersion: version) {
             self.specMessage = spec.messages[type]
+            self.type = self.specMessage?.type
             
             for s in segments {
                 s.specMessage = self.specMessage
             }
 
+            // get a type anyway
+            if self.type == nil {
+                self.type = HL7.UnknowMessageType(name: type)
+            }
         }
     }
     

@@ -170,7 +170,7 @@ public struct HL7 {
     }
 
     struct UnknowMessageType: Typable {
-        var name: String = "Unknow"
+        var name: String
     }
     
     class UnknowVersion: Versioned {
