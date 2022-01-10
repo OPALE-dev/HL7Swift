@@ -22,13 +22,13 @@ import Foundation
 public class Field {
     var cells: [Cell] = []
     
-    var segmentCode: String = ""
-    var name: String = ""
+    public var segmentCode: String = ""
+    public var name: String = ""
     public var longName: String = ""
-    var type: String = ""
-    var item: String = ""
-    var maxLength: Int = 0
-    var index: Int = 0
+    public var type: String = ""
+    public var item: String = ""
+    public var maxLength: Int = 0
+    public var index: Int = 0
     
     init(name: String) {
         self.name = name

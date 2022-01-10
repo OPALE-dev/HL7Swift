@@ -50,7 +50,7 @@ public class Segment {
         }
         
         for field in strCloneSplit {
-            fields.append(Field(String(field)))
+            fields.append(Field(String(field), segment: self))
         }
     }
     
