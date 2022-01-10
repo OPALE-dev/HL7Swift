@@ -24,7 +24,7 @@ public class Field {
     
     var segmentCode: String = ""
     var name: String = ""
-    var longName: String = ""
+    public var longName: String = ""
     var type: String = ""
     var item: String = ""
     var maxLength: Int = 0
