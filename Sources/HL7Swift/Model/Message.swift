@@ -99,6 +99,7 @@ public struct Message {
     public init(_ type: Typable, spec: Versioned, preloadSegments: [String]) throws {
         self.internalType = type
         self.specMessage  = spec.messages[type.name]
+        self.version = spec.version
         
         // populate segments ?
         if self.specMessage != nil {
