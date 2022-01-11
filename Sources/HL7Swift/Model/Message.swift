@@ -122,11 +122,13 @@ public struct Message {
     public subscript(code: String) -> Segment? {
         get { return getSegment(code) }
         set {
+            // something wrong here?
             // delete if exist
             if let index = segments.firstIndex(where: { seg in seg.code == code }) {
-                segments.remove(at: index)
+                let oldSegment = segments.remove(at: index)
                 
                 if let newValue = newValue {
+                    newValue.fields = oldSegment.fields
                     segments.insert(newValue, at: index)
                 }
             } else {

@@ -164,38 +164,55 @@
             if let url = Bundle.module.url(forResource: "ORU_R01 - 3", withExtension: "txt") {
                 do {
                     let message = try Message(withFileAt: url, hl7: hl7)
-                    
+
                     // SFT|Lab Information System^L^^^^LIS&2.16.840.1.113883.3.111&ISO^XX^^^123544|1.2.3|LIS|1.2.34||20150328|
-                                                                                   
+
                     let intSubscript = message[HL7.SFT]![2]!.description
                     print(intSubscript)
                     assert(intSubscript == "1.2.3")
-                                        
+
                     let versionIntSubscript = message[HL7.MSH]![12]!.description
                     assert(versionIntSubscript == "2.5.1")
-                    
+
                     message[HL7.MSH]![HL7.Message_Type]! = Field("ACK")
                     let mshTest = message[HL7.MSH]![HL7.Message_Type]!.cells[0].text
                     assert(mshTest == "ACK")
-                    
+
                     let stringSubscript = message[HL7.SFT]!["Software Certified Version or Release Number"]!.cells[0].text
                     message[HL7.SFT]!["Software Certified Version or Release Number"]! = Field(stringSubscript)
                     assert(stringSubscript == "1.2.3")
-                    
+
                     let symbolSubscript = message[HL7.SFT]?[HL7.Software_Certified_Version_or_Release_Number]?.cells[0].text
                     message[HL7.SFT]![HL7.Software_Certified_Version_or_Release_Number]! = Field(symbolSubscript!)
                     assert(symbolSubscript! == "1.2.3")
-                    
+
                     let stringSegment = message["PID"]?["Patient Name"]?.cells[0].description
                     message["PID"]?["Patient Name"]? = Field(stringSegment!)
                     assert(stringSegment == "WILLS^CYRUS^MARIO^^^^L")
-                    
+
                     let symbolSegment = message[HL7.PID]![HL7.Patient_Name]!.cells[0].description
                     assert(symbolSegment == "WILLS^CYRUS^MARIO^^^^L")
-                    
+
                 } catch let e {
                     assertionFailure(e.localizedDescription)
                 }
+            }
+            
+            do {
+                let message = try Message(HL7.V25.ACK(), spec: hl7.spec(ofVersion: .v25)!, preloadSegments: [HL7.MSH, HL7.MSA])
+                
+                print(message[HL7.MSA]!)
+                
+                message[HL7.MSA]![HL7.Acknowledgment_Code] = Field(AcknowledgeStatus.AA.rawValue)
+        
+                print(message[HL7.MSA]!)
+                
+                message[HL7.MSA]![HL7.Acknowledgment_Code] = Field(AcknowledgeStatus.AR.rawValue)
+                
+                print(message[HL7.MSA]!)
+                
+            } catch let e {
+                assertionFailure(e.localizedDescription)
             }
         }
         
