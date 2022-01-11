@@ -20,7 +20,7 @@ import Foundation
  ```
  */
 public class Field {
-    var cells: [Cell] = []
+    public var cells: [Cell] = []
     
     public var segmentCode: String = ""
     public var name: String = ""
