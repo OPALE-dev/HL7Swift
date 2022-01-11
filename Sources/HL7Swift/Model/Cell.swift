@@ -13,7 +13,7 @@ import Foundation
  */
 public struct Cell {
     var text: String = ""
-    var components: [Cell] = []
+    public var components: [Cell] = []
     
     init(_ str: String, isEncoding: Bool = false) {
         if isEncoding {
