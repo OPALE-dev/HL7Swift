@@ -11,6 +11,7 @@ import NIO
 
 public protocol HL7ServerDelegate {
     func server(_ server:HL7Server, receive message:Message)
+    func server(_ server:HL7Server, send message:Message)
     func server(_ server:HL7Server, ACKStatusFor message:Message) -> AcknowledgeStatus
 }
 
@@ -126,6 +127,11 @@ extension HL7Server : ChannelInboundHandler, ChannelOutboundHandler {
                 ack[HL7.MSA]![HL7.Message_Control_ID]! = Field("OK")
                 
                 Logger.info("### Reply ACK (\(ack.version.rawValue)):\n\n\(ack)\n")
+                
+                
+                if let delegate = self.delegate {
+                    delegate.server(self, send: ack)
+                }
                 
                 _ = context.writeAndFlush(NIOAny(ack))
             }
