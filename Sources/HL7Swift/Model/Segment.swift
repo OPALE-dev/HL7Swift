@@ -86,7 +86,6 @@ public class Segment {
                         for f in segment.fields {
                             if f.longName == name {
                                 // if found, return field by index
-                                // be careful of header segment (-2)
                                 return fields[f.index-1]
                             }
                         }
@@ -104,7 +103,6 @@ public class Segment {
                         for f in segment.fields {
                             if f.longName == name {
                                 if let newValue = newValue {
-                                    // be careful of header segment (-2)
                                     fields[f.index-1] = newValue
                                 }
                             }
