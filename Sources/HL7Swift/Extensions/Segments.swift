@@ -7,7 +7,7 @@
 
 import Foundation
 
-extension HL7 {
+public extension HL7 {
     static let ABS = "ABS"
     static let ACC = "ACC"
     static let AFF = "AFF"
