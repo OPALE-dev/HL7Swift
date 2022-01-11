@@ -7,7 +7,7 @@
 
 import Foundation
 
-extension HL7 {
+public extension HL7 {
     static let Field_Separator = "Field Separator"
     static let Encoding_Characters = "Encoding Characters"
     static let Sending_Application = "Sending Application"
