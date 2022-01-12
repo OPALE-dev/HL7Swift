@@ -21,5 +21,4 @@ public class SpecMessage: CustomStringConvertible {
         self.version = version
         self.rootGroup = Group(name: type.name, items: [])
     }
-
 }

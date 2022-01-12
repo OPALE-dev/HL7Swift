@@ -8,6 +8,7 @@
 import Foundation
 
 
+
 public protocol Typable {
     var name:String { get }
 }
@@ -29,16 +30,21 @@ public class Versioned: NSObject, Versionable {
     var version: Version
     
     var messages:[String:SpecMessage] = [:]
+    var dataTypes:[String:DataType] = [:] // datatypes by name
     var fields:[String:[Field]] = [:] // fields by segment
     
     var loadMessagesFlag = false
     var loadSegmentsFlag = false
     var loadFieldsFlag = false
+    var loadDataTypesFlag = false
+    var loadCompositeTypesFlag = false
     
     var currentVersion:Version? = nil
     var currentSequence:String? = nil
     var currentField:Field? = nil
     var currentMessage:SpecMessage? = nil
+    var currentDataType:DataType? = nil
+    var currentElement:String? = nil
     
     init(_ version: Version) throws {
         self.version = version
@@ -50,8 +56,10 @@ public class Versioned: NSObject, Versionable {
     
     
     internal func loadXML() throws {
-        try loadFields(forVersion: self.version)
-        try loadMessages(forVersion: self.version)
+        try loadDataTypes(forVersion: version)
+        try loadCompositeTypes(forVersion: version)
+        try loadFields(forVersion: version)
+        try loadMessages(forVersion: version)
     }
     
     
@@ -106,6 +114,35 @@ public class Versioned: NSObject, Versionable {
         }
     }
     
+    private func loadDataTypes(forVersion version: Version) throws {
+        if let xmlURL = Bundle.module.url(forResource: "datatypes", withExtension: "xsd", subdirectory: "v\(version.rawValue)") {
+            let xmlParser = XMLParser(contentsOf: xmlURL)!
+            
+            xmlParser.delegate = self
+            
+            loadDataTypesFlag = true
+            currentVersion = version
+            
+            if !xmlParser.parse() {
+                throw HL7Error.parserError(message: "Cannot parse")
+            }
+        }
+    }
+    
+    private func loadCompositeTypes(forVersion version: Version) throws {
+        if let xmlURL = Bundle.module.url(forResource: "datatypes", withExtension: "xsd", subdirectory: "v\(version.rawValue)") {
+            let xmlParser = XMLParser(contentsOf: xmlURL)!
+            
+            xmlParser.delegate = self
+            
+            loadCompositeTypesFlag = true
+            currentVersion = version
+            
+            if !xmlParser.parse() {
+                throw HL7Error.parserError(message: "Cannot parse")
+            }
+        }
+    }
 }
 
 
@@ -247,13 +284,56 @@ extension Versioned:XMLParserDelegate {
                         currentField?.item = attributeDict["fixed"]!
                     }
                     else if name == "Type" {
-                        currentField?.type = attributeDict["fixed"]!
+                        if let type = dataTypes[attributeDict["fixed"]!] {
+                            currentField?.type = type
+                        }
                     }
                     else if name == "LongName" {
                         currentField?.longName = attributeDict["fixed"]!
                     }
                     else if name == "maxLength" {
                         currentField?.maxLength = Int(attributeDict["fixed"]!)!
+                    }
+                }
+            }
+        }
+        else if loadDataTypesFlag {
+            if elementName == "xsd:simpleType" {
+                currentDataType = SimpleType(name: attributeDict["name"]!)
+            }
+            else if elementName == "xsd:restriction" {
+                if currentDataType != nil {
+                    currentDataType!.base = attributeDict["base"]!
+                }
+            }
+            else if elementName == "xsd:complexType" {
+                if attributeDict["name"]! != "escapeType" && attributeDict["name"]!.contains(".") {
+                    currentDataType = ComponentType(name: attributeDict["name"]!)
+                }
+            }
+            else if elementName == "hl7:type" {
+                if currentDataType is ComponentType {
+                    currentElement = elementName
+                }
+            }
+            else if elementName == "hl7:LongName" {
+                if currentDataType != nil {
+                    currentElement = elementName
+                }
+            }
+        }
+        else if loadCompositeTypesFlag {
+            if elementName == "xsd:complexType" {
+                if attributeDict["name"]! != "escapeType" && !attributeDict["name"]!.contains(".") {
+                    currentDataType = CompositeType(name: attributeDict["name"]!)
+                }
+            }
+            else if elementName == "xsd:element" {
+                if currentDataType != nil {
+                    if let currentDataType = currentDataType as? CompositeType {
+                        if let ref = attributeDict["ref"], let type = dataTypes[ref] {
+                            currentDataType.types.append(ComposedType(type: type, minOccurs: attributeDict["minOccurs"]!, maxOccurs: attributeDict["maxOccurs"]!))
+                        }
                     }
                 }
             }
@@ -279,9 +359,44 @@ extension Versioned:XMLParserDelegate {
                 currentField = nil
             }
         }
+        else if loadDataTypesFlag {
+            if elementName == "xsd:simpleType" {
+                if currentDataType != nil {
+                    dataTypes[currentDataType!.name] = currentDataType!
+
+                    currentDataType = nil
+                    currentElement = nil
+                    }
+            }
+            else if elementName == "xsd:complexType" {
+                if currentDataType != nil {
+                    dataTypes[currentDataType!.name] = currentDataType!
+
+                    currentDataType = nil
+                    currentElement = nil
+                }
+            }
+        }
+        else if loadCompositeTypesFlag {
+            if elementName == "xsd:complexType" {
+                if currentDataType != nil {
+                    dataTypes[currentDataType!.name] = currentDataType!
+                    
+                    currentDataType = nil
+                }
+            }
+        }
     }
 
     public func parser(_ parser: XMLParser, foundCharacters string: String) {
+        if let currentDataType = currentDataType as? ComponentType {
+            if currentElement == "hl7:type" {
+                currentDataType.type = string
+                
+            } else if currentElement == "hl7:LongName" {
+                currentDataType.longName = string
+            }
+        }
     }
 
     public func parser(_ parser: XMLParser, parseErrorOccurred parseError: Error) {
@@ -289,6 +404,7 @@ extension Versioned:XMLParserDelegate {
     }
     
     public func parserDidEndDocument(_ parser: XMLParser) {
+        // clean the lmess to avoid when parser delegate is reused
         if loadMessagesFlag == true {
             loadMessagesFlag = false
         }
@@ -296,7 +412,16 @@ extension Versioned:XMLParserDelegate {
         if loadSegmentsFlag == true {
             loadSegmentsFlag = false
         }
+        
+        if loadDataTypesFlag == true {
+            loadDataTypesFlag = false
+        }
+        
+        if loadCompositeTypesFlag == true {
+            loadCompositeTypesFlag = false
+        }
      
+        currentElement = nil
         currentMessage = nil
     }
 }
