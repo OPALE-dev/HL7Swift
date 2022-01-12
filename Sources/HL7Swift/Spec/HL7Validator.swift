@@ -17,7 +17,7 @@ public enum ResultType: Int {
 }
 
 /**
- Reprensents the level of detail/complexity of the validation
+ Represents the level of detail/complexity of the validation
  */
 public enum ValidationLevel: Int {
     case version
@@ -27,7 +27,7 @@ public enum ValidationLevel: Int {
 }
 
 /**
- Reprensents a result item for the validation process
+ Represents a result item for the validation process
  */
 public struct ValidationResult {
     let type:ResultType
