@@ -134,10 +134,10 @@ public struct Group {
                 str += group.prettyTree(depth: depth + 1)
             case .segment(let segment):
                 str += segment.code
-                /*for f in segment.fields {
-                    str += "|\(f.longName)"
+                for f in segment.fields {
+                    str += "|\(f.longName): \(f.description)"
                 }
-                */
+                
             }
             
             str += "\n"
@@ -168,6 +168,24 @@ public struct Group {
         }
         
         return str
+    }
+    
+    
+    public func populate(with message:Message) {
+        for item in items {
+            switch item {
+            case .segment(let segment):
+                if let messageSegment = message[segment.code] {
+                    for f1 in segment.fields {
+                        if let cells = messageSegment[f1.index]?.cells {
+                            f1.cells = cells
+                        }
+                    }
+                }
+            case .group(let group):
+                group.populate(with: message)
+            }
+        }
     }
 }
 
