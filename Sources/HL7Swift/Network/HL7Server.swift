@@ -101,8 +101,8 @@ extension HL7Server : ChannelInboundHandler, ChannelOutboundHandler {
         Logger.info("### Receive HL7 (\(spec.version.rawValue)) message:\n\n\(message)\n")
         
         // get remote name and facility (TODO: handle optionals below)
-        let remoteName = message[HL7.MSH]![HL7.Sending_Application]!.description
-        let remoteFacility = message[HL7.MSH]![HL7.Sending_Facility]!.description
+        let remoteName = message[HL7.MSH]![HL7.Sending_Application]!
+        let remoteFacility = message[HL7.MSH]![HL7.Sending_Facility]!
         var status = AcknowledgeStatus.AA
         
         if let delegate = self.delegate {
@@ -116,15 +116,15 @@ extension HL7Server : ChannelInboundHandler, ChannelOutboundHandler {
                 ack[HL7.MSH] = message[HL7.MSH]
                 
                 // MSH
-                ack[HL7.MSH]![HL7.Receiving_Facility]! = Field(remoteFacility)
-                ack[HL7.MSH]![HL7.Receiving_Application]! = Field(remoteName)
-                ack[HL7.MSH]![HL7.Sending_Facility]! = Field(facility)
-                ack[HL7.MSH]![HL7.Sending_Application]! = Field(name)
+                ack[HL7.MSH]![HL7.Receiving_Facility]! = remoteFacility
+                ack[HL7.MSH]![HL7.Receiving_Application]! = remoteName
+                ack[HL7.MSH]![HL7.Sending_Facility]! = facility
+                ack[HL7.MSH]![HL7.Sending_Application]! = name
                 
-                ack[HL7.MSH]![HL7.Message_Type]! = Field("ACK")
+                ack[HL7.MSH]![HL7.Message_Type]! = "ACK"
                 // MSA
-                ack[HL7.MSA]![HL7.Acknowledgment_Code]! = Field(status.rawValue)
-                ack[HL7.MSA]![HL7.Message_Control_ID]! = Field("OK")
+                ack[HL7.MSA]![HL7.Acknowledgment_Code]! = status.rawValue
+                ack[HL7.MSA]![HL7.Message_Control_ID]! = "OK"
                 
                 Logger.info("### Reply ACK (\(ack.version.rawValue)):\n\n\(ack)\n")
                 
