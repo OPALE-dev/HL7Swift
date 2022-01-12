@@ -7,27 +7,17 @@
 
 import Foundation
 
-//enum BaseType:String {
-//    case DT
-//    case DTM
-//    case GTS
-//    case ID
-//    case IS
-//    case NM
-//    case SI
-//    case SNM
-//    case ST
-//    case TM
-//    case TN // deprecated ?
-//    case None
-//}
-
-
+/**
+ Abstract datatype type
+ */
 protocol DataTypable {
     var name:String { get set }
     var base:String { get set }
 }
 
+/**
+ Base class implementing DataTypable
+ */
 public class DataType: DataTypable, CustomStringConvertible {
     var name: String
     var base: String = ""
@@ -41,10 +31,16 @@ public class DataType: DataTypable, CustomStringConvertible {
     }
 }
 
+/**
+ Simple HL7 datatype
+ */
 class SimpleType: DataType {
 
 }
 
+/**
+ Component HL7 datatype (they compose composite types, embedded in `ComposedType` as proxy)
+ */
 class ComponentType: DataType {
     var type:String = ""
     var longName:String = ""
@@ -63,6 +59,9 @@ class ComponentType: DataType {
     }
 }
 
+/**
+ A proxy type to encapsulate `ComponentType` alongside with `minOccurs` and `maxOccurs` attributes
+ */
 class ComposedType: DataType {
     var minOccurs:Int!
     var maxOccurs:Int!
@@ -76,6 +75,9 @@ class ComposedType: DataType {
     }
 }
 
+/**
+ Component HL7 datatype (composed of `ComponentType` through `ComposedType` proxy)
+ */
 class CompositeType: DataType {
     var types:[ComposedType] = []
     
