@@ -31,15 +31,15 @@ public enum AcknowledgeStatus: String {
  ```
  */
 public struct Message {
+    public var sep:Character = "\r"
     public var spec:HL7!
     public var specMessage:SpecMessage?
     public var rootGroup: Group?
-        
+
     public var version:Version!
     public var type:Typable!
-    
+
     var segments: [Segment] = []
-    var sep:Character = "\r"
     var internalType:Typable?
     
     public init(withFileAt url: URL, hl7: HL7) throws {
