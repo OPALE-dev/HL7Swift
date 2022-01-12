@@ -120,7 +120,8 @@ public struct Message {
     /// Easily get/set a segment of the message with a given code using subscript notation.
     /// Usage: `let segment = message["MSH"]`
     public subscript(code: String) -> Segment? {
-        get { return getSegment(code) }
+        get {
+            return getSegment(code) }
         set {
             // something wrong here?
             // delete if exist

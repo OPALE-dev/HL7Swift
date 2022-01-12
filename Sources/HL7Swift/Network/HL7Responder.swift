@@ -34,10 +34,10 @@ class HL7Responder {
 //            //nak[HL7.MSH]![HL7.Receiving_Application]! = Field("UNKNOW")
 //            nak[HL7.MSH]![HL7.Sending_Facility]! = Field(facility)
 //            nak[HL7.MSH]![HL7.Sending_Application]! = Field(app)
-            nak[HL7.MSH]![HL7.Message_Type]! = Field("NAK")
+            nak[HL7.MSH]![HL7.Message_Type]! = "NAK"
             
             // MSA
-            nak[HL7.MSA]![HL7.Acknowledgment_Code]! = Field(AcknowledgeStatus.AR.rawValue)
+            nak[HL7.MSA]![HL7.Acknowledgment_Code]! = AcknowledgeStatus.AR.rawValue
 //            nak[HL7.MSA]![HL7.Message_Control_ID]! = Field("KO")
             
             Logger.info("### Reply NAK (\(nak.version.rawValue)):\n\n\(nak)\n")

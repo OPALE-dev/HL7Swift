@@ -41,6 +41,7 @@ public class Segment {
             return
         }
         
+        
         // separator can be dynamic
         if let separator = str.prefix(4).last {
             var strCloneSplit = str.split(separator: separator, maxSplits: 50, omittingEmptySubsequences: false)
@@ -65,7 +66,6 @@ public class Segment {
             if index == 0 || index > fields.count {
                 return nil
             }
-            
             return fields[index-1]
         }
         set {
@@ -76,7 +76,7 @@ public class Segment {
     }
     
     /// Subscript that get/set segment fields by their specification long names as defined in the HL7 specification.
-    public subscript(name: String) -> Field? {
+    public subscript(name: String) -> String? {
         get {
             if let specMessage = specMessage {
                 // we loop over all known segments in the spec (specMessage.rootGroup)
@@ -86,24 +86,24 @@ public class Segment {
                         for f in segment.fields {
                             if f.longName == name {
                                 // if found, return field by index
-                                return fields[f.index-1]
+                                return fields[f.index-1].description
                             }
                         }
                     }
                 }
             }
-            
+
             return nil
         }
-        set {
+        set(newValue) {
             // same as getter
             if let specMessage = specMessage {
                 for segment in specMessage.rootGroup.segments {
                     if segment.code == code {
                         for f in segment.fields {
                             if f.longName == name {
-                                if let newValue = newValue {
-                                    fields[f.index-1] = newValue
+                                if let newVal = newValue {
+                                    fields[f.index - 1].cells = Field(newVal).cells
                                 }
                             }
                         }

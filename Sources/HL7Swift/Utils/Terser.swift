@@ -7,8 +7,10 @@
 
 import Foundation
 
-let REGEX_RULE = #"(\/[A-za-z]+[0-9_\-\(\)]*)+"#
+let REGEX_RULE = #"(\/[A-Za-z]+[0-9_\-\(\)]*)+"#
 let FIELD_REPETITION_REGEX_RULE = #"[1-9]\([1-9]\)"#
+// OBSERVATION(0)
+let GROUP_WITH_REPETITION_REGEX_RULE = #"[A-Z]+\([0-9]+\)"#
 
 /**
  The terser can get a segment description, or a field in particular in the message, given a string.
@@ -68,14 +70,30 @@ public struct Terser {
         return nil
     }
     
-    func getAux(_ comps: [String.SubSequence], currentGroup: Group) throws -> String? {
+    func getAux(_ comps: [String.SubSequence], currentGroup: Group, repetitions: Int? = nil) throws -> String? {
         var components = comps
+        let reps:Int? = repetitions
         
         // last component is a segment
         if comps.count == 1 {
             return scanSegmentPath(String(comps[0]))
  
         } else {
+            // handle segment repetition
+//            if repetitions == nil {
+//                let result = comps[0].range(
+//                    of: GROUP_WITH_REPETITION_REGEX_RULE,
+//                    options: .regularExpression
+//                )
+//                
+//                // group with no repetition
+//                if result == nil {
+//                    
+//                } else {
+//                    
+//                }
+//            }
+            
             
             for item in currentGroup.items {
                 switch item {
@@ -83,7 +101,7 @@ public struct Terser {
 
                     if subGroup.name == comps[0] {
                         components.removeFirst()
-                        return try self.getAux(components, currentGroup: subGroup)
+                        return try self.getAux(components, currentGroup: subGroup, repetitions: reps)
                     }
                 case .segment(_):
                     print("")
@@ -92,6 +110,10 @@ public struct Terser {
         }
         
         return nil
+    }
+    
+    private func scanGroupPath(_ group: String) {
+        
     }
     
     /**
