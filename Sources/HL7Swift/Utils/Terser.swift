@@ -62,7 +62,7 @@ public struct Terser {
                         return try self.getAux(comps, currentGroup: subGroup)
                     }
                 case .segment(_):
-                    print("")
+                    break
                 }
             }
         }
@@ -70,41 +70,31 @@ public struct Terser {
         return nil
     }
     
-    func getAux(_ comps: [String.SubSequence], currentGroup: Group, repetitions: Int? = nil) throws -> String? {
+    func getAux(_ comps: [String.SubSequence], currentGroup: Group, repetitions: UInt = 1) throws -> String? {
         var components = comps
-        let reps:Int? = repetitions
+        var reps: UInt = repetitions
+        var groupName = ""
         
         // last component is a segment
         if comps.count == 1 {
-            return scanSegmentPath(String(comps[0]))
+            return scanSegmentPath(String(comps[0]), repetitions: reps)
  
         } else {
             // handle segment repetition
-//            if repetitions == nil {
-//                let result = comps[0].range(
-//                    of: GROUP_WITH_REPETITION_REGEX_RULE,
-//                    options: .regularExpression
-//                )
-//                
-//                // group with no repetition
-//                if result == nil {
-//                    
-//                } else {
-//                    
-//                }
-//            }
-            
+            let result = getRepetitionFromGroup(String(comps[0]))
+            reps = result.0
+            groupName = result.1
             
             for item in currentGroup.items {
                 switch item {
                 case .group(let subGroup):
 
-                    if subGroup.name == comps[0] {
+                    if subGroup.name == groupName {
                         components.removeFirst()
                         return try self.getAux(components, currentGroup: subGroup, repetitions: reps)
                     }
                 case .segment(_):
-                    print("")
+                    break
                 }
             }
         }
@@ -112,15 +102,37 @@ public struct Terser {
         return nil
     }
     
-    private func scanGroupPath(_ group: String) {
+    /**
+     Gets the number of repetition from a group path, eg `OBSERVATION(2)`
+     
+     If there's no repetition, eg `OBSERVATION`, the function returns **1**
+     */
+    private func getRepetitionFromGroup(_ group: String) -> (UInt, String) {
+        // Check if there's a repetition according to a regex
+        let result = group.range(
+            of: GROUP_WITH_REPETITION_REGEX_RULE,
+            options: .regularExpression
+        )
         
+        // no repetition
+        if result == nil {
+            return (1, group)
+        } else {
+            let a = group.firstIndex(of: "(")!
+            let a1 = group.index(after: a)
+            let b = group.firstIndex(of: ")")!
+            
+            let groupName = String(group[..<a])
+            
+            return (UInt(group[a1..<b])!, groupName)
+        }
     }
     
     /**
      Scans a segment path, eg `PID-1(2)-3-12`, which represents `code-field(repetition)-component-subcomponent`.
      The repetition is optional
      */
-    private func scanSegmentPath(_ segment: String) -> String? {
+    private func scanSegmentPath(_ segment: String, repetitions: UInt = 1) -> String? {
         var path = segment
         var field: Int = 0
         var repetition: Int = 0
@@ -134,16 +146,16 @@ public struct Terser {
         let scanner = Scanner(string: path)
         
         if path.isEmpty {
-            return message[code]?.description
+            return message.getSegment(code, repetition: repetitions)?.description
         }
         
         // FIELD
-        scanner.charactersToBeSkipped = CharacterSet(charactersIn: "-") //scanUpTo("-", into: nil)
+        scanner.charactersToBeSkipped = CharacterSet(charactersIn: "-")
         scanner.scanInt(&field)
         //field -= 1 // index offset is now managed by segment subscript itself
         
         if scanner.isAtEnd {
-            return message[code]?[field]?.description
+            return message.getSegment(code, repetition: repetitions)?[field]?.description
         }
         
         // REPETITION, optional
@@ -154,7 +166,7 @@ public struct Terser {
             } 
             
             if scanner.isAtEnd {
-                return message[code]?[field]?.cells[repetition].description
+                return message.getSegment(code, repetition: repetitions)?[field]?.cells[repetition].description
             }
         }        
         
@@ -163,7 +175,7 @@ public struct Terser {
         component -= 1
         
         if scanner.isAtEnd {
-            return message[code]?[field]?.cells[repetition].components[component].description
+            return message.getSegment(code, repetition: repetitions)?[field]?.cells[repetition].components[component].description
         }
         
         // SUBCOMPONENT
@@ -171,7 +183,7 @@ public struct Terser {
         subcomponent -= 1
         
         if scanner.isAtEnd {
-            return message[code]?[field]?.cells[repetition].components[component].components[subcomponent].description
+            return message.getSegment(code, repetition: repetitions)?[field]?.cells[repetition].components[component].components[subcomponent].description
         }
         
         // TODO throw error, path too long

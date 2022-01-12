@@ -161,14 +161,25 @@ public struct Message {
     
     // MARK: -
     
-    /// Gets a segment with a given code
-    func getSegment(_ code: String, repetition: Int = 0) -> Segment? {
+    /**
+     Gets a segment with a given code. Takes into account the number of repetition of the segment. By default, if there's no repetition,
+     the repetition is 1, so the group `OBSERVATION` is equivalent to `OBSERVATION(1)` (you'll never see it in practice)
+     
+     Example :
+     ```
+     message.getSegment("MSH")
+     message.getSegment("OBX", repetition: 2)
+     ```
+    */
+    func getSegment(_ code: String, repetition: UInt = 1) -> Segment? {
+        var rep = repetition
+        
         for segment in segments {
             if segment.code == code {
-                if repetition == 0 {
+                if rep == 1 {
                     return segment
                 } else {
-                    return getSegment(code, repetition: repetition - 1)
+                    rep -= 1
                 }
             }
         }

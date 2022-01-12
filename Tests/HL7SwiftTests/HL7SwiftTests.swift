@@ -120,8 +120,11 @@
                     let repetitionWithComponent = try terser.get("/PATIENT_RESULT/PATIENT/PID-3(2)-1")
                     assert(repetitionWithComponent == "298113743")
                     
-                    // L /PATIENT_RESULT/ORDER_OBSERVATION/OBSERVATION(2)/OBX-6-6
-                    //print(msg["OBX"]!.)
+                    // 42-55 /PATIENT_RESULT/ORDER_OBSERVATION/OBSERVATION(2)/OBX-7
+                    let segmentRepetition = try terser.get("/PATIENT_RESULT/ORDER_OBSERVATION/OBSERVATION(2)/OBX-7")
+                    assert(segmentRepetition == "42-55")
+                    let segmentRepetitionWithComponent = try terser.get("/PATIENT_RESULT/ORDER_OBSERVATION/OBSERVATION(19)/OBX-6-6")
+                    assert(segmentRepetitionWithComponent == "L")
                         
                 } catch let e {
                     assertionFailure(e.localizedDescription)
