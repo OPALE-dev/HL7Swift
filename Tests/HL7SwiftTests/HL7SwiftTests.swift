@@ -174,23 +174,23 @@
                     let versionIntSubscript = message[HL7.MSH]![12]!.description
                     assert(versionIntSubscript == "2.5.1")
 
-                    message[HL7.MSH]![HL7.Message_Type]! = Field("ACK")
-                    let mshTest = message[HL7.MSH]![HL7.Message_Type]!.cells[0].text
+                    message[HL7.MSH]![HL7.Message_Type]! = "ACK"
+                    let mshTest = message[HL7.MSH]![HL7.Message_Type]!
                     assert(mshTest == "ACK")
 
-                    let stringSubscript = message[HL7.SFT]!["Software Certified Version or Release Number"]!.cells[0].text
-                    message[HL7.SFT]!["Software Certified Version or Release Number"]! = Field(stringSubscript)
+                    let stringSubscript = message[HL7.SFT]!["Software Certified Version or Release Number"]!
+                    message[HL7.SFT]!["Software Certified Version or Release Number"]! = stringSubscript
                     assert(stringSubscript == "1.2.3")
 
-                    let symbolSubscript = message[HL7.SFT]?[HL7.Software_Certified_Version_or_Release_Number]?.cells[0].text
-                    message[HL7.SFT]![HL7.Software_Certified_Version_or_Release_Number]! = Field(symbolSubscript!)
+                    let symbolSubscript = message[HL7.SFT]?[HL7.Software_Certified_Version_or_Release_Number]
+                    message[HL7.SFT]![HL7.Software_Certified_Version_or_Release_Number]! = symbolSubscript!
                     assert(symbolSubscript! == "1.2.3")
 
-                    let stringSegment = message["PID"]?["Patient Name"]?.cells[0].description
-                    message["PID"]?["Patient Name"]? = Field(stringSegment!)
+                    let stringSegment = message["PID"]?["Patient Name"]
+                    message["PID"]?["Patient Name"]? = stringSegment!
                     assert(stringSegment == "WILLS^CYRUS^MARIO^^^^L")
 
-                    let symbolSegment = message[HL7.PID]![HL7.Patient_Name]!.cells[0].description
+                    let symbolSegment = message[HL7.PID]![HL7.Patient_Name]!
                     assert(symbolSegment == "WILLS^CYRUS^MARIO^^^^L")
 
                 } catch let e {
@@ -200,17 +200,11 @@
             
             do {
                 let message = try Message(HL7.V25.ACK(), spec: hl7.spec(ofVersion: .v25)!, preloadSegments: [HL7.MSH, HL7.MSA])
-                
-                print(message[HL7.MSA]!)
-                
-                message[HL7.MSA]![HL7.Acknowledgment_Code] = Field(AcknowledgeStatus.AA.rawValue)
+                                
+                message[HL7.MSA]![HL7.Acknowledgment_Code] = AcknowledgeStatus.AA.rawValue
         
-                print(message[HL7.MSA]!)
-                
-                message[HL7.MSA]![HL7.Acknowledgment_Code] = Field(AcknowledgeStatus.AR.rawValue)
-                
-                print(message[HL7.MSA]!)
-                
+                message[HL7.MSA]![HL7.Acknowledgment_Code] = AcknowledgeStatus.AR.rawValue
+                                
             } catch let e {
                 assertionFailure(e.localizedDescription)
             }
