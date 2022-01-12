@@ -31,16 +31,16 @@ public enum AcknowledgeStatus: String {
  ```
  */
 public struct Message {
-    var segments: [Segment] = []
-    var sep:Character = "\r"
-
+    public var sep:Character = "\r"
     public var spec:HL7!
     public var specMessage:SpecMessage?
-    var internalType:Typable?
     
     public var version:Version!
     public var type:Typable!
-    
+
+    var segments: [Segment] = []
+    var internalType:Typable?
+
     
     public init(withFileAt url: URL, hl7: HL7) throws {
         do {
