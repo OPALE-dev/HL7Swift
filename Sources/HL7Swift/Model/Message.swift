@@ -31,16 +31,16 @@ public enum AcknowledgeStatus: String {
  ```
  */
 public struct Message {
-    var segments: [Segment] = []
-    var sep:Character = "\r"
-
     public var spec:HL7!
     public var specMessage:SpecMessage?
-    var internalType:Typable?
-    
+    public var rootGroup: Group?
+        
     public var version:Version!
     public var type:Typable!
     
+    var segments: [Segment] = []
+    var sep:Character = "\r"
+    var internalType:Typable?
     
     public init(withFileAt url: URL, hl7: HL7) throws {
         do {
@@ -84,7 +84,8 @@ public struct Message {
         if let spec = hl7.spec(ofVersion: version) {
             self.specMessage = spec.messages[type]
             self.type = self.specMessage?.type
-            
+            self.rootGroup = self.specMessage?.rootGroup
+                    
             for s in segments {
                 s.specMessage = self.specMessage
             }
@@ -93,6 +94,9 @@ public struct Message {
             if self.type == nil {
                 self.type = HL7.UnknowMessageType(name: type)
             }
+            
+            // populate message groups with values
+            self.rootGroup?.populate(with: self)
         }
     }
     
