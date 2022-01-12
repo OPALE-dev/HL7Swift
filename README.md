@@ -116,6 +116,10 @@ Get a segment:
 Get a field:
 
     let field = message[HL7.MSH]?[HL7.Message_Type]
+    
+This also works the same, as `HL7.`symbols are just strings:
+
+    let field = message["MSH"]?["Message Type"]
 
 #### Set data
 
