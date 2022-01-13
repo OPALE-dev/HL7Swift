@@ -14,13 +14,14 @@ public enum ResultType: Int, CustomStringConvertible {
     case notice = 0
     case warning
     case error
+    case none
     
     public var description: String {
         switch self {
         case .notice:  return "Notice"
         case .warning: return "Warning"
         case .error:   return "Error"
-
+        case .none:   return ""
         }
     }
 }
