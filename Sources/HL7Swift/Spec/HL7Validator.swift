@@ -48,6 +48,10 @@ public protocol HL7Validator {
  against its embedded specification.
  */
 public class DefaultValidator:HL7Validator {
+    public init() {
+        
+    }
+    
     /// Validate a message at different levels of detail
     ///
     /// Return an array of `ValidationResult`
