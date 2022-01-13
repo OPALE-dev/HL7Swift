@@ -28,11 +28,20 @@ public enum ResultType: Int, CustomStringConvertible {
 /**
  Represents the level of detail/complexity of the validation
  */
-public enum ValidationLevel: Int {
+public enum ValidationLevel: Int, CustomStringConvertible {
     case version
     case segments
     case fields
     case datatypes
+    
+    public var description: String {
+        switch self {
+        case .version:      return "Version"
+        case .segments:     return "Segments"
+        case .fields:       return "Fields"
+        case .datatypes:    return "DataTypes"
+        }
+    }
 }
 
 /**
