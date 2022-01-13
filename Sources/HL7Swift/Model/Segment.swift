@@ -26,6 +26,11 @@ import Foundation
 public class Segment {
     public var code: String = ""
     public var fields: [Field] = []
+    
+    // -1 means unbounded
+    public var minOccurs:Int = 0
+    public var maxOccurs:Int = -1
+    
     var specMessage:SpecMessage? = nil
     
     public var isHeader:Bool {

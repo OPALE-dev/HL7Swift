@@ -63,6 +63,7 @@ class ComponentType: DataType {
  A proxy type to encapsulate `ComponentType` alongside with `minOccurs` and `maxOccurs` attributes
  */
 class ComposedType: DataType {
+    // -1 means unbounded
     var minOccurs:Int!
     var maxOccurs:Int!
     var type:DataType!

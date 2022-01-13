@@ -227,13 +227,6 @@
         
         
         
-        func testDataTypes() {
-            for (_,t) in hl7.spec(ofVersion: .v25)!.dataTypes {
-                print(t)
-            }
-        }
-        
-        
 //        func testSegmentCodesList() {
 //            var segments:[String] = []
 //            let spec = hl7.spec(ofVersion: .v282)
