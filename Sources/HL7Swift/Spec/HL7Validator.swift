@@ -18,10 +18,10 @@ public enum ResultType: Int, CustomStringConvertible {
     
     public var description: String {
         switch self {
+        case .none:    return ""
         case .notice:  return "Notice"
         case .warning: return "Warning"
         case .error:   return "Error"
-        case .none:   return ""
         }
     }
 }
