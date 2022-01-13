@@ -30,10 +30,10 @@ public enum ValidationLevel: Int {
  Represents a result item for the validation process
  */
 public struct ValidationResult {
-    let type:ResultType
-    let level:ValidationLevel
-    let text:String
-    let date:Date = Date()
+    public let type:ResultType
+    public let level:ValidationLevel
+    public let text:String
+    public let date:Date = Date()
 }
 
 /**
