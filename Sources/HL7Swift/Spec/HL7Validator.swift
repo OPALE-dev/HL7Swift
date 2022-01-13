@@ -48,6 +48,7 @@ public enum ValidationLevel: Int, CustomStringConvertible {
  Represents a result item for the validation process
  */
 public struct ValidationResult {
+    public let message:Message
     public let type:ResultType
     public let level:ValidationLevel
     public let text:String
@@ -113,6 +114,7 @@ private extension DefaultValidator {
         if message.specMessage == nil {
             let text = "Message of type \(message.type.name) is not part of version \(message.version.rawValue)"
             results.append(ValidationResult(
+                            message: message,
                             type: .error,
                             level: .version,
                             text: text))
