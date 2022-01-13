@@ -36,6 +36,26 @@ extension Versioned:XMLParserDelegate {
                         if ref.count == 3 {
                             let segment = Segment(ref, specMessage: currentMessage)
                             
+                            if let minO = attributeDict["minOccurs"] {
+                                if minO == "unbounded" {
+                                    segment.minOccurs = -1
+                                } else {
+                                    if let asInt = Int(minO) {
+                                        segment.minOccurs = asInt
+                                    }
+                                }
+                            }
+                            
+                            if let maxO = attributeDict["maxOccurs"] {
+                                if maxO == "unbounded" {
+                                    segment.maxOccurs = -1
+                                } else {
+                                    if let asInt = Int(maxO) {
+                                        segment.maxOccurs = asInt
+                                    }
+                                }
+                            }
+                                                         
                             if let fields = fields[ref] {
                                 segment.fields.append(contentsOf: fields)
                             }
