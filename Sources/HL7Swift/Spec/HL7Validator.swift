@@ -10,10 +10,19 @@ import Foundation
 /**
  Defines the type of results returned by the validator
  */
-public enum ResultType: Int {
+public enum ResultType: Int, CustomStringConvertible {
     case notice = 0
     case warning
     case error
+    
+    public var description: String {
+        switch self {
+        case .notice:  return "Notice"
+        case .warning: return "Warning"
+        case .error:   return "Error"
+
+        }
+    }
 }
 
 /**
