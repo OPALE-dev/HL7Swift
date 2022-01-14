@@ -29,6 +29,8 @@ extension Versioned:XMLParserDelegate {
                 
                 currentSequence = shortname(currentSequence!)
                 
+                parentGroup = currentMessage?.rootGroup[currentSequence!] ?? currentMessage?.rootGroup
+                
             } else if elementName == "xsd:element" {
                 if let ref = attributeDict["ref"] {
                     if let currentSequence = currentSequence {
@@ -65,7 +67,9 @@ extension Versioned:XMLParserDelegate {
                         } else {
                             let groupName = shortname(ref)
                             
-                            _ = currentMessage?.rootGroup?.appendGroup(group: Group(name: groupName, items: []), underGroupName: currentSequence)
+                            let group = Group(parent: parentGroup, name: groupName, items: [])
+                            
+                            _ = currentMessage?.rootGroup?.appendGroup(group: group, underGroupName: currentSequence)
                         }
                     }
                 }
@@ -153,6 +157,7 @@ extension Versioned:XMLParserDelegate {
         if loadSegmentsFlag {
             if elementName == "xsd:complexType" {
                 currentSequence = nil
+                //parentGroup = nil
             }
         }
         else if loadFieldsFlag {

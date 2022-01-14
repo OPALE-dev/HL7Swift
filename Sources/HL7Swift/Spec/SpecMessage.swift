@@ -19,6 +19,6 @@ public class SpecMessage: CustomStringConvertible {
     init(type: Typable, version: Version) {
         self.type = type
         self.version = version
-        self.rootGroup = Group(name: type.name, items: [])
+        self.rootGroup = Group(parent: nil, name: type.name, items: [])
     }
 }
