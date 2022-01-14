@@ -84,7 +84,7 @@ public struct Message {
         if let spec = hl7.spec(ofVersion: version) {
             self.specMessage = spec.messages[type]
             self.type = self.specMessage?.type
-            self.rootGroup = self.specMessage?.rootGroup
+            self.rootGroup = Group(name: type)
                     
             for s in segments {
                 s.specMessage = self.specMessage
@@ -95,8 +95,8 @@ public struct Message {
                 self.type = HL7.UnknowMessageType(name: type)
             }
             
-            // populate message groups with values
-            self.rootGroup?.populate(with: self)
+            // populate message groups with values and segment repetitions
+            self.specMessage?.rootGroup.populate(group: self.rootGroup, from: self)
         }
     }
     
@@ -123,9 +123,9 @@ public struct Message {
 
     /// Easily get/set a segment of the message with a given code using subscript notation.
     /// Usage: `let segment = message["MSH"]`
-    public subscript(code: String) -> Segment? {
+    public subscript(code: String, repetition: UInt = 1) -> Segment? {
         get {
-            return getSegment(code) }
+            return getSegment(code, repetition: repetition) }
         set {
             // something wrong here?
             // delete if exist
@@ -177,6 +177,7 @@ public struct Message {
     */
     func getSegment(_ code: String, repetition: UInt = 1) -> Segment? {
         var rep = repetition
+        var i:UInt = 0
         
         for segment in segments {
             if segment.code == code {
@@ -184,8 +185,11 @@ public struct Message {
                     return segment
                 } else {
                     rep -= 1
+                    
+                    return segments[Int(rep+i)]
                 }
             }
+            i += 1
         }
         
         return nil

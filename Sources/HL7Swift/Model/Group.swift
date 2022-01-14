@@ -19,10 +19,25 @@ import Foundation
  rootGroup.appendSegment(segment: Segment("FSH||||whatever|||"), underGroupName: "R2")
  ```
  */
-public struct Group {
+
+public protocol Node {
+    var name:String { get set }
+    var parent:Node? { get set }
+}
+
+public class Group:Node {
+    public var parent: Node?
+    
     public var name: String = ""
     public var items: [Item] = []
     public var segments: [Segment] = []
+    
+    
+    init(parent:Node? = nil, name:String, items: [Item] = []) {
+        self.parent = parent
+        self.name = name
+        self.items = items
+    }
     
     /// subscript that return a group item based on its name
     /// Returns `Group` is matching group item found
@@ -43,7 +58,7 @@ public struct Group {
     
     /// Appends a segment to the group, under a certain group, eg. ORU_RO1.CONTENT
     /// Returns `true` is the segment was appended
-    public mutating func appendSegment(segment: Segment, underGroupName: String) -> Bool {
+    public func appendSegment(segment: Segment, underGroupName: String) -> Bool {
         var isAppended = false
         
         segments.append(segment)
@@ -70,7 +85,7 @@ public struct Group {
     
     /// Appends a group under a given group
     /// Returns `true` if the group is added
-    public mutating func appendGroup(group: Group, underGroupName: String) -> Bool {
+    public func appendGroup(group: Group, underGroupName: String) -> Bool {
         var appended = false
         
         if group.name == self.name {
@@ -124,7 +139,7 @@ public struct Group {
     
     /// Returns a pretty string
     public func prettyTree(depth: Int = 1) -> String {
-        var str = name + ":\n"
+        var str = name + " (\(parent?.name)) :\n"
         
         for item in items {
             str += String(repeating: "\t", count: depth)
@@ -134,9 +149,6 @@ public struct Group {
                 str += group.prettyTree(depth: depth + 1)
             case .segment(let segment):
                 str += segment.code
-                for f in segment.fields {
-                    str += "|\(f.longName): \(f.description)"
-                }
                 
             }
             
@@ -158,7 +170,10 @@ public struct Group {
                 str += group.prettyTree(printFields: printFields, depth: depth + 1)
             case .segment(let segment):
                 if printFields {
-                    str += segment.description
+                    for f in segment.fields {
+                        str += String(repeating: "\t", count: depth)
+                        str += "\t\(f.longName): \(f.description)\n"
+                    }
                 } else {
                     str += segment.code
                 }
@@ -170,20 +185,33 @@ public struct Group {
         return str
     }
     
-    
-    public func populate(with message:Message) {
+    /**
+     Clone self into `group` and populate values from `message` segments.
+     Also takes care to append segments with repetitions if needed.
+     */
+    public func populate(group:Group? = nil, from message:Message) {
         for item in items {
             switch item {
             case .segment(let segment):
-                if let messageSegment = message[segment.code] {
-                    for f1 in segment.fields {
-                        if let cells = messageSegment[f1.index]?.cells {
-                            f1.cells = cells
-                        }
+                var found = false
+                // append repeated segments
+                for messageSegment in message.segments {
+                    if messageSegment.code == segment.code {
+                        group?.items.append(Item.segment(messageSegment))
+                        
+                        found = true
                     }
                 }
-            case .group(let group):
-                group.populate(with: message)
+                // append single segment if no repetition found
+                if found {
+                    group?.items.append(Item.segment(segment))
+                }
+            case .group(let itemGroup):
+                let newGroup = Group(name: itemGroup.name)
+                
+                itemGroup.populate(group: newGroup, from: message)
+                
+                group?.items.append(Item.group(newGroup))
             }
         }
     }

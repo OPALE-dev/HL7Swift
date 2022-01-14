@@ -149,6 +149,8 @@ public class Versioned: NSObject, Versionable {
     var currentDataType:DataType? = nil
     var currentElement:String? = nil
     
+    var parentGroup:Group? = nil
+    
     init(_ version: Version) throws {
         self.version = version
         
