@@ -139,7 +139,7 @@ public class Group:Node {
     
     /// Returns a pretty string
     public func prettyTree(depth: Int = 1) -> String {
-        var str = name + " (\(parent?.name)) :\n"
+        var str = name + ":\n"
         
         for item in items {
             str += String(repeating: "\t", count: depth)
@@ -189,7 +189,7 @@ public class Group:Node {
      Clone self into `group` and populate values from `message` segments.
      Also takes care to append segments with repetitions if needed.
      */
-    public func populate(group:Group? = nil, from message:Message) {
+    internal func populate(group:Group? = nil, from message:Message) {
         for item in items {
             switch item {
             case .segment(let segment):
@@ -200,6 +200,7 @@ public class Group:Node {
                         
                         for f1 in segment.fields {
                             if  i < messageSegment.fields.count - 1 {
+                                // copy everything from the field except cells (we keep message values)
                                 messageSegment.fields[i].longName   = f1.longName
                                 messageSegment.fields[i].name       = f1.name
                                 messageSegment.fields[i].index      = f1.index
@@ -210,7 +211,7 @@ public class Group:Node {
                             }
                             i += 1
                         }
-                        
+                        // append populated segment
                         group?.items.append(Item.segment(messageSegment))
                     }
                 }
@@ -220,23 +221,6 @@ public class Group:Node {
                 itemGroup.populate(group: newGroup, from: message)
                 
                 group?.items.append(Item.group(newGroup))
-            }
-        }
-    }
-    
-    public func populate(from message:Message) {
-        for item in items {
-            switch item {
-            case .segment(let segment):
-                if let messageSegment = message[segment.code] {
-                    for f1 in segment.fields {
-                        if let cells = messageSegment[f1.index]?.cells {
-                            f1.cells = cells
-                        }
-                    }
-                }
-            case .group(let group):
-                group.populate(from: message)
             }
         }
     }

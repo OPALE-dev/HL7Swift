@@ -232,14 +232,6 @@
                 do {
                     let message = try Message(withFileAt: url, hl7: hl7)
                     
-//                    print(message[HL7.OBX])
-//                    print(message[HL7.OBX, 2])
-//                    print(message[HL7.OBX, 3])
-                    
-//                    let root = Group(name: "ROOT")
-//                    
-//                    message.rootGroup!.populate(from: message, group: root)
-//                    
                     print(message.rootGroup!.prettyTree())
                     
                 } catch {
