@@ -34,14 +34,14 @@ public class DataType: DataTypable, CustomStringConvertible {
 /**
  Simple HL7 datatype
  */
-public class SimpleType: DataType {
+class SimpleType: DataType {
 
 }
 
 /**
  Component HL7 datatype (they compose composite types, embedded in `ComposedType` as proxy)
  */
-public class ComponentType: DataType {
+class ComponentType: DataType {
     var type:String = ""
     var longName:String = ""
     var index:Int = -1
@@ -54,7 +54,7 @@ public class ComponentType: DataType {
         self.index = Int(comps[1])!
     }
     
-    public override var description: String {
+    override var description: String {
         "\(Swift.type(of: self)) \(name).\(index) (\(longName))"
     }
 }
@@ -62,10 +62,10 @@ public class ComponentType: DataType {
 /**
  A proxy type to encapsulate `ComponentType` alongside with `minOccurs` and `maxOccurs` attributes
  */
-public class ComposedType: DataType {
+class ComposedType: DataType {
     // -1 means unbounded
-    public var minOccurs:Int!
-    public var maxOccurs:Int!
+    var minOccurs:Int!
+    var maxOccurs:Int!
     var type:DataType!
 
     public init(type: DataType, minOccurs: String = "0", maxOccurs: String = "0") {
@@ -79,10 +79,10 @@ public class ComposedType: DataType {
 /**
  Component HL7 datatype (composed of `ComponentType` through `ComposedType` proxy)
  */
-public class CompositeType: DataType {
+class CompositeType: DataType {
     var types:[ComposedType] = []
     
-    public override var description: String {
+    override var description: String {
         "\(Swift.type(of: self)) \(name) [\(types.map { t in t.name }.joined(separator: ", "))]"
     }
 }

@@ -27,6 +27,7 @@ public class Field {
     public var longName: String = ""
     public var type: DataType? = nil
     public var item: String = ""
+    public var minLength: Int = 0
     public var maxLength: Int = 0
     public var index: Int = 0
     
