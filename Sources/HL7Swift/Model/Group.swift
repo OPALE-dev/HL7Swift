@@ -193,7 +193,6 @@ public class Group:Node {
         for item in items {
             switch item {
             case .segment(let segment):
-                var found = false
                 // append repeated segments
                 for messageSegment in message.segments {
                     if messageSegment.code == segment.code {
@@ -204,13 +203,7 @@ public class Group:Node {
                         }
                         
                         group?.items.append(Item.segment(segment))
-                        
-                        found = true
                     }
-                }
-                // append single segment if no repetition found
-                if found {
-                    group?.items.append(Item.segment(segment))
                 }
             case .group(let itemGroup):
                 let newGroup = Group(name: itemGroup.name)
