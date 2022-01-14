@@ -34,14 +34,14 @@ public class DataType: DataTypable, CustomStringConvertible {
 /**
  Simple HL7 datatype
  */
-class SimpleType: DataType {
+public class SimpleType: DataType {
 
 }
 
 /**
  Component HL7 datatype (they compose composite types, embedded in `ComposedType` as proxy)
  */
-class ComponentType: DataType {
+public class ComponentType: DataType {
     var type:String = ""
     var longName:String = ""
     var index:Int = -1
@@ -54,7 +54,7 @@ class ComponentType: DataType {
         self.index = Int(comps[1])!
     }
     
-    override var description: String {
+    public override var description: String {
         "\(Swift.type(of: self)) \(name).\(index) (\(longName))"
     }
 }
@@ -79,10 +79,10 @@ public class ComposedType: DataType {
 /**
  Component HL7 datatype (composed of `ComponentType` through `ComposedType` proxy)
  */
-class CompositeType: DataType {
+public class CompositeType: DataType {
     var types:[ComposedType] = []
     
-    override var description: String {
+    public override var description: String {
         "\(Swift.type(of: self)) \(name) [\(types.map { t in t.name }.joined(separator: ", "))]"
     }
 }
