@@ -148,7 +148,7 @@ public class Group:Node {
             case .group(let group):
                 str += group.prettyTree(depth: depth + 1)
             case .segment(let segment):
-                str += segment.code
+                str += segment.description
                 
             }
             
@@ -197,7 +197,13 @@ public class Group:Node {
                 // append repeated segments
                 for messageSegment in message.segments {
                     if messageSegment.code == segment.code {
-                        group?.items.append(Item.segment(messageSegment))
+                        for f1 in segment.fields {
+                            if let cells = messageSegment[f1.index]?.cells {
+                                f1.cells = cells
+                            }
+                        }
+                        
+                        group?.items.append(Item.segment(segment))
                         
                         found = true
                     }
@@ -212,6 +218,23 @@ public class Group:Node {
                 itemGroup.populate(group: newGroup, from: message)
                 
                 group?.items.append(Item.group(newGroup))
+            }
+        }
+    }
+    
+    public func populate(from message:Message) {
+        for item in items {
+            switch item {
+            case .segment(let segment):
+                if let messageSegment = message[segment.code] {
+                    for f1 in segment.fields {
+                        if let cells = messageSegment[f1.index]?.cells {
+                            f1.cells = cells
+                        }
+                    }
+                }
+            case .group(let group):
+                group.populate(from: message)
             }
         }
     }
