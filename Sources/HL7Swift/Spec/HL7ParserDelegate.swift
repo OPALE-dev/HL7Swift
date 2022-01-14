@@ -104,6 +104,9 @@ extension Versioned:XMLParserDelegate {
                     else if name == "LongName" {
                         currentField?.longName = attributeDict["fixed"]!
                     }
+                    else if name == "minLength" {
+                        currentField?.minLength = Int(attributeDict["fixed"]!)!
+                    }
                     else if name == "maxLength" {
                         currentField?.maxLength = Int(attributeDict["fixed"]!)!
                     }

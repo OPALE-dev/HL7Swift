@@ -193,27 +193,37 @@ public class Group:Node {
         for item in items {
             switch item {
             case .segment(let segment):
-                // append repeated segments
+                // append messages segments (and repetitions)
                 for messageSegment in message.segments {
                     if messageSegment.code == segment.code {
                         var i = 0
                         
+                        // populate segments attributes (longName, index, etc.), we already have the value
                         for f1 in segment.fields {
                             if  i < messageSegment.fields.count - 1 {
                                 messageSegment.minOccurs = segment.minOccurs
                                 messageSegment.maxOccurs = segment.maxOccurs
-                                // copy everything from the field except cells (we keep message values)
+                                // copy everything from the field except cells
                                 messageSegment.fields[i].longName   = f1.longName
                                 messageSegment.fields[i].name       = f1.name
+                                messageSegment.fields[i].type       = f1.type
                                 messageSegment.fields[i].index      = f1.index
                                 messageSegment.fields[i].maxLength  = f1.maxLength
-                                messageSegment.fields[i].type       = f1.type
+                                messageSegment.fields[i].minLength  = f1.minLength
                                 messageSegment.fields[i].item       = f1.item
-                                messageSegment.fields[i].maxLength  = f1.maxLength
+                                
                             }
                             i += 1
                         }
-                        // append populated segment
+                        
+//                        // populate min/maxOccurs by datatypes
+//                        for f in messageSegment.fields {
+//                            if let compositeType = f.type as? ComposedType {
+//
+//                            }
+//                        }
+                        
+                        // append populated segment to the current group
                         group?.items.append(Item.segment(messageSegment))
                     }
                 }
@@ -222,6 +232,7 @@ public class Group:Node {
                 
                 itemGroup.populate(group: newGroup, from: message)
                 
+                // append clone group to current group
                 group?.items.append(Item.group(newGroup))
             }
         }
