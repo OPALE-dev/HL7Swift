@@ -196,13 +196,22 @@ public class Group:Node {
                 // append repeated segments
                 for messageSegment in message.segments {
                     if messageSegment.code == segment.code {
+                        var i = 0
+                        
                         for f1 in segment.fields {
-                            if let cells = messageSegment[f1.index]?.cells {
-                                f1.cells = cells
+                            if  i < messageSegment.fields.count - 1 {
+                                messageSegment.fields[i].longName   = f1.longName
+                                messageSegment.fields[i].name       = f1.name
+                                messageSegment.fields[i].index      = f1.index
+                                messageSegment.fields[i].maxLength  = f1.maxLength
+                                messageSegment.fields[i].type       = f1.type
+                                messageSegment.fields[i].item       = f1.item
+                                messageSegment.fields[i].maxLength  = f1.maxLength
                             }
+                            i += 1
                         }
                         
-                        group?.items.append(Item.segment(segment))
+                        group?.items.append(Item.segment(messageSegment))
                     }
                 }
             case .group(let itemGroup):
