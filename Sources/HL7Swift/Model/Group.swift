@@ -200,6 +200,8 @@ public class Group:Node {
                         
                         for f1 in segment.fields {
                             if  i < messageSegment.fields.count - 1 {
+                                messageSegment.minOccurs = segment.minOccurs
+                                messageSegment.maxOccurs = segment.maxOccurs
                                 // copy everything from the field except cells (we keep message values)
                                 messageSegment.fields[i].longName   = f1.longName
                                 messageSegment.fields[i].name       = f1.name
