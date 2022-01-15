@@ -85,7 +85,7 @@ public struct Message {
             self.specMessage = spec.messages[type]
             self.type = self.specMessage?.type
             self.rootGroup = Group(name: type)
-                    
+            
             for s in segments {
                 s.specMessage = self.specMessage
             }

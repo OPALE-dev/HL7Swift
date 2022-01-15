@@ -23,7 +23,19 @@ import Foundation
 public protocol Node {
     var name:String { get set }
     var parent:Node? { get set }
+    func path() -> String
 }
+
+extension Node {
+    public func path() -> String {
+        if parent != nil {
+            return "\(parent!.path())/\(name)"
+        }
+        
+        return "/\(name)"
+    }
+}
+
 
 public class Group:Node {
     public var parent: Node?
@@ -201,8 +213,9 @@ public class Group:Node {
                         // populate segments attributes (longName, index, etc.), we already have the value
                         for f1 in segment.fields {
                             if  i < messageSegment.fields.count - 1 {
-                                messageSegment.minOccurs = segment.minOccurs
-                                messageSegment.maxOccurs = segment.maxOccurs
+                                messageSegment.parent       = segment.parent
+                                messageSegment.minOccurs    = segment.minOccurs
+                                messageSegment.maxOccurs    = segment.maxOccurs
                                 // copy everything from the field except cells
                                 messageSegment.fields[i].longName   = f1.longName
                                 messageSegment.fields[i].name       = f1.name
@@ -216,9 +229,21 @@ public class Group:Node {
                             i += 1
                         }
                         
-//                        // populate min/maxOccurs by datatypes
+                        // populate min/maxOccurs by datatypes
 //                        for f in messageSegment.fields {
-//                            if let compositeType = f.type as? ComposedType {
+//                            if let compositeType = f.type as? CompositeType {
+//                                var i = 0
+//
+//                                for t in compositeType.types {
+//
+//                                    i += 1
+//                                }
+//
+//                                for cell in f.cells {
+//                                    for comp in cell.components {
+//                                        print(comp)
+//                                    }
+//                                }
 //
 //                            }
 //                        }
