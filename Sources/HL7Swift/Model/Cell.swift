@@ -15,6 +15,9 @@ public struct Cell {
     var text: String = ""
     public var components: [Cell] = []
     
+    public var minOccurs:Int = 0
+    public var maxOccurs:Int = -1
+    
     init(_ str: String, isEncoding: Bool = false) {
         if isEncoding {
             text = str

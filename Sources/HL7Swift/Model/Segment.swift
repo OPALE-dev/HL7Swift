@@ -23,7 +23,10 @@ import Foundation
  # "MSH"
  ```
  */
-public class Segment {
+public class Segment: Node {
+    public var name: String = ""
+    public var parent: Node?
+    
     public var code: String = ""
     public var fields: [Field] = []
     
@@ -37,8 +40,9 @@ public class Segment {
         code == "MSH" || code == "FHS" || code == "BHS"
     }
     
-    init(_ str: String, specMessage:SpecMessage? = nil) {
+    init(_ str: String, parent:Node? = nil, specMessage:SpecMessage? = nil) {
         self.specMessage = specMessage
+        self.parent = parent
         
         // see ORU 1 txt file, contains a ^ at the last line
         if !str.contains("|") {
@@ -46,20 +50,22 @@ public class Segment {
             return
         }
         
+        name = code
         
         // separator can be dynamic
         if let separator = str.prefix(4).last {
             var strCloneSplit = str.split(separator: separator, maxSplits: 50, omittingEmptySubsequences: false)
         
             code = String(strCloneSplit.remove(at: 0))
-                        
+            name = code
+            
             if isHeader {
-                fields.append(Field([Cell(String(separator))])) // append separator field (MSH-1)
-                fields.append(Field([Cell(String(strCloneSplit.remove(at: 0)), isEncoding: true)]))
+                fields.append(Field([Cell(String(separator))], parent: self)) // append separator field (MSH-1)
+                fields.append(Field([Cell(String(strCloneSplit.remove(at: 0)), isEncoding: true)], parent: self))
             }
             
             for field in strCloneSplit {
-                fields.append(Field(String(field)))
+                fields.append(Field(String(field), parent: self))
             }
         }
     }
@@ -108,7 +114,7 @@ public class Segment {
                         for f in segment.fields {
                             if f.longName == name {
                                 if let newVal = newValue {
-                                    fields[f.index - 1].cells = Field(newVal).cells
+                                    fields[f.index - 1].cells = Field(name: newVal).cells
                                 }
                             }
                         }

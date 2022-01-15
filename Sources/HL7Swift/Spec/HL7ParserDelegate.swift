@@ -36,7 +36,7 @@ extension Versioned:XMLParserDelegate {
                     if let currentSequence = currentSequence {
                         // is it a segment ?
                         if ref.count == 3 {
-                            let segment = Segment(ref, specMessage: currentMessage)
+                            let segment = Segment(ref, parent: parentGroup, specMessage: currentMessage)
                             
                             if let minO = attributeDict["minOccurs"] {
                                 if minO == "unbounded" {

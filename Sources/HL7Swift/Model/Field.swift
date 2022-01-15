@@ -19,7 +19,9 @@ import Foundation
  # "LOI_Common_Component^LOI Base Profile^2.16.840.1.113883.9.66^ISO~LOI_NG_Component^LOI NG Profile^2.16.840.1.113883.9.79^ISO"
  ```
  */
-public class Field {
+public class Field:Node {
+    public var parent: Node?
+    
     public var cells: [Cell] = []
     
     public var segmentCode: String = ""
@@ -31,11 +33,14 @@ public class Field {
     public var maxLength: Int = 0
     public var index: Int = 0
     
-    init(name: String) {
+    init(name: String, parent: Node? = nil) {
         self.name = name
+        self.parent = parent
     }
     
-    init(_ str: String) {
+    init(_ str: String, parent: Node? = nil) {
+        self.parent = parent
+        
         if str.contains("~") {
             // 20 is a random number, could be anything; we want to take empty subsequences but we oughta specify a maximum number
             // of splits too, that's where the 20 is coming from
@@ -47,7 +52,8 @@ public class Field {
         }
     }    
     
-    init(_ cellsToCopy: [Cell]) {
+    init(_ cellsToCopy: [Cell], parent: Node? = nil) {
+        self.parent = parent
         cells = cellsToCopy
     }
 }
