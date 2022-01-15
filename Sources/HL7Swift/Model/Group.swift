@@ -230,23 +230,23 @@ public class Group:Node {
                         }
                         
                         // populate min/maxOccurs by datatypes
-//                        for f in messageSegment.fields {
-//                            if let compositeType = f.type as? CompositeType {
-//                                var i = 0
-//
-//                                for t in compositeType.types {
-//
-//                                    i += 1
-//                                }
-//
-//                                for cell in f.cells {
-//                                    for comp in cell.components {
-//                                        print(comp)
-//                                    }
-//                                }
-//
-//                            }
-//                        }
+                        for f in messageSegment.fields {
+                            for cell in f.cells {
+                                cell.type = f.type
+                                var j = 0
+                                for comp in cell.components {
+                                    if let compositeType = f.type as? CompositeType {
+                                        if j < compositeType.types.count - 1 {
+                                            let composedType = compositeType.types[j]
+                                            comp.type = composedType
+                                            comp.minOccurs = composedType.minOccurs
+                                            comp.maxOccurs = composedType.maxOccurs
+                                        }
+                                    }
+                                    j += 1
+                                }
+                            }
+                        }
                         
                         // append populated segment to the current group
                         group?.items.append(Item.segment(messageSegment))

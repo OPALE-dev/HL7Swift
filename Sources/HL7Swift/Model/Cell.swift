@@ -11,7 +11,7 @@ import Foundation
  `Cell` contains the data of the HL7 message. A cell can contain components which can contain subcomponents.
  Components may be sTODO
  */
-public struct Cell:Node {
+public class Cell:Node {
     var text: String = ""
     public var name: String = ""
     public var parent: Node?
