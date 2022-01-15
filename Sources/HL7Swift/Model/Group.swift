@@ -82,7 +82,7 @@ public class Group:Node {
         } else {
             for index in items.indices where isAppended != true {
                 switch items[index] {
-                case .group(var itemGroup):
+                case .group(let itemGroup):
                     isAppended = itemGroup.appendSegment(segment: segment, underGroupName: underGroupName)
                     items[index] = Item.group(itemGroup)
 
@@ -113,7 +113,7 @@ public class Group:Node {
         } else {
             for index in items.indices where appended != true {
                 switch items[index] {
-                case .group(var itemGroup):
+                case .group(let itemGroup):
                     appended = itemGroup.appendGroup(group: group, underGroupName: underGroupName)
                     items[index] = Item.group(itemGroup)
     
@@ -160,7 +160,7 @@ public class Group:Node {
             case .group(let group):
                 str += group.prettyTree(depth: depth + 1)
             case .segment(let segment):
-                str += segment.description
+                str += segment.name
                 
             }
             

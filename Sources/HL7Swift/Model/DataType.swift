@@ -19,7 +19,7 @@ protocol DataTypable {
  Base class implementing DataTypable
  */
 public class DataType: DataTypable, CustomStringConvertible {
-    var name: String
+    public var name: String
     var base: String = ""
     
     public init(name: String) {

@@ -11,14 +11,18 @@ import Foundation
  `Cell` contains the data of the HL7 message. A cell can contain components which can contain subcomponents.
  Components may be sTODO
  */
-public struct Cell {
+public struct Cell:Node {
     var text: String = ""
+    public var name: String = ""
+    public var parent: Node?
     public var components: [Cell] = []
-    
+    public var type: DataType? = nil
     public var minOccurs:Int = 0
     public var maxOccurs:Int = -1
     
-    init(_ str: String, isEncoding: Bool = false) {
+    init(_ str: String, parent: Node, isEncoding: Bool = false) {
+        self.parent = parent
+        
         if isEncoding {
             text = str
         } else {
@@ -29,11 +33,11 @@ public struct Cell {
                     if component.contains("&") {
                         var componentsArray: [Cell] = []
                         for subcomponent in component.split(separator: "&", maxSplits: 20, omittingEmptySubsequences: false) {
-                            componentsArray.append(Cell(text: String(subcomponent), components: []))
+                            componentsArray.append(Cell(text: String(subcomponent), parent: self, components: []))
                         }
-                        components.append(Cell(text: "", components: componentsArray))
+                        components.append(Cell(text: "", parent: parent, components: componentsArray))
                     } else {
-                        components.append(Cell(text: String(component), components: []))
+                        components.append(Cell(text: String(component), parent: parent, components: []))
                     }
                 }
             } else {
@@ -42,7 +46,8 @@ public struct Cell {
         }
     }
     
-    init(text: String, components: [Cell]) {
+    init(text: String, parent: Node, components: [Cell]) {
+        self.parent = parent
         self.text = text
         self.components = components
     }
