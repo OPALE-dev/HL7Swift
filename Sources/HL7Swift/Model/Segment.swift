@@ -60,10 +60,18 @@ public class Segment: Node {
             name = code
             
             if isHeader {
-                fields.append(Field([Cell(String(separator))], parent: self)) // append separator field (MSH-1)
-                fields.append(Field([Cell(String(strCloneSplit.remove(at: 0)), isEncoding: true)], parent: self))
+                // append separator field (MSH-1)
+                let sepField = Field([Cell(String(separator), parent: self)], parent: self)
+                sepField.cells[0].parent = sepField // (we  faked parent in Cell init)
+                fields.append(sepField)
+                
+                // append encoding field (MSH-2)
+                let encField = Field([Cell(String(strCloneSplit.remove(at: 0)), parent: self, isEncoding: true)], parent: self)
+                encField.cells[0].parent = encField // (we  faked parent in Cell init)
+                fields.append(encField)
             }
             
+            // append other fields
             for field in strCloneSplit {
                 fields.append(Field(String(field), parent: self))
             }

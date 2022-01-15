@@ -45,10 +45,10 @@ public class Field:Node {
             // 20 is a random number, could be anything; we want to take empty subsequences but we oughta specify a maximum number
             // of splits too, that's where the 20 is coming from
             for cell in str.split(separator: "~", maxSplits: 20, omittingEmptySubsequences: false) {
-                cells.append(Cell(String(cell)))
+                cells.append(Cell(String(cell), parent: self))
             }
         } else {
-            cells.append(Cell(str))
+            cells.append(Cell(str, parent: self))
         }
     }    
     
