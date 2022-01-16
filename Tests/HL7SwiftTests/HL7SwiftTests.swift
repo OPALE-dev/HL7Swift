@@ -166,7 +166,7 @@
         func testSubscripts() {
             if let url = Bundle.module.url(forResource: "ORU_R01 - 3", withExtension: "txt") {
                 do {
-                    let message = try Message(withFileAt: url, hl7: hl7)                    
+                    let message = try Message(withFileAt: url, hl7: hl7)
                     // SFT|Lab Information System^L^^^^LIS&2.16.840.1.113883.3.111&ISO^XX^^^123544|1.2.3|LIS|1.2.34||20150328|
 
                     let intSubscript = message[HL7.SFT]![2]!.description
@@ -189,6 +189,23 @@
 
                     let symbolSegment = message[HL7.PID]![HL7.Patient_Name]!
                     assert(symbolSegment == "WILLS^CYRUS^MARIO^^^^L")
+
+                } catch let e {
+                    assertionFailure(e.localizedDescription)
+                }
+            }
+            
+            if let url = Bundle.module.url(forResource: "ADT_A01 - 1", withExtension: "txt") {
+                do {
+                    let message = try Message(withFileAt: url, hl7: hl7)
+                    
+                    let stringSegment = message[HL7.MSH]?[HL7.Character_Set]
+                    
+                    assert(stringSegment == nil)
+
+                    let symbolSegment = message[HL7.MSH]?[HL7.Character_Set]
+                    
+                    assert(symbolSegment == nil)
 
                 } catch let e {
                     assertionFailure(e.localizedDescription)
