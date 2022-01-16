@@ -251,8 +251,13 @@ public class Group:Node {
                         // append populated segment to the current group
                         group?.items.append(Item.segment(messageSegment))
                         
-                        // also append it to root group segement array for efficiency
-                        root?.segments.append(messageSegment)
+                        // also append segment to root group segment array for efficiency
+                        if let root = root {
+                            if !root.segments.map({ $0.code }).contains(messageSegment.code) {
+                                root.segments.append(messageSegment)
+                            }
+                        }
+                        
                     }
                 }
             case .group(let itemGroup):

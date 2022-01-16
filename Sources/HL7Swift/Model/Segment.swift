@@ -97,6 +97,7 @@ public class Segment: Node {
     /// Subscript that get/set segment fields by their specification long names as defined in the HL7 specification.
     public subscript(name: String) -> String? {
         get {
+            print("\(specMessage?.type.name) \(specMessage?.rootGroup?.segments.count)")
             if let specMessage = specMessage {
                 // we loop over all known segments in the spec (specMessage.rootGroup)
                 for segment in specMessage.rootGroup.segments {
