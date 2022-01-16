@@ -166,21 +166,14 @@
         func testSubscripts() {
             if let url = Bundle.module.url(forResource: "ORU_R01 - 3", withExtension: "txt") {
                 do {
-                    let message = try Message(withFileAt: url, hl7: hl7)
-
+                    let message = try Message(withFileAt: url, hl7: hl7)                    
                     // SFT|Lab Information System^L^^^^LIS&2.16.840.1.113883.3.111&ISO^XX^^^123544|1.2.3|LIS|1.2.34||20150328|
 
                     let intSubscript = message[HL7.SFT]![2]!.description
-                    print(intSubscript)
                     assert(intSubscript == "1.2.3")
 
                     let versionIntSubscript = message[HL7.MSH]![12]!.description
                     assert(versionIntSubscript == "2.5.1")
-
-                    message[HL7.MSH]![HL7.Message_Type]! = "ACK"
-                    let mshTest = message[HL7.MSH]![HL7.Message_Type]!
-                    print(mshTest)
-                    assert(mshTest == "ACK")
 
                     let stringSubscript = message[HL7.SFT]!["Software Certified Version or Release Number"]!
                     message[HL7.SFT]!["Software Certified Version or Release Number"]! = stringSubscript
