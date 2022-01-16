@@ -105,7 +105,11 @@ public class Segment: Node {
                         for f in segment.fields {
                             if f.longName == name {
                                 // if found, return field by index
-                                return fields[f.index-1].description
+                                print("\(f.longName) \(f.index-1)/\(fields.count)")
+                                
+                                if f.index-1 <= fields.count {
+                                    return fields[f.index-1].description
+                                }
                             }
                         }
                     }
