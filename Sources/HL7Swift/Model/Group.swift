@@ -201,7 +201,7 @@ public class Group:Node {
      Clone self into `group` and populate values from `message` segments.
      Also takes care to append segments with repetitions if needed.
      */
-    internal func populate(group:Group? = nil, from message:Message) {
+    internal func populate(group:Group? = nil, root:Group?, from message:Message) {
         for item in items {
             switch item {
             case .segment(let segment):
@@ -250,12 +250,15 @@ public class Group:Node {
                         
                         // append populated segment to the current group
                         group?.items.append(Item.segment(messageSegment))
+                        
+                        // also append it to root group segement array for efficiency
+                        root?.segments.append(messageSegment)
                     }
                 }
             case .group(let itemGroup):
                 let newGroup = Group(name: itemGroup.name)
                 
-                itemGroup.populate(group: newGroup, from: message)
+                itemGroup.populate(group: newGroup, root: root, from: message)
                 
                 // append clone group to current group
                 group?.items.append(Item.group(newGroup))
