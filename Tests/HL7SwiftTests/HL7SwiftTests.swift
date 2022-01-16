@@ -241,6 +241,30 @@
         }
         
         
+        
+        func testValidator() {
+            let paths = Bundle.module.paths(forResourcesOfType: "txt", inDirectory: nil)
+            
+            for path in paths {
+                do {
+                    let content = try String(contentsOf: URL(fileURLWithPath: path))
+                                        
+                    let message = try Message(content, hl7: hl7)
+                    let validator = DefaultValidator()
+                    
+                    let results = validator.validate(message, level: .datatypes)
+
+                    for vr in results {
+                        print("\(vr.type) \(vr.text)")
+                    }
+                    
+                } catch {
+                    
+                }
+            }
+        }
+        
+        
 //        func testSegmentCodesList() {
 //            var segments:[String] = []
 //            let spec = hl7.spec(ofVersion: .v282)

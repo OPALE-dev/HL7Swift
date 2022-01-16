@@ -97,11 +97,12 @@ public struct Message {
             
             // populate message groups with values and segment repetitions
             if specMessage != nil {
-                self.specMessage?.rootGroup.populate(group: self.rootGroup, from: self)
+                self.specMessage?.rootGroup.populate(group: self.rootGroup, root: self.rootGroup, from: self)
 
             // else populate raw segments directly
             } else {
                 for s in segments {
+                    self.rootGroup?.segments.append(s)
                     self.rootGroup?.items.append(Item.segment(s))
                 }
             }

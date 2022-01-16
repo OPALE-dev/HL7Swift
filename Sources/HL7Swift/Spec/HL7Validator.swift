@@ -128,9 +128,108 @@ private extension DefaultValidator {
      Validates required and missing segments for message type
      */
     func validateSegments(_ message:Message) -> [ValidationResult] {
-        return []
+        var results:[ValidationResult] = []
+        
+        results.append(contentsOf: validateMissingSegments(message))
+        results.append(contentsOf: validateUnsupportedSegments(message))
+        
+        return results
     }
     
+    /**
+     Find missing required segments (segments that should be here but it is not)
+     */
+    func validateMissingSegments(_ message:Message, parent: Group? = nil) -> [ValidationResult] {
+        var results:[ValidationResult] = []
+        var group:Group? = parent
+        
+        if parent == nil {
+            group = message.rootGroup!
+        }
+        
+        if message.specMessage == nil || message.rootGroup == nil {
+            return []
+        }
+        
+        for item in group!.items {
+            switch item {
+            case .group(let subGroup):
+                results.append(contentsOf: validateMissingSegments(message, parent: subGroup))
+                
+            case .segment(let segment):
+                var count = 0
+                for ms in message.segments {
+                    if ms.code == segment.code {
+                        count += 1
+                    }
+                }
+                
+                if count < segment.minOccurs {
+                    let text = "Missing segment \(segment.code) in message of type \(message.type.name) (\(message.version.rawValue))"
+                    results.append(ValidationResult(
+                                    message: message,
+                                    type: .error,
+                                    level: .version,
+                                    text: text))
+                }
+            }
+        }
+        
+        return results
+    }
+    
+    /**
+     Find unsupported segemnts (segments that shouldn't be here but it is)
+     */
+    func validateUnsupportedSegments(_ message:Message, parent: Group? = nil) -> [ValidationResult] {
+        var results:[ValidationResult] = []
+        var group:Group? = parent
+        
+        if parent == nil {
+            group = message.rootGroup!
+        }
+        
+        if message.specMessage == nil || message.rootGroup == nil {
+            return []
+        }
+            
+        // segments that are used more than defined max occurences
+        for specSegment in message.rootGroup!.segments {
+            var count = 0
+            for segment in message.segments {
+                if segment.code == specSegment.code {
+                    count += 1
+                }
+            }
+                        
+            if specSegment.maxOccurs != -1 && count > specSegment.maxOccurs {
+                let text = "Too much occurences of segment \(specSegment.code) in message of type \(message.type.name) (\(message.version.rawValue))"
+                results.append(ValidationResult(
+                                message: message,
+                                type: .error,
+                                level: .version,
+                                text: text))
+            }
+        }
+        
+        // segment that souldn't be used in this message
+        for segment in message.segments {
+            if message.rootGroup!.segments.map({ $0.code }).contains(segment.code) == false {
+                // TODO: make use of maxOccurs, `message.rootGroup.segments` have to be populated properly first for that
+                // if segment.maxOccurs != -1 && count > segment.maxOccurs { ... }
+                
+                let text = "Unsupported segment \(segment.code) in message of type \(message.type.name) (\(message.version.rawValue))"
+                results.append(ValidationResult(
+                                message: message,
+                                type: .error,
+                                level: .version,
+                                text: text))
+            }
+        }
+        
+        return results
+    }
+
     /**
      Validates required and missing fields for segments
      */
