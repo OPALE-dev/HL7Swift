@@ -179,6 +179,7 @@
 
                     message[HL7.MSH]![HL7.Message_Type]! = "ACK"
                     let mshTest = message[HL7.MSH]![HL7.Message_Type]!
+                    print(mshTest)
                     assert(mshTest == "ACK")
 
                     let stringSubscript = message[HL7.SFT]!["Software Certified Version or Release Number"]!

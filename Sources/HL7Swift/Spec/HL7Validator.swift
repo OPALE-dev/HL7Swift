@@ -168,7 +168,7 @@ private extension DefaultValidator {
                     let text = "Missing segment \(segment.code) in message of type \(message.type.name) (\(message.version.rawValue))"
                     results.append(ValidationResult(
                                     message: message,
-                                    type: .error,
+                                    type: .warning,
                                     level: .version,
                                     text: text))
                 }
@@ -206,7 +206,7 @@ private extension DefaultValidator {
                 let text = "Too much occurences of segment \(specSegment.code) in message of type \(message.type.name) (\(message.version.rawValue))"
                 results.append(ValidationResult(
                                 message: message,
-                                type: .error,
+                                type: .warning,
                                 level: .version,
                                 text: text))
             }
@@ -221,7 +221,7 @@ private extension DefaultValidator {
                 let text = "Unsupported segment \(segment.code) in message of type \(message.type.name) (\(message.version.rawValue))"
                 results.append(ValidationResult(
                                 message: message,
-                                type: .error,
+                                type: .warning,
                                 level: .version,
                                 text: text))
             }
