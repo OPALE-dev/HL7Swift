@@ -177,15 +177,15 @@
 
                     let stringSubscript = message[HL7.SFT]!["Software Certified Version or Release Number"]!
                     message[HL7.SFT]!["Software Certified Version or Release Number"]! = stringSubscript
-                    assert(stringSubscript == "1.2.3")
+                    assert(stringSubscript == message[HL7.SFT]!["Software Certified Version or Release Number"]!)
 
                     let symbolSubscript = message[HL7.SFT]?[HL7.Software_Certified_Version_or_Release_Number]
                     message[HL7.SFT]![HL7.Software_Certified_Version_or_Release_Number]! = symbolSubscript!
-                    assert(symbolSubscript! == "1.2.3")
+                    assert(symbolSubscript! == message[HL7.SFT]![HL7.Software_Certified_Version_or_Release_Number]!)
 
                     let stringSegment = message["PID"]?["Patient Name"]
                     message["PID"]?["Patient Name"]? = stringSegment!
-                    assert(stringSegment == "WILLS^CYRUS^MARIO^^^^L")
+                    assert(stringSegment == message["PID"]!["Patient Name"]!)
 
                     let symbolSegment = message[HL7.PID]![HL7.Patient_Name]!
                     assert(symbolSegment == "WILLS^CYRUS^MARIO^^^^L")
@@ -199,10 +199,6 @@
                 do {
                     let message = try Message(withFileAt: url, hl7: hl7)
                     
-                    let stringSegment = message[HL7.MSH]?[HL7.Character_Set]
-                    
-                    assert(stringSegment == nil)
-
                     let symbolSegment = message[HL7.MSH]?[HL7.Character_Set]
                     
                     assert(symbolSegment == nil)
@@ -216,8 +212,12 @@
                 let message = try Message(HL7.V25.ACK(), spec: hl7.spec(ofVersion: .v25)!, preloadSegments: [HL7.MSH, HL7.MSA])
                                 
                 message[HL7.MSA]![HL7.Acknowledgment_Code] = AcknowledgeStatus.AA.rawValue
+                
+                assert(message[HL7.MSA]![HL7.Acknowledgment_Code]! == AcknowledgeStatus.AA.rawValue)
         
                 message[HL7.MSA]![HL7.Acknowledgment_Code] = AcknowledgeStatus.AR.rawValue
+                
+                assert(message[HL7.MSA]![HL7.Acknowledgment_Code]! == AcknowledgeStatus.AR.rawValue)
                                 
             } catch let e {
                 assertionFailure(e.localizedDescription)
@@ -230,26 +230,9 @@
             
             let generated = spec?.type(forName: "ACK") as! HL7.V251.ACK
             
-            print(type)
-
             assert("\(generated.self)" == "\(type.self)")
         }
         
-        
-        
-        
-        func testPopulate() {
-            if let url = Bundle.module.url(forResource: "ORU_R01 - 2", withExtension: "txt") {
-                do {
-                    let message = try Message(withFileAt: url, hl7: hl7)
-                    
-                    print(message.rootGroup!.prettyTree())
-                    
-                } catch {
-                    
-                }
-            }
-        }
         
         
         
@@ -264,7 +247,7 @@
                     let validator = DefaultValidator()
                     
                     let results = validator.validate(message, level: .datatypes)
-
+                    
                     for vr in results {
                         print("\(vr.type) \(vr.text)")
                     }
