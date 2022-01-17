@@ -105,8 +105,6 @@ public class Segment: Node {
                         for f in segment.fields {
                             if f.longName == name {
                                 // if found, return field by index
-                                print("\(f.longName) \(f.index-1)/\(fields.count)")
-                                
                                 if f.index-1 <= fields.count {
                                     return fields[f.index-1].description
                                 }
@@ -126,6 +124,7 @@ public class Segment: Node {
                         for f in segment.fields {
                             if f.longName == name {
                                 if let newVal = newValue {
+                                    // TODO: test with overflow, extent array if needed, etc.
                                     //print("\(type(of: newVal)) \(newVal)")
                                     fields[f.index - 1].cells = Field(newVal).cells
                                 }

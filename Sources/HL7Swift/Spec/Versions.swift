@@ -10,7 +10,24 @@ import Foundation
 /**
  Represents a HL7 standard versions.
  */
-public struct Version: RawRepresentable, Hashable {
+public struct Version: RawRepresentable, Hashable, CaseIterable {
+    public static var allCases: [Version] {
+        [
+            Version.v21,
+            Version.v23,
+            Version.v231,
+            Version.v24,
+            Version.v25,
+            Version.v251,
+            Version.v26,
+            Version.v27,
+            Version.v271,
+            Version.v28,
+            Version.v281,
+            Version.v282
+        ]
+    }
+    
     public var rawValue: String
     
     public typealias RawValue = String

@@ -239,7 +239,7 @@
         
         
         func testPopulate() {
-            if let url = Bundle.module.url(forResource: "ORU_R01 - 3", withExtension: "txt") {
+            if let url = Bundle.module.url(forResource: "ORU_R01 - 2", withExtension: "txt") {
                 do {
                     let message = try Message(withFileAt: url, hl7: hl7)
                     
@@ -274,6 +274,7 @@
                 }
             }
         }
+        
         
         
 //        func testSegmentCodesList() {
