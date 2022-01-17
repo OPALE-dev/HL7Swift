@@ -120,6 +120,16 @@ private extension DefaultValidator {
                             level: .version,
                             text: text))
         }
+        else {
+            if message.version != message.messageVersion {
+                let text = "Message of type \(message.type.name) is not part of version \(message.messageVersion.rawValue). Fallback to version \(message.version.rawValue)"
+                results.append(ValidationResult(
+                                message: message,
+                                type: .warning,
+                                level: .version,
+                                text: text))
+            }
+        }
         
         return results
     }

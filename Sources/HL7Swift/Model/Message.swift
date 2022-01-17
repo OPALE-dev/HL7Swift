@@ -37,6 +37,8 @@ public struct Message {
     public var rootGroup: Group?
 
     public var version:Version!
+    public var messageVersion:Version!
+
     public var type:Typable!
 
     var segments: [Segment] = []
@@ -60,6 +62,11 @@ public struct Message {
     
     
     public init(_ str: String, hl7: HL7) throws {
+        // sanitize check to exclude non-HL7 strings
+        guard (str.range(of: #"(^|\n)([A-Z]{2}[A-Z0-9]{1})(?=[\|])"#, options: .regularExpression) != nil) else {
+            throw HL7Error.unsupportedMessage(message: "Not HL7 message")
+        }
+        
         // The separator depends on the implementation, not on the standard
         if str.split(separator: "\r").count > 1 {
             sep = "\r"
@@ -69,42 +76,83 @@ public struct Message {
             sep = "\r\n"
         }
 
+        // parse raw segments
         for segment in str.split(separator: sep) {
             segments.append(Segment(String(segment)))
         }
+        
+        guard segments.count > 0 else {
+            throw HL7Error.unsupportedMessage(message: "No segment found")
+        }
+        
+        // check we have a header
+        // TODO : special cases for FHS/BHS ?
+        if let header = self[HL7.MSH] {
+            // check we have a version
+            guard header.fields.count > 11 else {
+                throw HL7Error.unsupportedMessage(message: "Not enought field in segment \(segments[0].code)")
+            }
+        }
                         
+        // read version form segments
         guard let version = try getVersion() else {
-            throw HL7Error.unsupportedVersion(message: "Unknow")
+            throw HL7Error.unsupportedVersion(message: "Unknow/unsupported version")
         }
         
         self.version = version
+        self.messageVersion = version
         
+        // read type from segments
         let type = try getType()
+        
+        // try to load versioned spec
+        guard let spec = hl7.spec(ofVersion: version) else {
+            throw HL7Error.unsupportedVersion(message: version.rawValue)
+        }
+        
+        // try to load matching message type in the versioned spec
+        self.specMessage = spec.messages[type]
+        
+        // try to auto fallback on other spec versions
+        // if no spec is found for the version given in the message
+        if specMessage == nil {
+            for v in Version.allCases {
+                if let spec = hl7.spec(ofVersion: v) {
+                    self.specMessage = spec.messages[type]
+                    
+                    if self.specMessage != nil {
+                        self.version = v
+                        break
+                    }
+                }
+            }
+        }
 
-        if let spec = hl7.spec(ofVersion: version) {
-            self.specMessage = spec.messages[type]
+        if self.specMessage != nil {
             self.type = self.specMessage?.type
+            
+            // create the Message root group (different fromm the spec message root group)
             self.rootGroup = Group(name: type)
             
+            // give ref of the spec to our segment objects
             for s in segments {
                 s.specMessage = self.specMessage
             }
-
-            // get a type anyway
+            
+            // populate groups with message values and repetitions
+            self.specMessage?.rootGroup.populate(group: self.rootGroup, root: self.rootGroup, from: self)
+        } else {
+            self.rootGroup = Group(name: type)
+            
+            // get a type anyway if none
             if self.type == nil {
                 self.type = HL7.UnknowMessageType(name: type)
             }
             
-            // populate message groups with values and segment repetitions
-            if specMessage != nil {
-                self.specMessage?.rootGroup.populate(group: self.rootGroup, root: self.rootGroup, from: self)
-
-            // else populate raw segments directly
-            } else {
-                for s in segments {
-                    self.rootGroup?.segments.append(s)
-                    self.rootGroup?.items.append(Item.segment(s))
-                }
+            // as we do not have any spec to rely on, load raw segments into the root group for convenience
+            for s in segments {
+                self.rootGroup?.segments.append(s)
+                self.rootGroup?.items.append(Item.segment(s))
             }
         }
     }
@@ -131,7 +179,7 @@ public struct Message {
     
 
     /// Easily get/set a segment of the message with a given code using subscript notation.
-    /// Usage: `let segment = message["MSH"]`
+    /// Usage: `let segment = message[HL7.MSH]`
     public subscript(code: String, repetition: UInt = 1) -> Segment? {
         get {
             return getSegment(code, repetition: repetition) }
