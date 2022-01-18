@@ -47,7 +47,7 @@ public struct HL7 {
     }
     
     
-    internal func spec(ofVersion version: Version) -> Versioned? {
+    public func spec(ofVersion version: Version) -> Versioned? {
         switch version {
         case .v21:  return v21
         case .v23:  return v23
