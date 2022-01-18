@@ -132,9 +132,9 @@ public class Versioned: NSObject, Versionable {
     
     var version: Version
     
-    var messages:[String:SpecMessage] = [:]
-    var dataTypes:[String:DataType] = [:] // datatypes by name
-    var fields:[String:[Field]] = [:] // fields by segment
+    public var messages:[String:SpecMessage] = [:]
+    public var dataTypes:[String:DataType] = [:] // datatypes by name
+    public var fields:[String:[Field]] = [:] // fields by segment
     
     var loadMessagesFlag = false
     var loadSegmentsFlag = false
