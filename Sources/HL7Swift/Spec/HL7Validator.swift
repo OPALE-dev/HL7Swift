@@ -113,7 +113,7 @@ private extension DefaultValidator {
         var results:[ValidationResult] = []
         
         if message.specMessage == nil {
-            let text = "Message of type \(message.type.name) is not part of version \(message.version.rawValue)"
+            let text = "Message of type \(message.type.name) is not part of version \(message.messageVersion.rawValue)"
             results.append(ValidationResult(
                             message: message,
                             type: .error,
@@ -122,7 +122,15 @@ private extension DefaultValidator {
         }
         else {
             if message.version != message.messageVersion {
-                let text = "Message of type \(message.type.name) is not part of version \(message.messageVersion.rawValue). Fallback to version \(message.version.rawValue)"
+                let text = "Message of type \(message.type.name) is not part of version \(message.messageVersion.rawValue). Read as version \(message.version.rawValue)"
+                results.append(ValidationResult(
+                                message: message,
+                                type: .warning,
+                                level: .version,
+                                text: text))
+            }
+            if message.forcedVersion != message.messageVersion {
+                let text = "Message of type \(message.type.name) is not part of version \(message.messageVersion.rawValue). Read as version \(message.forcedVersion.rawValue)"
                 results.append(ValidationResult(
                                 message: message,
                                 type: .warning,
@@ -194,7 +202,7 @@ private extension DefaultValidator {
     func validateUnsupportedSegments(_ message:Message, parent: Group? = nil) -> [ValidationResult] {
         var results:[ValidationResult] = []
 //        var group:Group? = parent
-//        
+//
 //        if parent == nil {
 //            group = message.rootGroup!
 //        }
