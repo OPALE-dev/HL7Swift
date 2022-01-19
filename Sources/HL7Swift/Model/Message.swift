@@ -109,7 +109,7 @@ public struct Message {
         
         // read type from segments
         let type = try getType()
-        
+                
         // try to load versioned spec
         guard let spec = hl7.spec(ofVersion: version) else {
             throw HL7Error.unsupportedVersion(message: version.rawValue)
@@ -127,9 +127,16 @@ public struct Message {
                     self.specMessage = spec.messages[type]
                     
                     if self.specMessage != nil {
-                        self.version = v
+                        self.version = v // not sure ? :-/
                         break
                     }
+                }
+            }
+        } else {
+            if forcedVersion != nil {
+                // try load forced spec
+                if let spec = hl7.spec(ofVersion: forcedVersion!) {
+                    self.specMessage = spec.messages[type]
                 }
             }
         }
