@@ -152,19 +152,17 @@ public class Segment: Node {
 
 extension Segment: CustomStringConvertible {
     public var description: String {
-        var fields: [Int:Field] = fields
+        var fields: [Field] = sortedFields
 
         var str = code + "|"
         
         if isHeader {
             // remove separator field
-            fields[1] = nil
+            fields.remove(at: 0)
         }
         
-        for k in Array(arrayLiteral: fields.keys).sorted(by: { k1, k2 in k1.description < k2.description }) {
-            if let k = k.first, let field = fields[k] {
-                str += field.description + "|"
-            }
+        for field in fields {
+            str += field.description + "|"
         }
         
         // remove last |
