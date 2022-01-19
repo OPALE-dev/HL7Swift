@@ -132,12 +132,14 @@ private extension DefaultValidator {
                 }
             }
         } else {
-            let text = "Message of type \(message.type.name) is not part of version \(message.forcedVersion!.rawValue) (forced)"
-            results.append(ValidationResult(
-                            message: message,
-                            type: .error,
-                            level: .version,
-                            text: text))
+            if message.specMessage == nil {
+                let text = "Message of type \(message.type.name) is not part of version \(message.forcedVersion!.rawValue) (forced)"
+                results.append(ValidationResult(
+                                message: message,
+                                type: .error,
+                                level: .version,
+                                text: text))
+            }
         }
         
         return results
