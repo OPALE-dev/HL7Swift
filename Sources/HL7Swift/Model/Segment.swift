@@ -152,16 +152,16 @@ public class Segment: Node {
 
 extension Segment: CustomStringConvertible {
     public var description: String {
-        var fields: [Field] = sortedFields
+        var localFields: [Field] = sortedFields
 
         var str = code + "|"
         
         if isHeader {
             // remove separator field
-            fields.remove(at: 0)
+            localFields.remove(at: 0)
         }
         
-        for field in fields {
+        for field in localFields {
             str += field.description + "|"
         }
         
