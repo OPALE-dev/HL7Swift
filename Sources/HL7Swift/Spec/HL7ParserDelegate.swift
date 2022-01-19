@@ -153,30 +153,36 @@ extension Versioned:XMLParserDelegate {
                     }
                 }
             }
-        } else if loadRepetitionsFlag {
+        }
+        
+        if loadRepetitionsFlag {
+            
             if elementName == "xsd:complexType" {
+                
                 if let name = attributeDict["name"] {
                     currentSegment = String(name.split(separator: ".")[0])
                 }
             }
             else if elementName == "xsd:element" {
-                if currentSegment != nil {
+                
+                if currentSegment != nil && currentSegment != "anyHL7Segment" {
                     
                     if let ref = attributeDict["ref"] {
-                        print(ref)
+                        
                         let index = Int(ref.split(separator: ".")[1])!
-                        if let field = currentMessage?.rootGroup.getSegment(currentSegment!)![index] {
-                            field.minOccurs = Int(attributeDict["minOccurs"]!)!
-                            
-                            if attributeDict["maxOccurs"]! == "unbounded" {
-                                field.maxOccurs = -1
-                            } else {
-                                field.maxOccurs = Int(attributeDict["maxOccurs"]!)!
+
+                        if let segment = currentMessage?.rootGroup.getSegment(currentSegment!) {
+                            if let field = segment[index] {
+                                field.minOccurs = Int(attributeDict["minOccurs"]!)!
+                                
+                                if attributeDict["maxOccurs"]! == "unbounded" {
+                                    field.maxOccurs = -1
+                                } else {
+                                    field.maxOccurs = Int(attributeDict["maxOccurs"]!)!
+                                }
                             }
-                            
                         }
                     }
-                    
                 }
             }
         }
@@ -262,6 +268,10 @@ extension Versioned:XMLParserDelegate {
         
         if loadCompositeTypesFlag == true {
             loadCompositeTypesFlag = false
+        }
+        
+        if loadRepetitionsFlag == true {
+            loadRepetitionsFlag = false
         }
      
         currentElement = nil

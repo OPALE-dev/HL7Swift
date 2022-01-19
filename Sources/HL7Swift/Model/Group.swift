@@ -212,7 +212,7 @@ public class Group:Node {
                         
                         // populate segments attributes (longName, index, etc.), we already have the value
                         for f1 in segment.fields {
-                            if  i < messageSegment.fields.count - 1 {
+                            if i != messageSegment.fields.count {
                                 messageSegment.parent       = segment.parent
                                 messageSegment.minOccurs    = segment.minOccurs
                                 messageSegment.maxOccurs    = segment.maxOccurs
@@ -236,7 +236,7 @@ public class Group:Node {
                                 var j = 0
                                 for comp in cell.components {
                                     if let compositeType = f.type as? CompositeType {
-                                        if j < compositeType.types.count - 1 {
+                                        if j != compositeType.types.count {
                                             let composedType = compositeType.types[j]
                                             comp.type = composedType
                                             comp.minOccurs = composedType.minOccurs

@@ -184,8 +184,8 @@ public class Versioned: NSObject, Versionable {
             }
                     
             for (_, message) in messages {
-                try loadRepetitions(forMessage: message, forVersion: version)
                 try loadSegments(forMessage: message, version: version)
+                try loadRepetitions(forMessage: message, forVersion: version)
             }
         }
     }
@@ -194,7 +194,6 @@ public class Versioned: NSObject, Versionable {
     private func loadRepetitions(forMessage message: SpecMessage, forVersion version: Version) throws {
         if let xmlURL = Bundle.module.url(forResource: "segments", withExtension: "xsd", subdirectory: "v\(version.rawValue)") {
             let xmlParser = XMLParser(contentsOf: xmlURL)!
-            
             xmlParser.delegate = self
             
             loadRepetitionsFlag = true
