@@ -33,6 +33,9 @@ public class Field:Node {
     public var maxLength: Int = 0
     public var index: Int = 0
     
+    public var minOccurs: Int = 0
+    public var maxOccurs: Int = 0
+    
     init(name: String, parent: Node? = nil) {
         self.name = name
         self.parent = parent

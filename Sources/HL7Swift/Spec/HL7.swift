@@ -141,6 +141,7 @@ public class Versioned: NSObject, Versionable {
     var loadFieldsFlag = false
     var loadDataTypesFlag = false
     var loadCompositeTypesFlag = false
+    var loadRepetitionsFlag = false
     
     var currentVersion:Version? = nil
     var currentSequence:String? = nil
@@ -148,6 +149,7 @@ public class Versioned: NSObject, Versionable {
     var currentMessage:SpecMessage? = nil
     var currentDataType:DataType? = nil
     var currentElement:String? = nil
+    var currentSegment: String? = nil
     
     var parentGroup:Group? = nil
     
@@ -182,12 +184,27 @@ public class Versioned: NSObject, Versionable {
             }
                     
             for (_, message) in messages {
+                try loadRepetitions(forMessage: message, forVersion: version)
                 try loadSegments(forMessage: message, version: version)
             }
         }
     }
     
     
+    private func loadRepetitions(forMessage message: SpecMessage, forVersion version: Version) throws {
+        if let xmlURL = Bundle.module.url(forResource: "segments", withExtension: "xsd", subdirectory: "v\(version.rawValue)") {
+            let xmlParser = XMLParser(contentsOf: xmlURL)!
+            
+            xmlParser.delegate = self
+            
+            loadRepetitionsFlag = true
+            currentMessage = message
+            
+            if !xmlParser.parse() {
+                throw HL7Error.parserError(message: "Cannot parse")
+            }
+        }
+    }
     
     private func loadSegments(forMessage message: SpecMessage, version: Version) throws {
         if let xmlURL = Bundle.module.url(forResource: message.type.name, withExtension: "xsd", subdirectory: "v\(version.rawValue)/messages") {

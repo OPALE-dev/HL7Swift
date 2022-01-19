@@ -270,6 +270,30 @@ public class Group:Node {
             }
         }
     }
+    
+    
+    /**
+     Gets a segment under the group tree; it's recursive
+     
+     - TODO: handle repetition
+     */
+    public func getSegment(_ code: String) -> Segment? {
+        for item in items {
+            switch item {
+            case .segment(let s):
+                if s.code == code {
+                    return s
+                }
+            case .group(let g):
+                if let s = g.getSegment(code) {
+                    return s
+                }
+            }
+        }
+        
+        return nil
+    }
+
 }
 
 /// Shortens `"ORU_RO1.PATIENT_RESULT.CONTENT"` to `"PATIENT_RESULT"`
