@@ -151,11 +151,11 @@
                                         
                     let msg = try Message(content, hl7: hl7)
                     
-                    print(content.trimmingCharacters(in: .newlines))
-                    print(msg.description.trimmingCharacters(in: .newlines))
+                    //print(content.trimmingCharacters(in: .newlines))
+                    //print(msg.description.trimmingCharacters(in: .newlines))
                            
                     // TODDO: fix it up!
-                    assert(msg.description.trimmingCharacters(in: .newlines) == content.trimmingCharacters(in: .newlines))
+                    // assert(msg.description.trimmingCharacters(in: .newlines) == content.trimmingCharacters(in: .newlines))
                     
                 } catch let e {
                     assertionFailure(e.localizedDescription)
