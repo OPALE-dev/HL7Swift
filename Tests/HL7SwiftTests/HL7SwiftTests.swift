@@ -86,6 +86,7 @@
                     
                     // Get segment
                     let pv1 = try terser.get("/PATIENT_RESULT/PATIENT/VISIT/PV1")
+                    print(pv1)
                     let pv1Description = "PV1|1|I|G52^G52-08^^||||213322^KRAT^DAVID^JOHN^^^5871925^^LIS_LAB^L^^^DN|||||||||||I|11036427586|||||||||||||||||||||||||20251014030201-0400||||||||"
                     assert(pv1?.description == pv1Description)
                     
@@ -169,7 +170,7 @@
                     let message = try Message(withFileAt: url, hl7: hl7)
                     // SFT|Lab Information System^L^^^^LIS&2.16.840.1.113883.3.111&ISO^XX^^^123544|1.2.3|LIS|1.2.34||20150328|
 
-                    let intSubscript = message[HL7.SFT]![2]!.description
+                    let intSubscript = message[HL7.SFT]?.fields[2]!.description
                     assert(intSubscript == "1.2.3")
 
                     let versionIntSubscript = message[HL7.MSH]![12]!.description
