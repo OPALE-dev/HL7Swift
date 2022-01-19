@@ -151,11 +151,11 @@
                                         
                     let msg = try Message(content, hl7: hl7)
                     
-//                    print(content.trimmingCharacters(in: .newlines))
-//                    print(msg.description.trimmingCharacters(in: .newlines))
+                    print(content.trimmingCharacters(in: .newlines))
+                    print(msg.description.trimmingCharacters(in: .newlines))
                            
                     // TODDO: fix it up!
-                    //assert(msg.description.trimmingCharacters(in: .newlines) == content.trimmingCharacters(in: .newlines))
+                    assert(msg.description.trimmingCharacters(in: .newlines) == content.trimmingCharacters(in: .newlines))
                     
                 } catch let e {
                     assertionFailure(e.localizedDescription)
@@ -256,6 +256,43 @@
                     
                 }
             }
+        }
+        
+        func testNonHL7Messages() {
+            for m in ["", "ttt|aaa|aaa|fff|",
+                      "<html></html>", "99 bottles…" ] {
+                do {
+                    let _ = try Message(m, hl7: hl7)
+                } catch let e {
+                    XCTAssertEqual((e as! HL7Error), HL7Error.unsupportedMessage(message: "Not HL7 message"))
+                }
+            }
+        }
+        
+        func testMessageHeader() {
+            // MSH|^~\\&|||||||ACK|||2.5.1|||||||||
+
+            // message with incomplete header
+            let string2 = "MSH|^~\\&||||"
+                        
+            do {
+                let _ = try Message(string2, hl7: hl7)
+            } catch let e {
+                XCTAssertEqual((e as! HL7Error), HL7Error.unsupportedMessage(message: "Not enought field in segment MSH"))
+            }
+            
+            // message with missing version
+            let string1 = "MSH|^~\\&||||||||||||||||"
+            do {
+                let _ = try Message(string1, hl7: hl7)
+            } catch let e {
+                XCTAssertEqual((e as! HL7Error), HL7Error.unsupportedMessage(message: "Version field empty"))
+            }
+            
+            // message with missing message type
+            let string3 = "MSH|^~\\&||||||||||2.5.1|||||||||"
+            let msg3 = try? Message(string3, hl7: hl7)
+            assert((msg3?.type is HL7Swift.HL7.UnknowMessageType) == true)
         }
         
         
