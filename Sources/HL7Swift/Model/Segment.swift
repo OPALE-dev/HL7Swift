@@ -29,6 +29,15 @@ public class Segment: Node {
     
     public var code: String = ""
     public var fields: [Int:Field] = [:]
+    public var sortedFields:[Field] {
+        var array:[Field] = []
+        for k in Array(fields.keys).sorted() {
+            if let f = fields[k] {
+                array.append(f)
+            }
+        }
+        return array
+    }
     
     // -1 means unbounded
     public var minOccurs:Int = 0
