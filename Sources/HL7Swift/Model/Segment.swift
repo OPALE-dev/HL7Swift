@@ -71,6 +71,7 @@ public class Segment: Node {
             if isHeader {
                 // append separator field (MSH-1)
                 let sepField = Field([Cell(String(separator), parent: self)], parent: self)
+                sepField.index = 1
                 sepField.cells[0].parent = sepField // (we  faked parent in Cell init)
                 fields[fields.keys.count+1] = sepField
                 
