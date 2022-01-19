@@ -153,6 +153,32 @@ extension Versioned:XMLParserDelegate {
                     }
                 }
             }
+        } else if loadRepetitionsFlag {
+            if elementName == "xsd:complexType" {
+                if let name = attributeDict["name"] {
+                    currentSegment = String(name.split(separator: ".")[0])
+                }
+            }
+            else if elementName == "xsd:element" {
+                if currentSegment != nil {
+                    
+                    if let ref = attributeDict["ref"] {
+                        print(ref)
+                        let index = Int(ref.split(separator: ".")[1])!
+                        if let field = currentMessage?.rootGroup.getSegment(currentSegment!)![index] {
+                            field.minOccurs = Int(attributeDict["minOccurs"]!)!
+                            
+                            if attributeDict["maxOccurs"]! == "unbounded" {
+                                field.maxOccurs = -1
+                            } else {
+                                field.maxOccurs = Int(attributeDict["maxOccurs"]!)!
+                            }
+                            
+                        }
+                    }
+                    
+                }
+            }
         }
     }
 
