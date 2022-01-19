@@ -161,6 +161,7 @@ extension Versioned:XMLParserDelegate {
                 
                 if let name = attributeDict["name"] {
                     currentSegment = String(name.split(separator: ".")[0])
+                    print(currentSegment!)
                 }
             }
             else if elementName == "xsd:element" {
@@ -170,17 +171,18 @@ extension Versioned:XMLParserDelegate {
                     if let ref = attributeDict["ref"] {
                         
                         let index = Int(ref.split(separator: ".")[1])!
-
-                        if let segment = currentMessage?.rootGroup.getSegment(currentSegment!) {
-                            if let field = segment[index] {
-                                field.minOccurs = Int(attributeDict["minOccurs"]!)!
-                                
-                                if attributeDict["maxOccurs"]! == "unbounded" {
-                                    field.maxOccurs = -1
-                                } else {
-                                    field.maxOccurs = Int(attributeDict["maxOccurs"]!)!
-                                }
+                        
+                        if let f = fields[currentSegment!] {
+                            print("index \(index) size \(f.count)")
+                            let field = f[index - 1]
+                            field.minOccurs = Int(attributeDict["minOccurs"]!)!
+                            
+                            if attributeDict["maxOccurs"]! == "unbounded" {
+                                field.maxOccurs = -1
+                            } else {
+                                field.maxOccurs = Int(attributeDict["maxOccurs"]!)!
                             }
+                            
                         }
                     }
                 }
@@ -198,11 +200,15 @@ extension Versioned:XMLParserDelegate {
         else if loadFieldsFlag {
             if elementName == "xsd:attributeGroup" {
                 if let currentField = currentField {
+                    
                     if fields[currentField.segmentCode] == nil {
                         fields[currentField.segmentCode] = []
                     }
-                
+                    
                     fields[currentField.segmentCode]?.append(currentField)
+                    if currentField.segmentCode == "BHS" {
+                        print(fields["BHS"]!.count)
+                    }
                 }
                 
                 currentField = nil
