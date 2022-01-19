@@ -57,15 +57,14 @@
         
         // TODO test all files
         func testSpecParse() {
-            //for path in Bundle.module.paths(forResourcesOfType: "", inDirectory: "HL7-xml v2.5.1") {
-            //}
-            
             let oru = Bundle.module.url(forResource: "ORU_R01 - 3", withExtension: "txt")
             if let oruPath = oru {
                 do {
                     let content = try String(contentsOf: oruPath)
 
-                    _ = try Message(content, hl7: hl7)
+                    let m = try Message(content, hl7: hl7)
+                    
+                    print(m[HL7.MSH]!)
 
                 } catch let e {
                     assertionFailure(e.localizedDescription)

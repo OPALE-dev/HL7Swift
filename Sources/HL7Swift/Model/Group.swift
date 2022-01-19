@@ -138,7 +138,7 @@ public class Group:Node {
                 str += group.pretty(depth: depth + 1)
             case .segment(let segment):
                 str += segment.code
-                for (i,f) in segment.fields {
+                for f in segment.sortedFields {
                     str += "|\(f.longName)"
                 }
             }
@@ -161,7 +161,6 @@ public class Group:Node {
                 str += group.prettyTree(depth: depth + 1)
             case .segment(let segment):
                 str += segment.name
-                
             }
             
             str += "\n"
@@ -211,7 +210,7 @@ public class Group:Node {
                         var i = 0
                         
                         // populate segments attributes (longName, index, etc.), we already have the value
-                        for (_, f1) in segment.fields {
+                        for f1 in segment.sortedFields {
                             if  i < messageSegment.fields.count - 1 {
                                 messageSegment.parent       = segment.parent
                                 messageSegment.minOccurs    = segment.minOccurs
@@ -230,7 +229,7 @@ public class Group:Node {
                         }
                         
                         // populate min/maxOccurs by datatypes
-                        for (_, f) in messageSegment.fields {
+                        for f in messageSegment.sortedFields {
                             for cell in f.cells {
                                 cell.type = f.type
                                 var j = 0
