@@ -166,6 +166,7 @@ public class Versioned: NSObject, Versionable {
         try loadDataTypes(forVersion: version)
         try loadCompositeTypes(forVersion: version)
         try loadFields(forVersion: version)
+        try loadRepetitions(forVersion: version)
         try loadMessages(forVersion: version)
     }
     
@@ -185,19 +186,17 @@ public class Versioned: NSObject, Versionable {
                     
             for (_, message) in messages {
                 try loadSegments(forMessage: message, version: version)
-                try loadRepetitions(forMessage: message, forVersion: version)
             }
         }
     }
     
     
-    private func loadRepetitions(forMessage message: SpecMessage, forVersion version: Version) throws {
+    private func loadRepetitions(forVersion version: Version) throws {
         if let xmlURL = Bundle.module.url(forResource: "segments", withExtension: "xsd", subdirectory: "v\(version.rawValue)") {
             let xmlParser = XMLParser(contentsOf: xmlURL)!
             xmlParser.delegate = self
             
             loadRepetitionsFlag = true
-            currentMessage = message
             
             if !xmlParser.parse() {
                 throw HL7Error.parserError(message: "Cannot parse")
