@@ -179,7 +179,7 @@ private extension DefaultValidator {
                     results.append(ValidationResult(
                                     message: message,
                                     type: .warning,
-                                    level: .version,
+                                    level: .segments,
                                     text: text))
                 }
             }
@@ -193,11 +193,11 @@ private extension DefaultValidator {
      */
     func validateUnsupportedSegments(_ message:Message, parent: Group? = nil) -> [ValidationResult] {
         var results:[ValidationResult] = []
-        var group:Group? = parent
-        
-        if parent == nil {
-            group = message.rootGroup!
-        }
+//        var group:Group? = parent
+//        
+//        if parent == nil {
+//            group = message.rootGroup!
+//        }
         
         if message.specMessage == nil || message.rootGroup == nil {
             return []
@@ -217,7 +217,7 @@ private extension DefaultValidator {
                 results.append(ValidationResult(
                                 message: message,
                                 type: .warning,
-                                level: .version,
+                                level: .segments,
                                 text: text))
             }
         }
@@ -232,7 +232,7 @@ private extension DefaultValidator {
                 results.append(ValidationResult(
                                 message: message,
                                 type: .warning,
-                                level: .version,
+                                level: .segments,
                                 text: text))
             }
         }
