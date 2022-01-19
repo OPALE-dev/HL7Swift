@@ -38,7 +38,8 @@ public struct Message {
 
     public var version:Version!
     public var messageVersion:Version!
-
+    public var forcedVersion:Version!
+    
     public var type:Typable!
 
     var segments: [Segment] = []
@@ -62,6 +63,8 @@ public struct Message {
     
     
     public init(_ str: String, hl7: HL7, force forcedVersion:Version? = nil) throws {
+        self.forcedVersion = forcedVersion
+        
         // sanitize check to exclude non-HL7 strings
         guard (str.range(of: #"(^|\n)([A-Z]{2}[A-Z0-9]{1})(?=[\|])"#, options: .regularExpression) != nil) else {
             throw HL7Error.unsupportedMessage(message: "Not HL7 message")
