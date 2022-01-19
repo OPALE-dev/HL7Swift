@@ -161,6 +161,10 @@ public class Group:Node {
                 str += group.prettyTree(depth: depth + 1)
             case .segment(let segment):
                 str += segment.name
+                for f in segment.sortedFields {
+                    str += String(repeating: "\t", count: depth)
+                    str += "\t\(f.longName): \(f.description)\n"
+                }
             }
             
             str += "\n"
@@ -181,7 +185,7 @@ public class Group:Node {
                 str += group.prettyTree(printFields: printFields, depth: depth + 1)
             case .segment(let segment):
                 if printFields {
-                    for (_, f) in segment.fields {
+                    for f in segment.sortedFields {
                         str += String(repeating: "\t", count: depth)
                         str += "\t\(f.longName): \(f.description)\n"
                     }
@@ -207,7 +211,7 @@ public class Group:Node {
                 // append messages segments (and repetitions)
                 for messageSegment in message.segments {
                     if messageSegment.code == segment.code {
-                        var i = 0
+                        var i = 1
                         
                         // populate segments attributes (longName, index, etc.), we already have the value
                         for f1 in segment.sortedFields {

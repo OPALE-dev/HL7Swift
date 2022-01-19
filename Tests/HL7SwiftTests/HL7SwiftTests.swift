@@ -64,7 +64,7 @@
 
                     let m = try Message(content, hl7: hl7)
                     
-                    print(m[HL7.MSH]!.sortedFields)
+                    print(m.rootGroup!.prettyTree())
 
                 } catch let e {
                     assertionFailure(e.localizedDescription)
