@@ -112,31 +112,32 @@ private extension DefaultValidator {
     func validateVersion(_ message:Message) -> [ValidationResult] {
         var results:[ValidationResult] = []
         
-        if message.specMessage == nil {
-            let text = "Message of type \(message.type.name) is not part of version \(message.messageVersion.rawValue)"
+        if message.forcedVersion == nil {
+            if message.specMessage == nil {
+                let text = "Message of type \(message.type.name) is not part of version \(message.version.rawValue)"
+                results.append(ValidationResult(
+                                message: message,
+                                type: .error,
+                                level: .version,
+                                text: text))
+            }
+            else {
+                if message.version != message.messageVersion {
+                    let text = "Message of type \(message.type.name) is not part of version \(message.messageVersion.rawValue). Fallback to version \(message.version.rawValue)"
+                    results.append(ValidationResult(
+                                    message: message,
+                                    type: .warning,
+                                    level: .version,
+                                    text: text))
+                }
+            }
+        } else {
+            let text = "Message of type \(message.type.name) is not part of version \(message.forcedVersion!.rawValue) (forced)"
             results.append(ValidationResult(
                             message: message,
                             type: .error,
                             level: .version,
                             text: text))
-        }
-        else {
-            if message.version != message.messageVersion {
-                let text = "Message of type \(message.type.name) is not part of version \(message.messageVersion.rawValue). Read as version \(message.version.rawValue)"
-                results.append(ValidationResult(
-                                message: message,
-                                type: .warning,
-                                level: .version,
-                                text: text))
-            }
-            if message.forcedVersion != message.messageVersion {
-                let text = "Message of type \(message.type.name) is not part of version \(message.messageVersion.rawValue). Read as version \(message.forcedVersion.rawValue)"
-                results.append(ValidationResult(
-                                message: message,
-                                type: .warning,
-                                level: .version,
-                                text: text))
-            }
         }
         
         return results
