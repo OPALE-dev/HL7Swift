@@ -295,7 +295,10 @@
             assert((msg3?.type is HL7Swift.HL7.UnknowMessageType) == true)
         }
         
-        
+        func testForceVersion() {
+            let str = "MSH|^~\\&||372523L|372520L|372521L|||ACK|1|D|2.1||||||\rMSA|AA|LRI_3.0_1.1-NG|"
+            let msg = try? Message(str, hl7: hl7!)
+        }
         
 //        func testSegmentCodesList() {
 //            var segments:[String] = []
