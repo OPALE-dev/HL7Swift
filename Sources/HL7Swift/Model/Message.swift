@@ -61,7 +61,7 @@ public struct Message {
     }
     
     
-    public init(_ str: String, hl7: HL7) throws {
+    public init(_ str: String, hl7: HL7, force forcedVersion:Version? = nil) throws {
         // sanitize check to exclude non-HL7 strings
         guard (str.range(of: #"(^|\n)([A-Z]{2}[A-Z0-9]{1})(?=[\|])"#, options: .regularExpression) != nil) else {
             throw HL7Error.unsupportedMessage(message: "Not HL7 message")
@@ -99,7 +99,9 @@ public struct Message {
             throw HL7Error.unsupportedVersion(message: "Unknow/unsupported version")
         }
         
-        self.version = version
+        // prefer forced if given
+        self.version = forcedVersion ?? version
+        // keep ref of the read message version here
         self.messageVersion = version
         
         // read type from segments
@@ -115,7 +117,8 @@ public struct Message {
         
         // try to auto fallback on other spec versions
         // if no spec is found for the version given in the message
-        if specMessage == nil {
+        // only if no already forced version given
+        if specMessage == nil && forcedVersion == nil {
             for v in Version.allCases {
                 if let spec = hl7.spec(ofVersion: v) {
                     self.specMessage = spec.messages[type]
@@ -294,7 +297,12 @@ public struct Message {
         var vString = field.cells[0].text
         
         if vString == "" {
-            vString = field.cells[0].components[0].text
+            if field.cells[0].components.count > 0 {
+                vString = field.cells[0].components[0].text
+            }
+            else {
+                throw HL7Error.unsupportedMessage(message: "Version field empty")
+            }
         }
         
         return Version(rawValue: vString)

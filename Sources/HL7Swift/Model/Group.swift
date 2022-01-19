@@ -161,10 +161,6 @@ public class Group:Node {
                 str += group.prettyTree(depth: depth + 1)
             case .segment(let segment):
                 str += segment.name
-                for f in segment.sortedFields {
-                    str += String(repeating: "\t", count: depth)
-                    str += "\t\(f.longName): \(f.description)\n"
-                }
             }
             
             str += "\n"
