@@ -133,8 +133,8 @@ public struct Message {
                 }
             }
         } else {
+            // else try load forced spec
             if forcedVersion != nil {
-                // try load forced spec
                 if let spec = hl7.spec(ofVersion: forcedVersion!) {
                     self.specMessage = spec.messages[type]
                 }
