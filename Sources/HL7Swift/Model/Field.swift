@@ -24,6 +24,7 @@ public class Field:Node {
     
     public var cells: [Cell] = []
     
+    // not used
     public var segmentCode: String = ""
     public var name: String = ""
     public var longName: String = ""

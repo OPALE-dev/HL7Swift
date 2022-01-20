@@ -225,7 +225,7 @@ extension Versioned:XMLParserDelegate {
 
                     currentDataType = nil
                     currentElement = nil
-                    }
+                }
             }
             else if elementName == "xsd:complexType" {
                 if currentDataType != nil {
