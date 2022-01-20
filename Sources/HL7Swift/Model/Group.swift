@@ -225,6 +225,8 @@ public class Group:Node {
                                 messageSegment.fields[i]?.maxLength  = f1.maxLength
                                 messageSegment.fields[i]?.minLength  = f1.minLength
                                 messageSegment.fields[i]?.item       = f1.item
+                                messageSegment.fields[i]?.minOccurs  = f1.minOccurs
+                                messageSegment.fields[i]?.maxOccurs  = f1.maxOccurs
                                 
                             }
                             i += 1

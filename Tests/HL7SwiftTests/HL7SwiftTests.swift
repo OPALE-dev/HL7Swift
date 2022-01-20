@@ -147,6 +147,7 @@
             
             for path in paths {
                 do {
+                    print(path)
                     let content = try String(contentsOf: URL(fileURLWithPath: path))
                                         
                     let msg = try Message(content, hl7: hl7)

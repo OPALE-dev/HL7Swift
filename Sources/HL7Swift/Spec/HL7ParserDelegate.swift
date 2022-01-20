@@ -172,13 +172,12 @@ extension Versioned:XMLParserDelegate {
                 if currentSegment != nil && currentSegment != "anyHL7Segment" {
                     
                     if let ref = attributeDict["ref"] {
-                        
                         let index = Int(ref.split(separator: ".")[1])!
                         
                         if let segment = segments[currentSegment!] {
-                            
-                            print("index \(index) size \(segment.sortedFields.count)")
+
                             if let field = segment.fields[index] {
+                                
                                 field.minOccurs = Int(attributeDict["minOccurs"]!)!
                                 
                                 if attributeDict["maxOccurs"]! == "unbounded" {
@@ -186,8 +185,8 @@ extension Versioned:XMLParserDelegate {
                                 } else {
                                     field.maxOccurs = Int(attributeDict["maxOccurs"]!)!
                                 }
-                            } else {
-                                print(".")
+                                
+                         
                             }
                             
                         }
