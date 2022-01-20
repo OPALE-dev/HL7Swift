@@ -138,7 +138,7 @@ public class Group:Node {
                 str += group.pretty(depth: depth + 1)
             case .segment(let segment):
                 str += segment.code
-                for f in segment.fields {
+                for f in segment.sortedFields {
                     str += "|\(f.longName)"
                 }
             }
@@ -161,7 +161,6 @@ public class Group:Node {
                 str += group.prettyTree(depth: depth + 1)
             case .segment(let segment):
                 str += segment.name
-                
             }
             
             str += "\n"
@@ -182,7 +181,7 @@ public class Group:Node {
                 str += group.prettyTree(printFields: printFields, depth: depth + 1)
             case .segment(let segment):
                 if printFields {
-                    for f in segment.fields {
+                    for f in segment.sortedFields {
                         str += String(repeating: "\t", count: depth)
                         str += "\t\(f.longName): \(f.description)\n"
                     }
@@ -208,29 +207,31 @@ public class Group:Node {
                 // append messages segments (and repetitions)
                 for messageSegment in message.segments {
                     if messageSegment.code == segment.code {
-                        var i = 0
+                        var i = 1
                         
                         // populate segments attributes (longName, index, etc.), we already have the value
-                        for f1 in segment.fields {
-                            if i < messageSegment.fields.count {
+
+                        for f1 in segment.sortedFields {
+                            if  i < messageSegment.fields.count - 1 {
+
                                 messageSegment.parent       = segment.parent
                                 messageSegment.minOccurs    = segment.minOccurs
                                 messageSegment.maxOccurs    = segment.maxOccurs
                                 // copy everything from the field except cells
-                                messageSegment.fields[i].longName   = f1.longName
-                                messageSegment.fields[i].name       = f1.name
-                                messageSegment.fields[i].type       = f1.type
-                                messageSegment.fields[i].index      = f1.index
-                                messageSegment.fields[i].maxLength  = f1.maxLength
-                                messageSegment.fields[i].minLength  = f1.minLength
-                                messageSegment.fields[i].item       = f1.item
+                                messageSegment.fields[i]?.longName   = f1.longName
+                                messageSegment.fields[i]?.name       = f1.name
+                                messageSegment.fields[i]?.type       = f1.type
+                                messageSegment.fields[i]?.index      = f1.index
+                                messageSegment.fields[i]?.maxLength  = f1.maxLength
+                                messageSegment.fields[i]?.minLength  = f1.minLength
+                                messageSegment.fields[i]?.item       = f1.item
                                 
                             }
                             i += 1
                         }
                         
                         // populate min/maxOccurs by datatypes
-                        for f in messageSegment.fields {
+                        for f in messageSegment.sortedFields {
                             for cell in f.cells {
                                 cell.type = f.type
                                 var j = 0

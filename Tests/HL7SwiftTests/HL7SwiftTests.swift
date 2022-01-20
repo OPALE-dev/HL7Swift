@@ -57,15 +57,14 @@
         
         // TODO test all files
         func testSpecParse() {
-            //for path in Bundle.module.paths(forResourcesOfType: "", inDirectory: "HL7-xml v2.5.1") {
-            //}
-            
             let oru = Bundle.module.url(forResource: "ORU_R01 - 3", withExtension: "txt")
             if let oruPath = oru {
                 do {
                     let content = try String(contentsOf: oruPath)
 
-                    _ = try Message(content, hl7: hl7)
+                    let m = try Message(content, hl7: hl7)
+                    
+                    print(m.rootGroup!.prettyTree())
 
                 } catch let e {
                     assertionFailure(e.localizedDescription)
@@ -86,6 +85,7 @@
                     
                     // Get segment
                     let pv1 = try terser.get("/PATIENT_RESULT/PATIENT/VISIT/PV1")
+                    print(pv1)
                     let pv1Description = "PV1|1|I|G52^G52-08^^||||213322^KRAT^DAVID^JOHN^^^5871925^^LIS_LAB^L^^^DN|||||||||||I|11036427586|||||||||||||||||||||||||20251014030201-0400||||||||"
                     assert(pv1?.description == pv1Description)
                     
@@ -151,11 +151,11 @@
                                         
                     let msg = try Message(content, hl7: hl7)
                     
-//                    print(content.trimmingCharacters(in: .newlines))
-//                    print(msg.description.trimmingCharacters(in: .newlines))
+                    //print(content.trimmingCharacters(in: .newlines))
+                    //print(msg.description.trimmingCharacters(in: .newlines))
                            
                     // TODDO: fix it up!
-                    //assert(msg.description.trimmingCharacters(in: .newlines) == content.trimmingCharacters(in: .newlines))
+                    // assert(msg.description.trimmingCharacters(in: .newlines) == content.trimmingCharacters(in: .newlines))
                     
                 } catch let e {
                     assertionFailure(e.localizedDescription)
@@ -169,7 +169,7 @@
                     let message = try Message(withFileAt: url, hl7: hl7)
                     // SFT|Lab Information System^L^^^^LIS&2.16.840.1.113883.3.111&ISO^XX^^^123544|1.2.3|LIS|1.2.34||20150328|
 
-                    let intSubscript = message[HL7.SFT]![2]!.description
+                    let intSubscript = message[HL7.SFT]?.fields[2]!.description
                     assert(intSubscript == "1.2.3")
 
                     let versionIntSubscript = message[HL7.MSH]![12]!.description
@@ -258,7 +258,47 @@
             }
         }
         
+        func testNonHL7Messages() {
+            for m in ["", "ttt|aaa|aaa|fff|",
+                      "<html></html>", "99 bottles…" ] {
+                do {
+                    let _ = try Message(m, hl7: hl7)
+                } catch let e {
+                    XCTAssertEqual((e as! HL7Error), HL7Error.unsupportedMessage(message: "Not HL7 message"))
+                }
+            }
+        }
         
+        func testMessageHeader() {
+            // MSH|^~\\&|||||||ACK|||2.5.1|||||||||
+
+            // message with incomplete header
+            let string2 = "MSH|^~\\&||||"
+                        
+            do {
+                let _ = try Message(string2, hl7: hl7)
+            } catch let e {
+                XCTAssertEqual((e as! HL7Error), HL7Error.unsupportedMessage(message: "Not enought field in segment MSH"))
+            }
+            
+            // message with missing version
+            let string1 = "MSH|^~\\&||||||||||||||||"
+            do {
+                let _ = try Message(string1, hl7: hl7)
+            } catch let e {
+                XCTAssertEqual((e as! HL7Error), HL7Error.unsupportedMessage(message: "Version field empty"))
+            }
+            
+            // message with missing message type
+            let string3 = "MSH|^~\\&||||||||||2.5.1|||||||||"
+            let msg3 = try? Message(string3, hl7: hl7)
+            assert((msg3?.type is HL7Swift.HL7.UnknowMessageType) == true)
+        }
+        
+        func testForceVersion() {
+            let str = "MSH|^~\\&||372523L|372520L|372521L|||ACK|1|D|2.1||||||\rMSA|AA|LRI_3.0_1.1-NG|"
+            let msg = try? Message(str, hl7: hl7!)
+        }
         
 //        func testSegmentCodesList() {
 //            var segments:[String] = []

@@ -38,7 +38,8 @@ public struct Message {
 
     public var version:Version!
     public var messageVersion:Version!
-
+    public var forcedVersion:Version!
+    
     public var type:Typable!
 
     var segments: [Segment] = []
@@ -61,7 +62,9 @@ public struct Message {
     }
     
     
-    public init(_ str: String, hl7: HL7) throws {
+    public init(_ str: String, hl7: HL7, force forcedVersion:Version? = nil) throws {
+        self.forcedVersion = forcedVersion
+        
         // sanitize check to exclude non-HL7 strings
         guard (str.range(of: #"(^|\n)([A-Z]{2}[A-Z0-9]{1})(?=[\|])"#, options: .regularExpression) != nil) else {
             throw HL7Error.unsupportedMessage(message: "Not HL7 message")
@@ -99,12 +102,14 @@ public struct Message {
             throw HL7Error.unsupportedVersion(message: "Unknow/unsupported version")
         }
         
-        self.version = version
+        // prefer forced if given
+        self.version = forcedVersion ?? version
+        // keep ref of the read message version here
         self.messageVersion = version
         
         // read type from segments
         let type = try getType()
-        
+                
         // try to load versioned spec
         guard let spec = hl7.spec(ofVersion: version) else {
             throw HL7Error.unsupportedVersion(message: version.rawValue)
@@ -115,15 +120,23 @@ public struct Message {
         
         // try to auto fallback on other spec versions
         // if no spec is found for the version given in the message
-        if specMessage == nil {
+        // only if no already forced version given
+        if specMessage == nil && forcedVersion == nil {
             for v in Version.allCases {
                 if let spec = hl7.spec(ofVersion: v) {
                     self.specMessage = spec.messages[type]
                     
                     if self.specMessage != nil {
-                        self.version = v
+                        self.version = v // not sure ? :-/
                         break
                     }
+                }
+            }
+        } else {
+            // else try load forced spec
+            if forcedVersion != nil {
+                if let spec = hl7.spec(ofVersion: forcedVersion!) {
+                    self.specMessage = spec.messages[type]
                 }
             }
         }
@@ -262,14 +275,18 @@ public struct Message {
             throw HL7Error.unsupportedMessage(message: "MSH segment not found")
         }
         
+        guard let field = segment.fields[9] else {
+            throw HL7Error.unsupportedMessage(message: "Message Type field not found")
+        }
+        
         // ACK / NAK
-        if segment.fields[8].cells[0].components.isEmpty {
-            str = segment.fields[8].cells[0].text
+        if field.cells[0].components.isEmpty {
+            str = field.cells[0].text
         } else {
-            if segment.fields[8].cells[0].components.count == 3 {
-                str = segment.fields[8].cells[0].components[2].text
+            if field.cells[0].components.count == 3 {
+                str = field.cells[0].components[2].text
             } else {
-                str = segment.fields[8].cells[0].components[0].text + "_" + segment.fields[8].cells[0].components[1].text
+                str = field.cells[0].components[0].text + "_" + field.cells[0].components[1].text
             }
         }
         
@@ -283,10 +300,19 @@ public struct Message {
             throw HL7Error.unsupportedMessage(message: "MSH segment not found")
         }
         
-        var vString = segment.fields[11].cells[0].text
+        guard let field = segment.fields[12] else {
+            throw HL7Error.unsupportedMessage(message: "Version field not found")
+        }
+        
+        var vString = field.cells[0].text
         
         if vString == "" {
-            vString = segment.fields[11].cells[0].components[0].text
+            if field.cells[0].components.count > 0 {
+                vString = field.cells[0].components[0].text
+            }
+            else {
+                throw HL7Error.unsupportedMessage(message: "Version field empty")
+            }
         }
         
         return Version(rawValue: vString)

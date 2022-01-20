@@ -28,7 +28,16 @@ public class Segment: Node {
     public var parent: Node?
     
     public var code: String = ""
-    public var fields: [Field] = []
+    public var fields: [Int:Field] = [:]
+    public var sortedFields:[Field] {
+        var array:[Field] = []
+        for k in Array(fields.keys).sorted() {
+            if let f = fields[k] {
+                array.append(f)
+            }
+        }
+        return array
+    }
     
     // -1 means unbounded
     public var minOccurs:Int = 0
@@ -62,18 +71,19 @@ public class Segment: Node {
             if isHeader {
                 // append separator field (MSH-1)
                 let sepField = Field([Cell(String(separator), parent: self)], parent: self)
+                sepField.index = 1
                 sepField.cells[0].parent = sepField // (we  faked parent in Cell init)
-                fields.append(sepField)
+                fields[fields.keys.count+1] = sepField
                 
                 // append encoding field (MSH-2)
                 let encField = Field([Cell(String(strCloneSplit.remove(at: 0)), parent: self, isEncoding: true)], parent: self)
                 encField.cells[0].parent = encField // (we  faked parent in Cell init)
-                fields.append(encField)
+                fields[fields.keys.count+1] = encField
             }
             
             // append other fields
             for field in strCloneSplit {
-                fields.append(Field(String(field), parent: self))
+                fields[fields.keys.count+1] = Field(String(field), parent: self)
             }
         }
     }
@@ -85,11 +95,11 @@ public class Segment: Node {
             if index == 0 || index > fields.count {
                 return nil
             }
-            return fields[index-1]
+            return fields[index]
         }
         set {
             if let newValue = newValue {
-                fields[index-1] = newValue
+                fields[index] = newValue
             }
         }
     }
@@ -102,11 +112,13 @@ public class Segment: Node {
                 for segment in specMessage.rootGroup.segments {
                     if segment.code == code {
                         // we search for a matching field in the spec
-                        for f in segment.fields {
+                        for (_, f) in segment.fields {
                             if f.longName == name {
                                 // if found, return field by index
                                 if f.index-1 <= fields.count-1 {
-                                    return fields[f.index-1].description
+                                    if let field = fields[f.index] {
+                                        return field.description
+                                    }
                                 }
                             }
                         }
@@ -121,12 +133,14 @@ public class Segment: Node {
             if let specMessage = specMessage {
                 for segment in specMessage.rootGroup.segments {
                     if segment.code == code {
-                        for f in segment.fields {
+                        for (_, f) in segment.fields {
                             if f.longName == name {
                                 if let newVal = newValue {
                                     // TODO: test with overflow, extent array if needed, etc.
                                     //print("\(type(of: newVal)) \(newVal)")
-                                    fields[f.index - 1].cells = Field(newVal).cells
+                                    if let field = fields[f.index] {
+                                        field.cells = Field(newVal).cells
+                                    }
                                 }
                             }
                         }
@@ -139,16 +153,16 @@ public class Segment: Node {
 
 extension Segment: CustomStringConvertible {
     public var description: String {
-        var fields = Array(fields)
-        
+        var localFields: [Field] = sortedFields
+
         var str = code + "|"
         
         if isHeader {
             // remove separator field
-            fields.remove(at: 0)
+            localFields.remove(at: 0)
         }
-
-        for field in fields {
+        
+        for field in localFields {
             str += field.description + "|"
         }
         
