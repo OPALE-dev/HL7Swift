@@ -253,9 +253,59 @@ private extension DefaultValidator {
 
     /**
      Validates required and missing fields for segments
+     - minimum occurrence
+     - maximum occurrence
+     - minimum length
+     - maximum length
      */
     func validateFields(_ message:Message) -> [ValidationResult] {
-        return []
+        var results:[ValidationResult] = []
+        
+        for segment in message.segments {
+            for field in segment.sortedFields {
+                let fieldRealLength = field.description.count
+                
+                // Check min length
+                if fieldRealLength < field.minLength {
+                    let text = "Length (\(fieldRealLength)) of field \(field.name) is below minimum length (\(field.minLength))"
+                    results.append(ValidationResult(
+                                    message: message,
+                                    type: .warning,
+                                    level: .fields,
+                                    text: text))
+                    
+                // Check max length
+                } else if fieldRealLength > field.maxLength {
+                    let text = "Length (\(fieldRealLength)) of field \(field.name) is above maximum length (\(field.maxLength))"
+                    results.append(ValidationResult(
+                                    message: message,
+                                    type: .warning,
+                                    level: .fields,
+                                    text: text))
+                }
+                
+                let fieldRepetitions = field.cells.count
+                
+                
+                if fieldRepetitions < field.minOccurs {
+                    let text = "Number of occurrences (\(fieldRepetitions)) of field \(field.name) is below the minimum number of occurrences (\(field.minOccurs))"
+                    results.append(ValidationResult(
+                                    message: message,
+                                    type: .warning,
+                                    level: .fields,
+                                    text: text))
+                } else if fieldRepetitions > field.maxOccurs {
+                    let text = "Number of occurrences (\(fieldRepetitions)) of field \(field.name) is above the maximum number of occurrences (\(field.maxOccurs))"
+                    results.append(ValidationResult(
+                                    message: message,
+                                    type: .warning,
+                                    level: .fields,
+                                    text: text))
+                }
+            }
+        }
+        
+        return results
     }
     
     /**
