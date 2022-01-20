@@ -37,6 +37,7 @@ extension Versioned:XMLParserDelegate {
                         // is it a segment ?
                         if ref.count == 3 {
                             let segment = Segment(ref, parent: parentGroup, specMessage: currentMessage)
+                            segments[segment.code] = segment
                             
                             if let minO = attributeDict["minOccurs"] {
                                 if minO == "unbounded" {
@@ -174,19 +175,20 @@ extension Versioned:XMLParserDelegate {
                         
                         let index = Int(ref.split(separator: ".")[1])!
                         
-                        if let f = fields[currentSegment!] {
+                        if let segment = segments[currentSegment!] {
                             
-                            //print("index \(index) size \(f.count)")
-                            let field = f[index - 1]
-                            field.minOccurs = Int(attributeDict["minOccurs"]!)!
-                            
-                            if attributeDict["maxOccurs"]! == "unbounded" {
-                                field.maxOccurs = -1
+                            print("index \(index) size \(segment.sortedFields.count)")
+                            if let field = segment.fields[index] {
+                                field.minOccurs = Int(attributeDict["minOccurs"]!)!
+                                
+                                if attributeDict["maxOccurs"]! == "unbounded" {
+                                    field.maxOccurs = -1
+                                } else {
+                                    field.maxOccurs = Int(attributeDict["maxOccurs"]!)!
+                                }
                             } else {
-                                field.maxOccurs = Int(attributeDict["maxOccurs"]!)!
+                                print(".")
                             }
-                        
-                            
                             
                         }
                     }
