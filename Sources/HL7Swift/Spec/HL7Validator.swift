@@ -275,7 +275,7 @@ private extension DefaultValidator {
                                     text: text))
                     
                 // Check max length
-                } else if fieldRealLength > field.maxLength {
+                } else if !(field.maxLength == -1) && fieldRealLength > field.maxLength {
                     let text = "Length (\(fieldRealLength)) of field \(field.name) is above maximum length (\(field.maxLength))"
                     results.append(ValidationResult(
                                     message: message,
@@ -294,7 +294,7 @@ private extension DefaultValidator {
                                     type: .warning,
                                     level: .fields,
                                     text: text))
-                } else if fieldRepetitions > field.maxOccurs {
+                } else if !(field.maxOccurs == -1) && fieldRepetitions > field.maxOccurs {
                     let text = "Number of occurrences (\(fieldRepetitions)) of field \(field.name) is above the maximum number of occurrences (\(field.maxOccurs))"
                     results.append(ValidationResult(
                                     message: message,
