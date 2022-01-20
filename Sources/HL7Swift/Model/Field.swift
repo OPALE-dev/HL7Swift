@@ -36,6 +36,10 @@ public class Field:Node {
     public var minOccurs: Int = 0
     public var maxOccurs: Int = 0
     
+    public lazy var fieldCode: String = {
+        return segmentCode + "-" + String(self.index)
+    }()
+    
     init(name: String, parent: Node? = nil) {
         self.name = name
         self.parent = parent

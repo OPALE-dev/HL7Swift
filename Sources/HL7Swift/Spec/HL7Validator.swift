@@ -288,14 +288,14 @@ private extension DefaultValidator {
                 
                 
                 if fieldRepetitions < field.minOccurs {
-                    let text = "Number of occurrences (\(fieldRepetitions)) of field \(field.longName) is below the minimum number of occurrences (\(field.minOccurs))"
+                    let text = "Number of occurrences (\(fieldRepetitions)) of field \(field.fieldCode) is below the minimum number of occurrences (\(field.minOccurs))"
                     results.append(ValidationResult(
                                     message: message,
                                     type: .warning,
                                     level: .fields,
                                     text: text))
                 } else if !(field.maxOccurs == -1) && fieldRepetitions > field.maxOccurs {
-                    let text = "Number of occurrences (\(fieldRepetitions)) of field \(field.longName) is above the maximum number of occurrences (\(field.maxOccurs))"
+                    let text = "Number of occurrences (\(fieldRepetitions)) of field \(field.fieldCode) is above the maximum number of occurrences (\(field.maxOccurs))"
                     results.append(ValidationResult(
                                     message: message,
                                     type: .warning,
@@ -312,6 +312,26 @@ private extension DefaultValidator {
      Validates datatypes of fields
      */
     func validateDataTypes(_ message:Message) -> [ValidationResult] {
-        return []
+        var results:[ValidationResult] = []
+        
+        for segment in message.segments {
+            for field in segment.sortedFields {
+                for cell in field.cells {
+                    if cell.type?.name == "DT" {
+                        
+                        if cell.description.range(of: #"[0-9]{4}(|[0-9]{2}(|[0-9]{2}))"#, options: .regularExpression) == nil {
+                            let text = "Wrong format for date (\(cell.description)) for field \(field.fieldCode), was expecting YYYY[MM[DD]]"
+                            results.append(ValidationResult(
+                                            message: message,
+                                            type: .warning,
+                                            level: .fields,
+                                            text: text))
+                        }
+                    }
+                }
+            }
+        }
+        
+        return results
     }
 }
