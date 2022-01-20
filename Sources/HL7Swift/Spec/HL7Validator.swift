@@ -267,7 +267,7 @@ private extension DefaultValidator {
                 
                 // Check min length
                 if fieldRealLength < field.minLength {
-                    let text = "Length (\(fieldRealLength)) of field \(field.name) is below minimum length (\(field.minLength))"
+                    let text = "Length (\(fieldRealLength)) of field \(field.longName) is below minimum length (\(field.minLength))"
                     results.append(ValidationResult(
                                     message: message,
                                     type: .warning,
@@ -276,7 +276,7 @@ private extension DefaultValidator {
                     
                 // Check max length
                 } else if !(field.maxLength == -1) && fieldRealLength > field.maxLength {
-                    let text = "Length (\(fieldRealLength)) of field \(field.name) is above maximum length (\(field.maxLength))"
+                    let text = "Length (\(fieldRealLength)) of field \(field.longName) is above maximum length (\(field.maxLength))"
                     results.append(ValidationResult(
                                     message: message,
                                     type: .warning,
@@ -288,14 +288,14 @@ private extension DefaultValidator {
                 
                 
                 if fieldRepetitions < field.minOccurs {
-                    let text = "Number of occurrences (\(fieldRepetitions)) of field \(field.name) is below the minimum number of occurrences (\(field.minOccurs))"
+                    let text = "Number of occurrences (\(fieldRepetitions)) of field \(field.longName) is below the minimum number of occurrences (\(field.minOccurs))"
                     results.append(ValidationResult(
                                     message: message,
                                     type: .warning,
                                     level: .fields,
                                     text: text))
                 } else if !(field.maxOccurs == -1) && fieldRepetitions > field.maxOccurs {
-                    let text = "Number of occurrences (\(fieldRepetitions)) of field \(field.name) is above the maximum number of occurrences (\(field.maxOccurs))"
+                    let text = "Number of occurrences (\(fieldRepetitions)) of field \(field.longName) is above the maximum number of occurrences (\(field.maxOccurs))"
                     results.append(ValidationResult(
                                     message: message,
                                     type: .warning,
