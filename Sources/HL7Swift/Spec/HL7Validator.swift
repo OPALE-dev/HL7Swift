@@ -317,14 +317,14 @@ private extension DefaultValidator {
         for segment in message.segments {
             for field in segment.sortedFields {
                 for cell in field.cells {
-                    if cell.type?.name == "DT" {
+                    if !cell.description.isEmpty && cell.type?.name == "DT" {
                         
                         if cell.description.range(of: #"[0-9]{4}(|[0-9]{2}(|[0-9]{2}))"#, options: .regularExpression) == nil {
                             let text = "Wrong format for date (\(cell.description)) for field \(field.fieldCode), was expecting YYYY[MM[DD]]"
                             results.append(ValidationResult(
                                             message: message,
                                             type: .warning,
-                                            level: .fields,
+                                            level: .datatypes,
                                             text: text))
                         }
                     }
