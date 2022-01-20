@@ -59,7 +59,9 @@ extension Versioned:XMLParserDelegate {
                             }
                                                          
                             if let fields = fields[ref] {
-                                segment.fields.append(contentsOf: fields)
+                                for f in fields {
+                                    segment.fields[f.index] = f
+                                }
                             }
                             
                             _ = currentMessage?.rootGroup?.appendSegment(segment: segment, underGroupName: currentSequence)

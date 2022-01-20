@@ -112,20 +112,31 @@ private extension DefaultValidator {
     func validateVersion(_ message:Message) -> [ValidationResult] {
         var results:[ValidationResult] = []
         
-        if message.specMessage == nil {
-            let text = "Message of type \(message.type.name) is not part of version \(message.version.rawValue)"
-            results.append(ValidationResult(
-                            message: message,
-                            type: .error,
-                            level: .version,
-                            text: text))
-        }
-        else {
-            if message.version != message.messageVersion {
-                let text = "Message of type \(message.type.name) is not part of version \(message.messageVersion.rawValue). Fallback to version \(message.version.rawValue)"
+        if message.forcedVersion == nil {
+            if message.specMessage == nil {
+                let text = "Message of type \(message.type.name) is not part of version \(message.version.rawValue)"
                 results.append(ValidationResult(
                                 message: message,
-                                type: .warning,
+                                type: .error,
+                                level: .version,
+                                text: text))
+            }
+            else {
+                if message.version != message.messageVersion {
+                    let text = "Message of type \(message.type.name) is not part of version \(message.messageVersion.rawValue). Fallback to version \(message.version.rawValue)"
+                    results.append(ValidationResult(
+                                    message: message,
+                                    type: .warning,
+                                    level: .version,
+                                    text: text))
+                }
+            }
+        } else {
+            if message.specMessage == nil {
+                let text = "Message of type \(message.type.name) is not part of version \(message.forcedVersion!.rawValue) (forced)"
+                results.append(ValidationResult(
+                                message: message,
+                                type: .error,
                                 level: .version,
                                 text: text))
             }
@@ -179,7 +190,7 @@ private extension DefaultValidator {
                     results.append(ValidationResult(
                                     message: message,
                                     type: .warning,
-                                    level: .version,
+                                    level: .segments,
                                     text: text))
                 }
             }
@@ -193,11 +204,11 @@ private extension DefaultValidator {
      */
     func validateUnsupportedSegments(_ message:Message, parent: Group? = nil) -> [ValidationResult] {
         var results:[ValidationResult] = []
-        var group:Group? = parent
-        
-        if parent == nil {
-            group = message.rootGroup!
-        }
+//        var group:Group? = parent
+//
+//        if parent == nil {
+//            group = message.rootGroup!
+//        }
         
         if message.specMessage == nil || message.rootGroup == nil {
             return []
@@ -217,7 +228,7 @@ private extension DefaultValidator {
                 results.append(ValidationResult(
                                 message: message,
                                 type: .warning,
-                                level: .version,
+                                level: .segments,
                                 text: text))
             }
         }
@@ -232,7 +243,7 @@ private extension DefaultValidator {
                 results.append(ValidationResult(
                                 message: message,
                                 type: .warning,
-                                level: .version,
+                                level: .segments,
                                 text: text))
             }
         }

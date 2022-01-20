@@ -7,7 +7,7 @@
 
 import Foundation
 
-public enum HL7Error: LocalizedError {
+public enum HL7Error: LocalizedError, Equatable {
     case fileNotFound(message: String)
     case networkError(message: String)
     case encondingFailed(message: String)
