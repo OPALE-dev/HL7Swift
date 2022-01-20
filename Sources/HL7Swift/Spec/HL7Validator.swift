@@ -262,12 +262,13 @@ private extension DefaultValidator {
         var results:[ValidationResult] = []
         
         for segment in message.segments {
-            for field in segment.sortedFields {
+            for (index, field) in segment.sortedFields.enumerated() {
+
                 let fieldRealLength = field.description.count
                 
                 // Check min length
                 if fieldRealLength < field.minLength {
-                    let text = "Length (\(fieldRealLength)) of field \(field.longName) is below minimum length (\(field.minLength))"
+                    let text = "Length (\(fieldRealLength)) of field \(field.fieldCode) is below minimum length (\(field.minLength))"
                     results.append(ValidationResult(
                                     message: message,
                                     type: .warning,
@@ -276,7 +277,7 @@ private extension DefaultValidator {
                     
                 // Check max length
                 } else if !(field.maxLength == -1) && fieldRealLength > field.maxLength {
-                    let text = "Length (\(fieldRealLength)) of field \(field.longName) is above maximum length (\(field.maxLength))"
+                    let text = "Length (\(fieldRealLength)) of field \(field.fieldCode) is above maximum length (\(field.maxLength))"
                     results.append(ValidationResult(
                                     message: message,
                                     type: .warning,

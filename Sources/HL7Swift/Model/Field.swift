@@ -24,7 +24,7 @@ public class Field:Node {
     
     public var cells: [Cell] = []
     
-    // not used
+    // TODO remove, not used
     public var segmentCode: String = ""
     public var name: String = ""
     public var longName: String = ""
@@ -38,7 +38,7 @@ public class Field:Node {
     public var maxOccurs: Int = 0
     
     public lazy var fieldCode: String = {
-        return segmentCode + "-" + String(self.index)
+        return parent!.name + "-" + String(self.index)
     }()
     
     init(name: String, parent: Node? = nil) {
