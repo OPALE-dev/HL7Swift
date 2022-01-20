@@ -197,6 +197,7 @@ public class Versioned: NSObject, Versionable {
             xmlParser.delegate = self
             
             loadRepetitionsFlag = true
+            print(self.version)
             
             if !xmlParser.parse() {
                 throw HL7Error.parserError(message: "Cannot parse")

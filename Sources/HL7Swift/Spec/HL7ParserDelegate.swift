@@ -161,7 +161,7 @@ extension Versioned:XMLParserDelegate {
                 
                 if let name = attributeDict["name"] {
                     currentSegment = String(name.split(separator: ".")[0])
-                    print(currentSegment!)
+                    //print(currentSegment!)
                 }
             }
             else if elementName == "xsd:element" {
@@ -173,7 +173,8 @@ extension Versioned:XMLParserDelegate {
                         let index = Int(ref.split(separator: ".")[1])!
                         
                         if let f = fields[currentSegment!] {
-                            print("index \(index) size \(f.count)")
+                            
+                            //print("index \(index) size \(f.count)")
                             let field = f[index - 1]
                             field.minOccurs = Int(attributeDict["minOccurs"]!)!
                             
@@ -182,6 +183,8 @@ extension Versioned:XMLParserDelegate {
                             } else {
                                 field.maxOccurs = Int(attributeDict["maxOccurs"]!)!
                             }
+                        
+                            
                             
                         }
                     }
@@ -206,9 +209,7 @@ extension Versioned:XMLParserDelegate {
                     }
                     
                     fields[currentField.segmentCode]?.append(currentField)
-                    if currentField.segmentCode == "BHS" {
-                        print(fields["BHS"]!.count)
-                    }
+                    
                 }
                 
                 currentField = nil
