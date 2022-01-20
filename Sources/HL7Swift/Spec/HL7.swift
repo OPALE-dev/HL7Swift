@@ -134,7 +134,9 @@ public class Versioned: NSObject, Versionable {
     
     public var messages:[String:SpecMessage] = [:]
     public var dataTypes:[String:DataType] = [:] // datatypes by name
+    // TODO remove, don't use it
     public var fields:[String:[Field]] = [:] // fields by segment
+    public var segments: [String: Segment] = [:]
     
     var loadMessagesFlag = false
     var loadSegmentsFlag = false
@@ -166,8 +168,8 @@ public class Versioned: NSObject, Versionable {
         try loadDataTypes(forVersion: version)
         try loadCompositeTypes(forVersion: version)
         try loadFields(forVersion: version)
-        try loadRepetitions(forVersion: version)
         try loadMessages(forVersion: version)
+        try loadRepetitions(forVersion: version)
     }
     
     
