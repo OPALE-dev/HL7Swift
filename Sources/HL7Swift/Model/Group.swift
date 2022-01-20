@@ -210,9 +210,9 @@ public class Group:Node {
                         var i = 1
                         
                         // populate segments attributes (longName, index, etc.), we already have the value
-
+                        
                         for f1 in segment.sortedFields {
-                            if  i < messageSegment.fields.count - 1 {
+                            if  i < messageSegment.fields.count + 1 {
 
                                 messageSegment.parent       = segment.parent
                                 messageSegment.minOccurs    = segment.minOccurs
@@ -229,6 +229,7 @@ public class Group:Node {
                                 messageSegment.fields[i]?.maxOccurs  = f1.maxOccurs
                                 
                             }
+
                             i += 1
                         }
                         

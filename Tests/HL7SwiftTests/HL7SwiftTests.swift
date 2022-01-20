@@ -296,6 +296,22 @@
             assert((msg3?.type is HL7Swift.HL7.UnknowMessageType) == true)
         }
         
+        func testDataTypeValidation() {
+            let text = """
+            MSH|^~\\&|NIST EHR^2.16.840.1.113883.3.72.5.22^ISO|NIST EHR Facility^2.16.840.1.113883.3.72.5.23^ISO|NIST Test Lab APP^2.16.840.1.113883.3.72.5.20^ISO|NIST Lab Facility^2.16.840.1.113883.3.72.5.21^ISO|20130211184101-0500||OML^O21^OML_O21|NIST-LOI_5.0_1.1-GU|T|2.5.1|||AL|AL|||||
+            NK1|1||OTH^Other^HL70063|||||20205513|hbggggg||||County Women's Correctional Facility^^^^^CWCF&2.16.840.1.114222.4.50.12.4&ISO^XX^^^OID724
+            """
+            
+            
+            let msg = try! Message(text, hl7: hl7)
+
+            let validator = DefaultValidator()
+            let results = validator.validate(msg, level: .datatypes)
+            
+            // wrong format for date
+            assert(results.count == 1)
+        }
+        
         func testForceVersion() {
             let str = "MSH|^~\\&||372523L|372520L|372521L|||ACK|1|D|2.1||||||\rMSA|AA|LRI_3.0_1.1-NG|"
             let msg = try? Message(str, hl7: hl7!)
