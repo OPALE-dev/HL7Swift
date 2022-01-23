@@ -89,7 +89,7 @@ extension HL7Server : ChannelInboundHandler, ChannelOutboundHandler {
         guard let spec = hl7.spec(ofVersion: message.version) else {
             Logger.error(HL7Error.unsupportedVersion(message: "Cannor read version").localizedDescription)
             
-            try? responder.replyNAK(withMessage: "Cannor read version", inContext: context)
+            //try? responder.replyNAK(withMessage: "Cannor read version", inContext: context)
             
             return
         }
