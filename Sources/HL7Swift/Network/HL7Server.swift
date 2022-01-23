@@ -25,7 +25,7 @@ public class HL7Server {
     var name:String     = "HL7SERVER"
     var facility:String = "HL7SERVER"
 
-    var delegate:HL7ServerDelegate?
+    public var delegate:HL7ServerDelegate?
     var responder:HL7Responder!
     
     var channel: Channel!
