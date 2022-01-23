@@ -63,7 +63,7 @@ public struct MLLPDecoder: ByteToMessageDecoder {
                 context.fireErrorCaught(e)
                 
                 // reply NAK
-                try? responder.replyNAK(withMessage: e.localizedDescription, inContext: context)
+                // try? responder.replyNAK(withMessage: e.localizedDescription, inContext: context)
             }
 
             // reset states
