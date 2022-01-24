@@ -24,14 +24,14 @@ final class HL7SwiftNetworkTests: XCTestCase {
     
     
     func testServer() throws {
-        let serialQueue = DispatchQueue(label: "hl7swift-test.serial.queue", attributes: .concurrent)
+        let queue = DispatchQueue(label: "hl7swift-test.serial.queue", attributes: .concurrent)
         let expectation = XCTestExpectation(description: "Stop the server")
 
         var server:HL7Server? = nil
         
         server = try HL7Server(host: host, port: port)
         
-        serialQueue.async {
+        queue.async {
             do {
                 try server?.start()
             } catch let e {
@@ -41,15 +41,11 @@ final class HL7SwiftNetworkTests: XCTestCase {
         
         sleep(3)
             
-        do {
-            try server?.stop()
-            
-            expectation.fulfill()
-            
-            server = nil
-        } catch let e {
-            XCTAssertThrowsError(e)
-        }
+        try server?.stop()
+        
+        expectation.fulfill()
+        
+        server = nil
         
         wait(for: [expectation], timeout: 10.0)
     }
