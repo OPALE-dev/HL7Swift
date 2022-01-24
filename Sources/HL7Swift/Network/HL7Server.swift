@@ -60,8 +60,10 @@ public class HL7Server {
     
     
     deinit {
-        channel.close(mode: .all, promise: nil)
-
+        if channel != nil {
+            channel.close(mode: .all, promise: nil)
+        }
+        
         try? group.syncShutdownGracefully()
     }
     
@@ -73,6 +75,16 @@ public class HL7Server {
         Logger.info("Server listening on port \(port)...")
         
         try channel.closeFuture.wait()
+    }
+    
+    
+    
+    public func stop() throws {
+        if channel != nil {
+            channel.close(mode: .all, promise: nil)
+            
+            Logger.info("Server stopped.")
+        }
     }
 }
     

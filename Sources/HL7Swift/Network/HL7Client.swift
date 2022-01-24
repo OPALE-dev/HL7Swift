@@ -64,6 +64,7 @@ public class HL7CLient {
             Logger.info("Disconnected form \(self.host!):\(self.port!)")
         }
         
+        self.promise?.fail(HL7Error.initError(message: ""))
         self.channel?.close(promise: nil)
     }
     
