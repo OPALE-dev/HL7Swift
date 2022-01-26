@@ -50,7 +50,7 @@ struct HL7Server: ParsableCommand, HL7ServerDelegate {
         
     
     // MARK: -
-    func server(_ server: HL7Swift.HL7Server, send message: Message) {
+    func server(_ server: HL7Swift.HL7Server, send message: Message, to: String?) {
         
     }
     
