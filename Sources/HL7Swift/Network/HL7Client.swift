@@ -9,8 +9,8 @@ import Foundation
 import NIO
 
 public class HL7CLient {
-    var host:String!
-    var port:Int!
+    public var host:String!
+    public var port:Int!
     
     var hl7:HL7!
     var channel:Channel?
