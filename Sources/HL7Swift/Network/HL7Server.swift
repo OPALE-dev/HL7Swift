@@ -10,7 +10,7 @@ import NIO
 
 
 public protocol HL7ServerDelegate {
-    func server(_ server:HL7Server, receive message:Message)
+    func server(_ server:HL7Server, receive message:Message, from:String?)
     func server(_ server:HL7Server, send message:Message)
     func server(_ server:HL7Server, ACKStatusFor message:Message) -> AcknowledgeStatus
 }
@@ -107,8 +107,17 @@ extension HL7Server : ChannelInboundHandler, ChannelOutboundHandler {
         }
         
         if let delegate = self.delegate {
+            var from:String? = nil
+            
+            if let addr = context.remoteAddress,
+               let ip = addr.ipAddress,
+               let port = addr.port
+            {
+                from = "\(ip):\(port)"
+            }
+            
             DispatchQueue.main.async {
-                delegate.server(self, receive: message)
+                delegate.server(self, receive: message, from: from)
             }
         }
         
@@ -125,7 +134,7 @@ extension HL7Server : ChannelInboundHandler, ChannelOutboundHandler {
         
         // reply ACK/NAK
         if let type = spec.type(forName: "ACK") {
-            if var ack = try? Message(type, spec: spec, preloadSegments: ["MSH", "MSA"]) {
+            if let ack = try? Message(type, spec: spec, preloadSegments: ["MSH", "MSA"]) {
                 // fill MSH
                 ack[HL7.MSH]![HL7.Version_ID] = message.version.rawValue
                 
