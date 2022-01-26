@@ -41,7 +41,7 @@ extension Node {
      [PID:pid item, PID/PID-1:the 1st field of pid]
      ```
      */
-    public func autocomplete(_ input: String, deepInput: String = "") -> [String:Node] {
+    public func autocomplete(_ input: String, deepInput: String = "/") -> [String:Node] {
         var suggestions: [String:Node] = [:]
         //let lastNode = input.split(separator: "/").last
         let i = input.lastIndex(of: "/")!
