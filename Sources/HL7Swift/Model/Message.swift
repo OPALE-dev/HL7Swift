@@ -318,7 +318,7 @@ public struct Message {
         return Version(rawValue: vString)
     }
     
-    public func getPositionInMessage(_ ofSegment: Segment) -> NSRange? {
+    public func getPositionInMessage(_ ofSegment: Segment) -> Range<String.Index>? {
         var index = -1
         var sum = 0
         
@@ -335,13 +335,79 @@ public struct Message {
         
         // sum(segments[0..<index].description.count)
         for j in 0..<index {
-            sum += segments[j].description.count
+            sum += segments[j].description.count + 1 // TODO replace by sep.count, but it's a char :/
         }
         
-        return NSMakeRange(sum, sum + ofSegment.description.count)
+        // return NSRange(location: sum, length: ofSegment.description.count)
+        //return self.description[sum..<ofSegment.description.count+sum]
+        print(self.description.count)
+        print(sum, ofSegment.description.count)
+        print(self.description.startIndex, self.description.endIndex)
+        return Range(NSRange(location: sum, length: sum + ofSegment.description.count), in: self.description)
     }
     
-   
+    public func getPositionInMessage(_ ofField: Field) -> Range<String.Index>? {
+        let index = ofField.index
+        var sum = 0
+        guard let segment = ofField.parent as? Segment else {
+            return nil
+        }
+        
+        guard let pos = self.getPositionInMessage(segment) else {
+            return nil
+        }
+        
+        sum = self.description.distance(from: self.description.startIndex, to: pos.lowerBound) //String.distance(from: self.description.startIndex, to: pos)
+        
+        // sum(segment.fields[0..<ofField.index].description.count + 1)
+        for i in 0..<index {
+            if let field = segment.fields[i] {
+                sum += field.description.count + 1// for the pipe
+            }
+        }
+        
+        sum += segment.code.count + 1
+        
+        return Range(NSRange(location: sum, length: ofField.description.count), in: self.description)
+    }
+    
+    /*
+    public func getPositionInMessage(_ ofCell: Cell) -> NSRange? {
+        var index = -1
+        guard let field = ofCell.parent as? Field else {
+            return nil
+        }
+        var sum = 0
+        
+        // Find the index of the cell
+        for (i, cell) in field.cells.enumerated() {
+            if cell.description == ofCell.description {
+                index = i
+            }
+        }
+        
+        // If cell is found
+        if index == -1 {
+            return nil
+        }
+        
+        sum = self.getPositionInMessage(field)
+        
+        // sum(field.cells[0..<index])
+    }
+ */
+    public func desc() -> String {
+        var str = ""
+        for segment in segments {
+            str += segment.description + sep.description
+        }
+        
+        if !str.isEmpty {
+            str.removeLast()
+        }
+        
+        return str
+    }
 }
 
 extension Message: CustomStringConvertible {
@@ -356,5 +422,13 @@ extension Message: CustomStringConvertible {
         }
         
         return str
+    }
+}
+
+// TODO move elsewhere
+extension String {
+    func substring(with nsrange: NSRange) -> Substring? {
+        guard let range = Range(nsrange, in: self) else { return nil }
+        return self[range]
     }
 }
