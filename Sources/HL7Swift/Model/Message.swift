@@ -317,6 +317,31 @@ public struct Message {
         
         return Version(rawValue: vString)
     }
+    
+    public func getPositionInMessage(_ ofSegment: Segment) -> NSRange? {
+        var index = -1
+        var sum = 0
+        
+        for (i, s) in segments.enumerated() {
+            if s.code == ofSegment.code {
+                index = i
+            }
+        }
+        
+        // Segment not found
+        if index == -1 {
+            return nil
+        }
+        
+        // sum(segments[0..<index].description.count)
+        for j in 0..<index {
+            sum += segments[j].description.count
+        }
+        
+        return NSMakeRange(sum, sum + ofSegment.description.count)
+    }
+    
+   
 }
 
 extension Message: CustomStringConvertible {
