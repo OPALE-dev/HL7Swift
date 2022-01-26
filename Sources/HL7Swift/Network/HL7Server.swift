@@ -107,7 +107,9 @@ extension HL7Server : ChannelInboundHandler, ChannelOutboundHandler {
         }
         
         if let delegate = self.delegate {
-            delegate.server(self, receive: message)
+            DispatchQueue.main.async {
+                delegate.server(self, receive: message)
+            }
         }
         
         Logger.info("### Receive HL7 (\(spec.version.rawValue)) message:\n\n\(message)\n")
@@ -147,7 +149,9 @@ extension HL7Server : ChannelInboundHandler, ChannelOutboundHandler {
                 
                 
                 if let delegate = self.delegate {
-                    delegate.server(self, send: ack)
+                    DispatchQueue.main.async {
+                        delegate.server(self, send: ack)
+                    }
                 }
                 
                 _ = context.writeAndFlush(NIOAny(ack))
