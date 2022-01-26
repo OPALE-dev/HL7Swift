@@ -24,6 +24,7 @@ public protocol Node {
     var name:String { get set }
     var parent:Node? { get set }
     func path() -> String
+    //func autocomplete() -> [String:Node]
 }
 
 extension Node {
@@ -33,6 +34,47 @@ extension Node {
         }
         
         return "/\(name)"
+    }
+    
+    /**
+     ```
+     [PID:pid item, PID/PID-1:the 1st field of pid]
+     ```
+     */
+    public func autocomplete(_ input: String) -> [String:Node] {
+        var suggestions: [String:Node] = [:]
+        //let lastNode = input.split(separator: "/").last
+        let i = input.lastIndex(of: "/")!
+        let otherNodes = String(input[..<i])
+        let lastNode = String(input[i...])
+        //var otherNodes = input.split(separator: "/", omittingEmptySubsequences: false)
+        //otherNodes.removeLast()
+        //otherNodes = String(otherNodes.joined(separator: "/"))
+        
+        if let group = self as? Group {
+            for item in group.items {
+                switch item {
+                case .group(let g):
+                    if lastNode.isEmpty || g.name.hasPrefix(lastNode) {
+                        suggestions[g.name] = g as Node
+                        suggestions.merge(g.autocomplete(otherNodes + "/" + g.name + "/")) {(current,_) in current}
+                    }
+                case .segment(let s):
+                    if lastNode.isEmpty || s.code.hasPrefix(lastNode) {
+                        suggestions[s.code] = s as Node
+                        suggestions.merge(s.autocomplete(otherNodes + "/" + s.code + "/")) {(current,_) in current}
+                    }
+                }
+            }
+        } else if let segment = self as? Segment {
+            
+        } else if let field = self as? Field {
+            
+        } else if let cell = self as? Cell {
+            
+        }
+        
+        return [:]
     }
 }
 

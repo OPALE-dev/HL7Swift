@@ -282,25 +282,52 @@ final class HL7SwiftTests: XCTestCase {
         if let url = Bundle.module.url(forResource: "ORU_R01 - 3", withExtension: "txt") {
             let message = try Message(withFileAt: url, hl7: hl7)
             
+            // Get position in message for a given segment
+            
             let msh = message[HL7.MSH]!
             let mshRange = message.getPositionInMessage(msh)
             assert(mshRange != nil)
-            assert(mshRange!.lowerBound == 0)
-            assert(mshRange!.length == msh.description.count)
+            print(message.description[mshRange!])
+            assert(message[HL7.MSH]!.description == message.description[mshRange!])
+            
             
             
             let sft = message[HL7.SFT]!
             let sftRange = message.getPositionInMessage(sft)
+            //print(message.description.substring(with: sftRange!))
+            
+            print(message[HL7.SFT]!.description)
             assert(sftRange != nil)
-            assert(sftRange!.lowerBound == mshRange!.length)
-            assert(sftRange!.length == mshRange!.length + sft.description.count)
+            assert(message[HL7.SFT]!.description == message.description[sftRange!])
+            //assert(NSString(string: message[HL7.SFT]!.description) == NSString(string: message.description).range(of: message.description, options: [], range: sftRange!))
+            // print(message.description.count)
+            // print(sftRange!.debugDescription, sftRange!.description)
+            // print(sftRange!.lowerBound, sftRange!.upperBound)
+                        
+            // sftRange?.
+            
+            // let range = Range(sftRange!, in: String(message.description))
+
+            //print(range)
+                        
+            //let s = message.description[range!]
+            // print(s)
+            //assert(message[HL7.SFT]!.description == message.description.substring(with: sftRange!)!)
             
             
             let pid = message[HL7.PID]!
             let pidRange = message.getPositionInMessage(pid)
             assert(pidRange != nil)
-            assert(pidRange!.lowerBound == msh.description.count + message[HL7.SFT]!.description.count)
-            assert(pidRange!.length == msh.description.count + message[HL7.SFT]!.description.count + pid.description.count)            
+            print(message.description.substring(with: pidRange!))
+            assert(message[HL7.PID]!.description == message.description[pidRange!])
+            
+            // Get position in message for a given field
+            
+            let f1 = message[HL7.SFT]?.fields[2]!
+            let f1Range = message.getPositionInMessage(f1!)
+            assert(f1Range != nil)
+            print(message.description.substring(with: f1Range!))
+            assert(message.description.substring(with: f1Range!) == "1.2.3")
         }
     }
     
