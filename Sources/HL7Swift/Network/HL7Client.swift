@@ -17,11 +17,10 @@ public class HL7CLient {
     var promise: EventLoopPromise<Message>?
 
     
-    public init(host: String, port: Int) throws {
+    public init(host: String, port: Int, hl7: HL7) throws {
         self.host = host
         self.port = port
-        
-        self.hl7 = try HL7()
+        self.hl7  = hl7
     }
 
     

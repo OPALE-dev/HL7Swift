@@ -23,6 +23,8 @@ struct HL7Server: ParsableCommand, HL7ServerDelegate {
     
     mutating func run() throws {
         do {
+            let hl7 = try HL7()
+            
             // make sure dir exists, else try to create it
             if !FileManager.default.fileExists(atPath: (self.dirPath as NSString).expandingTildeInPath) {
                 try FileManager.default.createDirectory(
@@ -35,6 +37,7 @@ struct HL7Server: ParsableCommand, HL7ServerDelegate {
             let server = try HL7Swift.HL7Server(
                 host: self.hostname,
                 port: self.port,
+                hl7: hl7,
                 delegate: self)
             
             try server.start()
@@ -51,7 +54,7 @@ struct HL7Server: ParsableCommand, HL7ServerDelegate {
         
     }
     
-    func server(_ server: HL7Swift.HL7Server, receive message: Message) {
+    func server(_ server: HL7Swift.HL7Server, receive message: Message, from: String?) {
         let timeInterval = NSDate().timeIntervalSince1970
 
         do {

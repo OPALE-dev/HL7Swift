@@ -19,11 +19,11 @@ public protocol HL7ServerDelegate {
 public class HL7Server {
     var hl7:HL7!
     
-    var host:String     = "0.0.0.0"
-    var port:Int        = 2575
+    public var host:String  = "0.0.0.0"
+    public var port:Int     = 2575
     
-    var name:String     = "HL7SERVER"
-    var facility:String = "HL7SERVER"
+    var name:String         = "HL7SERVER"
+    var facility:String     = "HL7SERVER"
 
     public var delegate:HL7ServerDelegate?
     var responder:HL7Responder!
@@ -33,8 +33,8 @@ public class HL7Server {
     var bootstrap:ServerBootstrap!
     
     
-    public init(host: String, port: Int, delegate: HL7ServerDelegate? = nil) throws {
-        self.hl7        = try HL7()
+    public init(host: String, port: Int, hl7:HL7, delegate: HL7ServerDelegate? = nil) throws {
+        self.hl7        = hl7
         self.host       = host
         self.port       = port
         self.delegate   = delegate
