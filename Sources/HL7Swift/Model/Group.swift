@@ -41,12 +41,13 @@ extension Node {
      [PID:pid item, PID/PID-1:the 1st field of pid]
      ```
      */
-    public func autocomplete(_ input: String) -> [String:Node] {
+    public func autocomplete(_ input: String, deepInput: String = "") -> [String:Node] {
         var suggestions: [String:Node] = [:]
         //let lastNode = input.split(separator: "/").last
         let i = input.lastIndex(of: "/")!
+        let j = input.index(after: i)
         let otherNodes = String(input[..<i])
-        let lastNode = String(input[i...])
+        let lastNode = String(input[j...])
         //var otherNodes = input.split(separator: "/", omittingEmptySubsequences: false)
         //otherNodes.removeLast()
         //otherNodes = String(otherNodes.joined(separator: "/"))
@@ -56,13 +57,13 @@ extension Node {
                 switch item {
                 case .group(let g):
                     if lastNode.isEmpty || g.name.hasPrefix(lastNode) {
-                        suggestions[g.name] = g as Node
-                        suggestions.merge(g.autocomplete(otherNodes + "/" + g.name + "/")) {(current,_) in current}
+                        suggestions[deepInput + g.name] = g as Node
+                        suggestions.merge(g.autocomplete(otherNodes + "/" + g.name + "/", deepInput: deepInput + g.name + "/")) {(current,_) in current}
                     }
                 case .segment(let s):
                     if lastNode.isEmpty || s.code.hasPrefix(lastNode) {
-                        suggestions[s.code] = s as Node
-                        suggestions.merge(s.autocomplete(otherNodes + "/" + s.code + "/")) {(current,_) in current}
+                        suggestions[deepInput + s.code] = s as Node
+                        suggestions.merge(s.autocomplete(otherNodes + "/" + s.code + "/", deepInput: deepInput + s.code + "/")) {(current,_) in current}
                     }
                 }
             }
@@ -74,7 +75,7 @@ extension Node {
             
         }
         
-        return [:]
+        return suggestions
     }
 }
 

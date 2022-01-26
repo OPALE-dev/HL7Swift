@@ -307,7 +307,7 @@ final class HL7SwiftTests: XCTestCase {
             let f1 = message[HL7.SFT]?.fields[2]!
             let f1Range = message.getPositionInMessage(f1!)
             assert(f1Range != nil)
-            assert(message.description.substring(with: f1Range!) == "1.2.3")
+            assert(message.description[f1Range!] == "1.2.3")
         }
     }
     
@@ -316,11 +316,17 @@ final class HL7SwiftTests: XCTestCase {
             let message = try Message(withFileAt: url, hl7: hl7)
             
             let r1 = message.rootGroup?.autocomplete("/P")
-            print(r1)
+            assert(r1 != nil)
+            print(Array(r1!.keys))
+            assert(Array(r1!.keys).count == 15)
             
-            // message.rootGroup?.autocomplete("/PI")
+            let r2 = message.rootGroup?.autocomplete("/PI")
+            assert(r2 != nil)
+            assert(Array(r2!.keys) == [])
             
-            // message.rootGroup?.autocomplete("/PID")
+            let r3 = message.rootGroup?.autocomplete("/PATIENT_RESULT")
+            assert(r3 != nil)
+            assert(Array(r3!.keys).count == 15)
         }
     }
     
