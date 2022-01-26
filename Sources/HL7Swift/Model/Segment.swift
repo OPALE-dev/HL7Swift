@@ -131,15 +131,18 @@ public class Segment: Node {
         set(newValue) {
             // same as getter
             if let specMessage = specMessage {
+                // we loop over all known segments in the spec (specMessage.rootGroup)
                 for segment in specMessage.rootGroup.segments {
                     if segment.code == code {
+                        // we search for a matching field in the spec
                         for (_, f) in segment.fields {
                             if f.longName == name {
-                                if let newVal = newValue {
-                                    // TODO: test with overflow, extent array if needed, etc.
-                                    //print("\(type(of: newVal)) \(newVal)")
+                                // if found, return field by index
+                                if f.index-1 <= fields.count-1 {
                                     if let field = fields[f.index] {
-                                        field.cells = Field(newVal).cells
+                                        if let newVal = newValue {
+                                            field.cells = Field(newVal).cells
+                                        }
                                     }
                                 }
                             }
@@ -147,6 +150,24 @@ public class Segment: Node {
                     }
                 }
             }
+                
+//            if let specMessage = specMessage {
+//                for segment in specMessage.rootGroup.segments {
+//                    if segment.code == code {
+//                        for (_, f) in segment.fields {
+//                            if f.longName == name {
+//                                if let newVal = newValue {
+//                                    // TODO: test with overflow, extent array if needed, etc.
+//                                    //print("\(type(of: newVal)) \(newVal)")
+//                                    if let field = fields[f.index] {
+//                                        field.cells = Field(newVal).cells
+//                                    }
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+//            }
         }
     }
 }
