@@ -11,6 +11,7 @@ import NIO
 public class HL7CLient {
     public var host:String!
     public var port:Int!
+    public var localPort:Int? = nil
     
     var hl7:HL7!
     var channel:Channel?
@@ -47,7 +48,7 @@ public class HL7CLient {
             .connect(host: self.host, port: self.port)
             .flatMap { channel in
                 
-            self.channel = channel
+            self.localPort = self.channel?.localAddress?.port
             
             // make promise to receive ACK/NAK
             self.promise = self.channel?.eventLoop.makePromise(of: Message.self)
