@@ -278,6 +278,32 @@ final class HL7SwiftTests: XCTestCase {
         assert(results.count == 1)
     }
     
+    func testGetPosition() throws {
+        if let url = Bundle.module.url(forResource: "ORU_R01 - 3", withExtension: "txt") {
+            let message = try Message(withFileAt: url, hl7: hl7)
+            
+            let msh = message[HL7.MSH]!
+            let mshRange = message.getPositionInMessage(msh)
+            assert(mshRange != nil)
+            assert(mshRange!.lowerBound == 0)
+            assert(mshRange!.length == msh.description.count)
+            
+            
+            let sft = message[HL7.SFT]!
+            let sftRange = message.getPositionInMessage(sft)
+            assert(sftRange != nil)
+            assert(sftRange!.lowerBound == mshRange!.length)
+            assert(sftRange!.length == mshRange!.length + sft.description.count)
+            
+            
+            let pid = message[HL7.PID]!
+            let pidRange = message.getPositionInMessage(pid)
+            assert(pidRange != nil)
+            assert(pidRange!.lowerBound == msh.description.count + message[HL7.SFT]!.description.count)
+            assert(pidRange!.length == msh.description.count + message[HL7.SFT]!.description.count + pid.description.count)            
+        }
+    }
+    
 
     // TODO : put this elsewhere! (integrate in CodeGen binary?)
 //        func testSegmentCodesList() {
