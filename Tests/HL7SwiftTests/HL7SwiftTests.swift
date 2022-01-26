@@ -287,38 +287,19 @@ final class HL7SwiftTests: XCTestCase {
             let msh = message[HL7.MSH]!
             let mshRange = message.getPositionInMessage(msh)
             assert(mshRange != nil)
-            print(message.description[mshRange!])
             assert(message[HL7.MSH]!.description == message.description[mshRange!])
             
             
             
             let sft = message[HL7.SFT]!
             let sftRange = message.getPositionInMessage(sft)
-            //print(message.description.substring(with: sftRange!))
-            
-            print(message[HL7.SFT]!.description)
             assert(sftRange != nil)
             assert(message[HL7.SFT]!.description == message.description[sftRange!])
-            //assert(NSString(string: message[HL7.SFT]!.description) == NSString(string: message.description).range(of: message.description, options: [], range: sftRange!))
-            // print(message.description.count)
-            // print(sftRange!.debugDescription, sftRange!.description)
-            // print(sftRange!.lowerBound, sftRange!.upperBound)
-                        
-            // sftRange?.
-            
-            // let range = Range(sftRange!, in: String(message.description))
-
-            //print(range)
-                        
-            //let s = message.description[range!]
-            // print(s)
-            //assert(message[HL7.SFT]!.description == message.description.substring(with: sftRange!)!)
             
             
             let pid = message[HL7.PID]!
             let pidRange = message.getPositionInMessage(pid)
             assert(pidRange != nil)
-            print(message.description.substring(with: pidRange!))
             assert(message[HL7.PID]!.description == message.description[pidRange!])
             
             // Get position in message for a given field
@@ -326,8 +307,20 @@ final class HL7SwiftTests: XCTestCase {
             let f1 = message[HL7.SFT]?.fields[2]!
             let f1Range = message.getPositionInMessage(f1!)
             assert(f1Range != nil)
-            print(message.description.substring(with: f1Range!))
             assert(message.description.substring(with: f1Range!) == "1.2.3")
+        }
+    }
+    
+    func testAutocompletion() throws {
+        if let url = Bundle.module.url(forResource: "ORU_R01 - 3", withExtension: "txt") {
+            let message = try Message(withFileAt: url, hl7: hl7)
+            
+            let r1 = message.rootGroup?.autocomplete("/P")
+            print(r1)
+            
+            // message.rootGroup?.autocomplete("/PI")
+            
+            // message.rootGroup?.autocomplete("/PID")
         }
     }
     
