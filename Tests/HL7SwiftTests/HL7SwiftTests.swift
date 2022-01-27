@@ -303,18 +303,18 @@ final class HL7SwiftTests: XCTestCase {
             
             assert(sftRange != nil)
             assert(message[HL7.SFT]!.description == message.description[i..<j])
-            
-            
+
+
             let pid = message[HL7.PID]!
             let pidRange = message.getPositionInMessage(pid)
             assert(pidRange != nil)
             i = message.description.index(start, offsetBy: pidRange!.0)
             j = message.description.index(start, offsetBy: pidRange!.1)
- 
+
             assert(message[HL7.PID]!.description == message.description[i..<j])
-            
+
             // Get position in message for a given field
-            
+
             let f1 = message[HL7.SFT]?.fields[2]!
             let f1Range = message.getPositionInMessage(f1!)
             assert(f1Range != nil)
