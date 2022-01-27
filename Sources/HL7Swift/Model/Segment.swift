@@ -88,7 +88,7 @@ public class Segment: Node {
         }
     }
     
-    
+     
     /// Subscript that get/set segment fields by their index (1-n) as defined in the HL7 specification.
     public subscript(index: Int) -> Field? {
         get {
