@@ -315,6 +315,7 @@ final class HL7SwiftTests: XCTestCase {
         if let url = Bundle.module.url(forResource: "ORU_R01 - 3", withExtension: "txt") {
             let message = try Message(withFileAt: url, hl7: hl7)
             
+            print(message.rootGroup?.autocomplete("/").keys)
             let r1 = message.rootGroup?.autocomplete("/P")
             assert(r1 != nil)
             print(Array(r1!.keys))
