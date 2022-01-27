@@ -24,7 +24,6 @@ public protocol Node {
     var name:String { get set }
     var parent:Node? { get set }
     func path() -> String
-    //func autocomplete() -> [String:Node]
 }
 
 extension Node {
@@ -43,14 +42,10 @@ extension Node {
      */
     public func autocomplete(_ input: String, deepInput: String = "/") -> [String:Node] {
         var suggestions: [String:Node] = [:]
-        //let lastNode = input.split(separator: "/").last
         let i = input.lastIndex(of: "/")!
         let j = input.index(after: i)
         let otherNodes = String(input[..<i])
         let lastNode = String(input[j...])
-        //var otherNodes = input.split(separator: "/", omittingEmptySubsequences: false)
-        //otherNodes.removeLast()
-        //otherNodes = String(otherNodes.joined(separator: "/"))
         
         if let group = self as? Group {
             for item in group.items {

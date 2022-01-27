@@ -317,12 +317,24 @@ public struct Message {
         
         return Version(rawValue: vString)
     }
-    
-    public func getPositionInMessage(_ ofSegment: Segment) -> Range<String.Index>? {
+
+    /**
+     Returns the start index and the end index of the given segment in the message string
+     
+     ```
+     let mshRange = message.getPositionInMessage(msh)
+     
+     var i = message.description.index(start, offsetBy: mshRange!.0)
+     var j = message.description.index(start, offsetBy: mshRange!.1)
+ 
+     let mshString = message.description[i..<j])
+     ```
+     */
+    public func getPositionInMessage(_ ofSegment: Segment) -> (Int, Int)? {
         var index = -1
         var sum = 0
         
-        for (i, s) in segments.enumerated() {
+        for (i, s) in segments.enumerated() where index == -1 {
             if s.code == ofSegment.code {
                 index = i
             }
@@ -338,15 +350,13 @@ public struct Message {
             sum += segments[j].description.count + 1 // TODO replace by sep.count, but it's a char :/
         }
         
-        // return NSRange(location: sum, length: ofSegment.description.count)
-        //return self.description[sum..<ofSegment.description.count+sum]
-        print(self.description.count)
-        print(sum, ofSegment.description.count)
-        print(self.description.startIndex, self.description.endIndex)
-        return Range(NSRange(location: sum, length: sum + ofSegment.description.count), in: self.description)
+        return (sum, sum + ofSegment.description.count)
     }
     
-    public func getPositionInMessage(_ ofField: Field) -> Range<String.Index>? {
+    /**
+     Returns the start index and the end index of the given field in the message string
+     */
+    public func getPositionInMessage(_ ofField: Field) -> (Int, Int)? {
         let index = ofField.index
         var sum = 0
         guard let segment = ofField.parent as? Segment else {
@@ -357,7 +367,7 @@ public struct Message {
             return nil
         }
         
-        sum = self.description.distance(from: self.description.startIndex, to: pos.lowerBound) //String.distance(from: self.description.startIndex, to: pos)
+        sum = pos.0
         
         // sum(segment.fields[0..<ofField.index].description.count + 1)
         for i in 0..<index {
@@ -368,7 +378,7 @@ public struct Message {
         
         sum += segment.code.count + 1
         
-        return Range(NSRange(location: sum, length: ofField.description.count), in: self.description)
+        return (sum, sum + ofField.description.count)
     }
     
     /*
