@@ -36,9 +36,13 @@ extension Node {
     }
     
     /**
-     ```
-     [PID:pid item, PID/PID-1:the 1st field of pid]
-     ```
+     For a given terser path, returns suggestions to complete the path. Returns a dictionnary with the suggested paths as keys
+     and the nodes as values. The nodes may be used later for further autocompletion.
+     
+     Example : `/PATIENT/OB` gives `["/PATIENT/OBX": <OBX node>]`
+     - parameters:
+        - input: the terser path to complete
+        - deepInput: used internally
      */
     public func autocomplete(_ input: String, deepInput: String = "/") -> [String:Node] {
         var suggestions: [String:Node] = [:]
