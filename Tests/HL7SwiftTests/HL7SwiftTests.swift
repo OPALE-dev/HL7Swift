@@ -278,6 +278,73 @@ final class HL7SwiftTests: XCTestCase {
         assert(results.count == 1)
     }
     
+    func testGetPosition() throws {
+        if let url = Bundle.module.url(forResource: "ORU_R01 - 3", withExtension: "txt") {
+            let message = try Message(withFileAt: url, hl7: hl7)
+            let start = message.description.startIndex
+            
+            // Get position in message for a given segment
+            
+            let msh = message[HL7.MSH]!
+            let mshRange = message.getPositionInMessage(msh)
+            assert(mshRange != nil)
+            var i = message.description.index(start, offsetBy: mshRange!.0)
+            var j = message.description.index(start, offsetBy: mshRange!.1)
+        
+            assert(message[HL7.MSH]!.description == message.description[i..<j])
+            
+            
+            
+            let sft = message[HL7.SFT]!
+            let sftRange = message.getPositionInMessage(sft)
+        
+            i = message.description.index(start, offsetBy: sftRange!.0)
+            j = message.description.index(start, offsetBy: sftRange!.1)
+            
+            assert(sftRange != nil)
+            assert(message[HL7.SFT]!.description == message.description[i..<j])
+
+
+            let pid = message[HL7.PID]!
+            let pidRange = message.getPositionInMessage(pid)
+            assert(pidRange != nil)
+            i = message.description.index(start, offsetBy: pidRange!.0)
+            j = message.description.index(start, offsetBy: pidRange!.1)
+
+            assert(message[HL7.PID]!.description == message.description[i..<j])
+
+            // Get position in message for a given field
+
+            let f1 = message[HL7.SFT]?.fields[2]!
+            let f1Range = message.getPositionInMessage(f1!)
+            assert(f1Range != nil)
+            i = message.description.index(start, offsetBy: f1Range!.0)
+            j = message.description.index(start, offsetBy: f1Range!.1)
+            assert(message.description[i..<j] == "1.2.3")
+ 
+        }
+    }
+    
+    func testAutocompletion() throws {
+        if let url = Bundle.module.url(forResource: "ORU_R01 - 3", withExtension: "txt") {
+            let message = try Message(withFileAt: url, hl7: hl7)
+            
+            print(message.rootGroup?.autocomplete("/").keys)
+            let r1 = message.rootGroup?.autocomplete("/P")
+            assert(r1 != nil)
+            print(Array(r1!.keys))
+            assert(Array(r1!.keys).count == 15)
+            
+            let r2 = message.rootGroup?.autocomplete("/PI")
+            assert(r2 != nil)
+            assert(Array(r2!.keys) == [])
+            
+            let r3 = message.rootGroup?.autocomplete("/PATIENT_RESULT")
+            assert(r3 != nil)
+            assert(Array(r3!.keys).count == 15)
+        }
+    }
+    
 
     // TODO : put this elsewhere! (integrate in CodeGen binary?)
 //        func testSegmentCodesList() {

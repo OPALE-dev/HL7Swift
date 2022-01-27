@@ -317,6 +317,107 @@ public struct Message {
         
         return Version(rawValue: vString)
     }
+
+    /**
+     Returns the start index and the end index of the given segment in the message string
+     
+     ```
+     let mshRange = message.getPositionInMessage(msh)
+     
+     var i = message.description.index(start, offsetBy: mshRange!.0)
+     var j = message.description.index(start, offsetBy: mshRange!.1)
+ 
+     let mshString = message.description[i..<j])
+     ```
+     */
+    public func getPositionInMessage(_ ofSegment: Segment) -> (Int, Int)? {
+        var index = -1
+        var sum = 0
+        
+        for (i, s) in segments.enumerated() where index == -1 {
+            if s.code == ofSegment.code {
+                index = i
+            }
+        }
+        
+        // Segment not found
+        if index == -1 {
+            return nil
+        }
+        
+        // sum(segments[0..<index].description.count)
+        for j in 0..<index {
+            sum += segments[j].description.count + 1 // TODO replace by sep.count, but it's a char :/
+        }
+        
+        return (sum, sum + ofSegment.description.count)
+    }
+    
+    /**
+     Returns the start index and the end index of the given field in the message string
+     */
+    public func getPositionInMessage(_ ofField: Field) -> (Int, Int)? {
+        let index = ofField.index
+        var sum = 0
+        guard let segment = ofField.parent as? Segment else {
+            return nil
+        }
+        
+        guard let pos = self.getPositionInMessage(segment) else {
+            return nil
+        }
+        
+        sum = pos.0
+        
+        // sum(segment.fields[0..<ofField.index].description.count + 1)
+        for i in 0..<index {
+            if let field = segment.fields[i] {
+                sum += field.description.count + 1// for the pipe
+            }
+        }
+        
+        sum += segment.code.count + 1
+        
+        return (sum, sum + ofField.description.count)
+    }
+    
+    /*
+    public func getPositionInMessage(_ ofCell: Cell) -> NSRange? {
+        var index = -1
+        guard let field = ofCell.parent as? Field else {
+            return nil
+        }
+        var sum = 0
+        
+        // Find the index of the cell
+        for (i, cell) in field.cells.enumerated() {
+            if cell.description == ofCell.description {
+                index = i
+            }
+        }
+        
+        // If cell is found
+        if index == -1 {
+            return nil
+        }
+        
+        sum = self.getPositionInMessage(field)
+        
+        // sum(field.cells[0..<index])
+    }
+ */
+    public func desc() -> String {
+        var str = ""
+        for segment in segments {
+            str += segment.description + sep.description
+        }
+        
+        if !str.isEmpty {
+            str.removeLast()
+        }
+        
+        return str
+    }
 }
 
 extension Message: CustomStringConvertible {
@@ -331,5 +432,13 @@ extension Message: CustomStringConvertible {
         }
         
         return str
+    }
+}
+
+// TODO move elsewhere
+extension String {
+    func substring(with nsrange: NSRange) -> Substring? {
+        guard let range = Range(nsrange, in: self) else { return nil }
+        return self[range]
     }
 }
