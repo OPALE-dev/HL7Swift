@@ -107,12 +107,12 @@ extension HL7CLient: ChannelInboundHandler {
     
     
     public func channelActive(context: ChannelHandlerContext) {
-        Logger.debug("channelActive")
+        Logger.debug("[HL7CLient] channelActive")
     }
     
     
     public func channelInactive(context: ChannelHandlerContext) {
-        Logger.debug("channelInactive")
+        Logger.debug("[HL7CLient] channelInactive")
     }
     
     
@@ -120,7 +120,9 @@ extension HL7CLient: ChannelInboundHandler {
         let response = self.unwrapInboundIn(data)
         
         guard let type = response.type else {
-            promise?.fail(HL7Error.unsupportedMessage(message: "Cannot read message type"))
+            let message = "Cannot read message type"
+            Logger.error(message)
+            promise?.fail(HL7Error.unsupportedMessage(message: message))
             return
         }
         
@@ -128,6 +130,7 @@ extension HL7CLient: ChannelInboundHandler {
             promise?.succeed(response)
 
         } else {
+            Logger.error("Unexpected Message: \(type.name)")
             promise?.fail(HL7Error.unexpectedMessage(message: type.name))
         }
     }
