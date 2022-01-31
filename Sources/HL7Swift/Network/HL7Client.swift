@@ -119,6 +119,8 @@ extension HL7CLient: ChannelInboundHandler {
     public func channelRead(context: ChannelHandlerContext, data: NIOAny) {
         let response = self.unwrapInboundIn(data)
         
+        Logger.debug("[HL7CLient] channelRead \(response)")
+        
         guard let type = response.type else {
             let message = "Cannot read message type"
             Logger.error(message)
