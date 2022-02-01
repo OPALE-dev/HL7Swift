@@ -48,10 +48,11 @@ public class HL7CLient {
             .connect(host: self.host, port: self.port)
             .flatMap { channel in
                 
-            self.localPort = self.channel?.localAddress?.port
+            self.channel    = channel
+            self.localPort  = self.channel?.localAddress?.port
             
             // make promise to receive ACK/NAK
-            self.promise = self.channel?.eventLoop.makePromise(of: Message.self)
+            self.promise    = self.channel?.eventLoop.makePromise(of: Message.self)
                         
             return channel.eventLoop.makeSucceededVoidFuture()
         }
@@ -90,9 +91,9 @@ public class HL7CLient {
         guard let message = message else {
             return nil
         }
-         
+                 
         try channel?.writeAndFlush(message).wait()
-        
+                
         return try promise?.futureResult.wait()
     }
 
@@ -100,7 +101,8 @@ public class HL7CLient {
 
 
 
-    // MARK: -
+// MARK: -
+
 extension HL7CLient: ChannelInboundHandler {
     public typealias InboundIn = Message
     public typealias OutboundOut = Message
