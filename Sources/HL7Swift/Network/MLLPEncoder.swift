@@ -19,9 +19,13 @@ public struct MLLPEncoder: MessageToByteEncoder {
     public typealias OutboundIn = Message
     
     public func encode(data: Message, out: inout ByteBuffer) throws {
+        print("encode 1")
+        
         guard let messageData = data.description.data(using: .utf8) else {
             throw HL7Error.encondingFailed(message: "Cannot encode message as UTF-8")
         }
+        
+        print("encode 2")
         
         var outData = Data()
         
