@@ -373,6 +373,8 @@ public struct Message {
         for i in 0..<index {
             if let field = segment.fields[i] {
                 sum += field.description.count + 1// for the pipe
+            } else {
+                sum += 1
             }
         }
         
@@ -381,8 +383,8 @@ public struct Message {
         return (sum, sum + ofField.description.count)
     }
     
-    /*
-    public func getPositionInMessage(_ ofCell: Cell) -> NSRange? {
+    
+    public func getPositionInMessage(_ ofCell: Cell) -> (Int, Int)? {
         var index = -1
         guard let field = ofCell.parent as? Field else {
             return nil
@@ -400,12 +402,22 @@ public struct Message {
         if index == -1 {
             return nil
         }
+        guard let pos = self.getPositionInMessage(field) else {
+            return nil
+        }
         
-        sum = self.getPositionInMessage(field)
-        
+        sum = pos.0
+            
         // sum(field.cells[0..<index])
+        for i in 0..<index {
+            let cell = field.cells[i]
+            sum += cell.description.count + 1
+            
+        }
+        
+        return (sum, sum + ofCell.description.count)
     }
- */
+ 
     public func desc() -> String {
         var str = ""
         for segment in segments {
