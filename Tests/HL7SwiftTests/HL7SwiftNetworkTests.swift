@@ -154,9 +154,11 @@ final class HL7SwiftNetworkTests: XCTestCase {
             
             print("Send: " + NSString(string: path).lastPathComponent)
             
-            _ = try client?.send(message)
-            
-            expectation.fulfill()
+            if let response = try client?.send(message) {
+                expectation.fulfill()
+            } else {
+                print("NO RESPONSE RECEIVED !!!")
+            }
         }
         
         
