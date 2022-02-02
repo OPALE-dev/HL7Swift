@@ -168,15 +168,15 @@ public struct Message {
         
         // populate segments ?
         if self.specMessage != nil {
-            populateRootGroup()
-            
-            for s in self.rootGroup!.segments {
+            for s in self.specMessage!.rootGroup.segments {
                 for ps in preloadSegments {
                     if s.code == ps {
                         segments.append(s)
                     }
                 }
             }
+            
+            populateRootGroup()
         }
     }
     
@@ -189,11 +189,11 @@ public struct Message {
         
         // populate segments ?
         if preloadSegmentsFromSpec && self.specMessage != nil {
-            populateRootGroup()
-            
-            for s in self.rootGroup!.segments {
+            for s in self.specMessage!.rootGroup.segments {
                 segments.append(s)
             }
+            
+            populateRootGroup()
         }
     }
     
