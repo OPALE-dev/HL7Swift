@@ -323,7 +323,15 @@ final class HL7SwiftTests: XCTestCase {
             assert(message.description[i..<j] == "1.2.3")
             
             let f2 = message[HL7.MSH]?.fields[1]!
-            print(f2)
+            let f2Range = message.getPositionInMessage(f2!)
+            assert(f2Range != nil)
+            i = message.description.index(start, offsetBy: f2Range!.0)
+            j = message.description.index(start, offsetBy: f2Range!.1)
+            assert(message.description[i..<j] == "|")
+            
+            print(message[HL7.SFT]?.fields)
+            print(message[HL7.SFT]?.fields[1])
+            //print(message[HL7.SFT]?.fields[1]?.cells[4])
  
         }
     }

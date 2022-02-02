@@ -378,7 +378,13 @@ public struct Message {
             }
         }
         
-        sum += segment.code.count + 1
+        // If it's the field separator, |, We shouldn't count the empty field (check the else just above)
+        // TODO handle other segments than MSH, ie BST.1 ?
+        if ofField.name == "MSH.1" {
+            sum -= 1
+        }
+        
+        sum += segment.code.count
         
         return (sum, sum + ofField.description.count)
     }
@@ -414,6 +420,8 @@ public struct Message {
             sum += cell.description.count + 1
             
         }
+        
+
         
         return (sum, sum + ofCell.description.count)
     }
