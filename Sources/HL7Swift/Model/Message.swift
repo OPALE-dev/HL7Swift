@@ -188,6 +188,20 @@ public struct Message {
     }
     
     
+    public init(_ type: Typable, spec: Versioned, preloadSegmentsFromSpec:Bool = true) throws {
+        self.internalType = type
+        self.specMessage  = spec.messages[type.name]
+        self.version = spec.version
+        
+        // populate segments ?
+        if preloadSegmentsFromSpec && self.specMessage != nil {
+            for s in self.specMessage!.rootGroup.segments {
+                segments.append(s)
+            }
+        }
+    }
+    
+    
     // MARK: -
     
 
