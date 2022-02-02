@@ -177,6 +177,10 @@ public struct Message {
             }
             
             populateRootGroup()
+            
+            self[HL7.MSH]?[HL7.Version_ID] = version.rawValue
+            self[HL7.MSH]?[HL7.Message_Type] = type.name
+            self[HL7.MSH]?[HL7.Sending_Application] = "HL7Swift"
         }
     }
     
@@ -194,6 +198,10 @@ public struct Message {
             }
             
             populateRootGroup()
+            
+            self[HL7.MSH]?[HL7.Version_ID] = version.rawValue
+            self[HL7.MSH]?[HL7.Message_Type] = type.name
+            self[HL7.MSH]?[HL7.Sending_Application] = "HL7Swift"
         }
     }
     
