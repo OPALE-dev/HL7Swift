@@ -187,7 +187,7 @@ final class HL7SwiftTests: XCTestCase {
 
         
         let message = try Message(HL7.V25.ACK(), spec: hl7.spec(ofVersion: .v25)!, preloadSegments: [HL7.MSH, HL7.MSA])
-                        
+                                
         message[HL7.MSA]![HL7.Acknowledgment_Code] = AcknowledgeStatus.AA.rawValue
         
         assert(message[HL7.MSA]![HL7.Acknowledgment_Code]! == AcknowledgeStatus.AA.rawValue)
@@ -195,6 +195,10 @@ final class HL7SwiftTests: XCTestCase {
         message[HL7.MSA]![HL7.Acknowledgment_Code] = AcknowledgeStatus.AR.rawValue
         
         assert(message[HL7.MSA]![HL7.Acknowledgment_Code]! == AcknowledgeStatus.AR.rawValue)
+        
+        let message2 = try Message(HL7.V25.ADT_A02(), spec: hl7.spec(ofVersion: .v25)!, preloadSegmentsFromSpec: true)
+        
+        print(message2)
     }
     
     func testTypable() throws {
