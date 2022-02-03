@@ -306,6 +306,7 @@ final class HL7SwiftTests: XCTestCase {
             j = message.description.index(start, offsetBy: sftRange!.1)
             
             assert(sftRange != nil)
+            print(message.description[i..<j])
             assert(message[HL7.SFT]!.description == message.description[i..<j])
 
 
@@ -324,6 +325,7 @@ final class HL7SwiftTests: XCTestCase {
             assert(f1Range != nil)
             i = message.description.index(start, offsetBy: f1Range!.0)
             j = message.description.index(start, offsetBy: f1Range!.1)
+            print(message.description[i..<j], f1Range)
             assert(message.description[i..<j] == "1.2.3")
             
             let f2 = message[HL7.MSH]?.fields[1]!

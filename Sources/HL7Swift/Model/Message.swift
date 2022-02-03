@@ -367,7 +367,7 @@ public struct Message {
         
         // sum(segments[0..<index].description.count)
         for j in 0..<index {
-            sum += segments[j].description.count + 1 // TODO replace by sep.count, but it's a char :/
+            sum += segments[j].description.count + 2 // TODO replace by sep.count, but it's a char :/
         }
         
         return (sum, sum + ofSegment.description.count)
