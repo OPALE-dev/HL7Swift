@@ -117,7 +117,7 @@ public protocol Typable {
 }
 
 
-protocol Versionable {
+public protocol Versionable {
     var version:Version { get }
 
     func loadXML() throws
@@ -126,11 +126,11 @@ protocol Versionable {
 
 
 public class Versioned: NSObject, Versionable {    
-    func type(forName name:String) -> Typable? {
+    public func type(forName name:String) -> Typable? {
         return nil
     }
     
-    var version: Version
+    public var version: Version
     
     public var messages:[String:SpecMessage] = [:]
     public var dataTypes:[String:DataType] = [:] // datatypes by name
@@ -164,7 +164,7 @@ public class Versioned: NSObject, Versionable {
     }
     
     
-    internal func loadXML() throws {
+    public func loadXML() throws {
         try loadDataTypes(forVersion: version)
         try loadCompositeTypes(forVersion: version)
         try loadFields(forVersion: version)
