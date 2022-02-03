@@ -376,8 +376,7 @@ public struct Message {
     /**
      Returns the start index and the end index of the given field in the message string
      */
-    
-    public func getPositionInMessage(_ ofField: Field) -> NSRange? {//(Int, Int)? {
+    public func getPositionInMessage(_ ofField: Field) -> NSRange? {
         let index = ofField.index
         var sum = 0
         guard let segment = ofField.parent as? Segment else {
@@ -414,16 +413,115 @@ public struct Message {
         return NSRange(location: sum, length: ofField.description.utf16.count)
     }
  
-    
-    
-    public func getPositionInMessage(_ ofCell: Cell) -> NSRange? {//(Int, Int)? {
+    public func getPositionInMessage(_ ofCell: Cell) -> NSRange? {
+        var field: Field? = nil
+        var parentCell: Cell? = nil
+        
+        var repetition = false
+        var component = false
+        var subcomponent = false
+        
+        var cellIndex = -1
+        var componentIndex = -1
+        var subcomponentIndex = -1
+        
+        var sum = 0
+        
+        if let f = ofCell.parent as? Field {
+            repetition = true
+            field = f
+            
+            
+            for (i, c) in field!.cells.enumerated() where cellIndex == -1 {
+                if c.description == ofCell.description {
+                    cellIndex = i
+                }
+            }
+            
+        } else if let pc = ofCell.parent as? Cell {
+            component = true
+            parentCell = pc
+            
+            if let gpc = pc.parent as? Cell {
+                subcomponent = true
+                parentCell = gpc
+             
+                guard let f = gpc.parent as? Field else {
+                    return nil
+                }
+                field = f
+                
+                for (i, c) in pc.components.enumerated() where subcomponentIndex == -1 {
+                    if c.description == ofCell.description {
+                        subcomponentIndex = i
+                    }
+                }
+                
+                for (i, c) in parentCell!.components.enumerated() where componentIndex == -1 {
+                    if c.description == pc.description {
+                        componentIndex = i
+                    }
+                }
+                
+                for (i, c) in field!.cells.enumerated() where cellIndex == -1 {
+                    if c.description == parentCell!.description {
+                        cellIndex = i
+                    }
+                }
+                
+                
+            } else {
+                guard let f = pc.parent as? Field else {
+                    return nil
+                }
+                
+                field = f
+                
+                for (i, c) in parentCell!.components.enumerated() where componentIndex == -1 {
+                    if c.description == ofCell.description {
+                        componentIndex = i
+                    }
+                }
+                
+                for (i, c) in field!.cells.enumerated() where cellIndex == -1 {
+                    if c.description == parentCell!.description {
+                        cellIndex = i
+                    }
+                }
+            }
+            
+            
+        }
+        
+     
+        
+        sum = self.getPositionInMessage(field!)!.location
+        
+        if repetition || component || subcomponent {// ~
+            sum += field!.cells[0..<cellIndex].map({$0.description.utf16.count + 1}).reduce(0, +)
+            
+            if component || subcomponent {// ^
+                sum += field!.cells[cellIndex].components[0..<componentIndex].map({$0.description.utf16.count + 1}).reduce(0, +)
+                
+                if subcomponent {// &
+                    sum += field!.cells[cellIndex].components[componentIndex].components[0..<subcomponentIndex].map({$0.description.utf16.count + 1}).reduce(0, +)
+                }
+            }
+        }
+        
+        return NSRange(location: sum, length: ofCell.description.utf16.count)
+        
+        /*
         var index = -1
         var subindex = -1
         
         let parentCell = ofCell.parent as? Cell
         
+        let grandParentCell = parentCell?.parent? as? Cell
         
-        guard let field = parentCell?.parent as? Field else {
+        let field = parentCell?.parent as? Field ?? parentCell?.parent? as? Field
+        
+        if field == nil {
             return nil
         }
         
@@ -431,17 +529,17 @@ public struct Message {
         
         if parentCell == nil {
             // Find the index of the cell
-            for (i, cell) in field.cells.enumerated() {
+            for (i, cell) in field!.cells.enumerated() {
                 if cell.description == ofCell.description {
                     index = i
                 }
             }
         } else {
             // Find the index of the cell
-            for (i, cell) in field.cells.enumerated() {
+            for (i, cell) in field!.cells.enumerated() where index == -1 {
                 if cell.description == parentCell!.description {
                     index = i
-                    for (j, component) in cell.components.enumerated() {
+                    for (j, component) in cell.components.enumerated() where index == -1 {
                         if component.description == ofCell.description {
                             subindex = j
                         }
@@ -454,7 +552,7 @@ public struct Message {
         if index == -1 {
             return nil
         }
-        guard let pos = self.getPositionInMessage(field) else {
+        guard let pos = self.getPositionInMessage(field!) else {
             return nil
         }
         
@@ -462,18 +560,19 @@ public struct Message {
             
         // sum(field.cells[0..<index])
         for i in 0..<index {
-            let cell = field.cells[i]
+            let cell = field!.cells[i]
             sum += cell.description.utf16.count + 1 // for the ^ char
             
         }
         
         if subindex != -1 {
             for i in 0..<subindex {
-                sum += field.cells[index].components[i].description.utf16.count + 1 // for the & char
+                sum += field!.cells[index].components[i].description.utf16.count + 1 // for the & char
             }
         }
 
         return NSRange(location: sum, length: ofCell.description.utf16.count)
+         */
     }
  
  
