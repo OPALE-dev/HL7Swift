@@ -438,8 +438,12 @@ public struct Message {
         
         // If it's the field separator, |, We shouldn't count the empty field (check the else just above)
         // TODO handle other segments than MSH, ie BST.1 ?
-        if ofField.name == "MSH.1" {
-            sum -= 1
+        if segment.code == "MSH" {
+            if ofField.name == "MSH.1" {
+                sum -= 1
+            } else {
+                sum -= 2
+            }
         }
         
         sum += segment.code.utf16.count
