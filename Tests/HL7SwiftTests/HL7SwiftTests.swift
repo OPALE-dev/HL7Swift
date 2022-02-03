@@ -329,10 +329,20 @@ final class HL7SwiftTests: XCTestCase {
             j = message.description.index(start, offsetBy: f2Range!.1)
             assert(message.description[i..<j] == "|")
             
-            print(message[HL7.SFT]?.fields)
-            print(message[HL7.SFT]?.fields[1])
-            //print(message[HL7.SFT]?.fields[1]?.cells[4])
- 
+            let c1 = message[HL7.SFT]?.fields[1]?.cells[0].components[0]
+            let c1Range = message.getPositionInMessage(c1!)
+            assert(c1Range != nil)
+            i = message.description.index(start, offsetBy: c1Range!.0)
+            j = message.description.index(start, offsetBy: c1Range!.1)
+            print(message.description[i..<j])
+            print(message[HL7.SFT]?.fields[1]?.cells[0])
+            print(message[HL7.SFT]?.fields[1]?.cells[0].components[0])
+            assert(message.description[i..<j] == "Lab Information System")
+            
+//            print(message[HL7.SFT]?.fields)
+//            print(message[HL7.SFT]?.fields[1])
+//            print(message[HL7.SFT]?.fields[1]?.cells)
+
         }
     }
     

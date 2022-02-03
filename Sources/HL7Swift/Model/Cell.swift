@@ -35,9 +35,9 @@ public class Cell:Node {
                         for subcomponent in component.split(separator: "&", maxSplits: 20, omittingEmptySubsequences: false) {
                             componentsArray.append(Cell(text: String(subcomponent), parent: self, components: []))
                         }
-                        components.append(Cell(text: "", parent: parent, components: componentsArray))
+                        components.append(Cell(text: "", parent: self, components: componentsArray))
                     } else {
-                        components.append(Cell(text: String(component), parent: parent, components: []))
+                        components.append(Cell(text: String(component), parent: self, components: []))
                     }
                 }
             } else {
