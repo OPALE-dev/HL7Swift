@@ -412,6 +412,7 @@ public struct Message {
     
     public func getPositionInMessage(_ ofCell: Cell) -> (Int, Int)? {
         var index = -1
+        var subindex = -1
         
         guard let parentCell = ofCell.parent as? Cell else {
             print("eee")
@@ -425,10 +426,24 @@ public struct Message {
         
         var sum = 0
         
-        // Find the index of the cell
-        for (i, cell) in field.cells.enumerated() {
-            if cell.description == ofCell.description {
-                index = i
+        if parentCell == nil {
+            // Find the index of the cell
+            for (i, cell) in field.cells.enumerated() {
+                if cell.description == ofCell.description {
+                    index = i
+                }
+            }
+        } else {
+            // Find the index of the cell
+            for (i, cell) in field.cells.enumerated() {
+                if cell.description == parentCell.description {
+                    index = i
+                    for (j, component) in cell.components.enumerated() {
+                        if component.description == ofCell.description {
+                            subindex = j
+                        }
+                    }
+                }
             }
         }
         
@@ -447,6 +462,12 @@ public struct Message {
             let cell = field.cells[i]
             sum += cell.description.count + 1
             
+        }
+        
+        if subindex != -1 {
+            for i in 0..<subindex {
+                sum += field.cells[index].components[i].description.count + 1
+            }
         }
         
         print(ofCell.description)
