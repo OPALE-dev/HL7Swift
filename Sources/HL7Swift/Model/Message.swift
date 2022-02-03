@@ -172,7 +172,7 @@ public struct Message {
                 for ps in preloadSegments {
                     if s.code == ps {
                         segments.append(s)
-                    }
+                    } 
                 }
             }
             
