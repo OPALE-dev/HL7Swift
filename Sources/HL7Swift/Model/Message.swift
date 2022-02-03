@@ -142,18 +142,8 @@ public struct Message {
         }
 
         if self.specMessage != nil {
-            self.type = self.specMessage?.type
+            populateRootGroup()
             
-            // create the Message root group (different fromm the spec message root group)
-            self.rootGroup = Group(name: type)
-            
-            // give ref of the spec to our segment objects
-            for s in segments {
-                s.specMessage = self.specMessage
-            }
-            
-            // populate groups with message values and repetitions
-            self.specMessage?.rootGroup.populate(group: self.rootGroup, root: self.rootGroup, from: self)
         } else {
             self.rootGroup = Group(name: type)
             
@@ -172,6 +162,7 @@ public struct Message {
     
     public init(_ type: Typable, spec: Versioned, preloadSegments: [String]) throws {
         self.internalType = type
+        self.type = type
         self.specMessage  = spec.messages[type.name]
         self.version = spec.version
         
@@ -184,7 +175,51 @@ public struct Message {
                     }
                 }
             }
+            
+            populateRootGroup()
+            
+            self[HL7.MSH]?[HL7.Version_ID] = version.rawValue
+            self[HL7.MSH]?[HL7.Message_Type] = type.name
+            self[HL7.MSH]?[HL7.Sending_Application] = "HL7Swift"
         }
+    }
+    
+    
+    public init(_ type: Typable, spec: Versioned, preloadSegmentsFromSpec:Bool = true) throws {
+        self.internalType = type
+        self.type = type
+        self.specMessage  = spec.messages[type.name]
+        self.version = spec.version
+        
+        // populate segments ?
+        if preloadSegmentsFromSpec && self.specMessage != nil {
+            for s in self.specMessage!.rootGroup.segments {
+                segments.append(s)
+            }
+            
+            populateRootGroup()
+            
+            self[HL7.MSH]?[HL7.Version_ID] = version.rawValue
+            self[HL7.MSH]?[HL7.Message_Type] = type.name
+            self[HL7.MSH]?[HL7.Sending_Application] = "HL7Swift"
+        }
+    }
+    
+    
+    
+    private mutating func populateRootGroup() {
+        self.type = self.specMessage?.type
+        
+        // create the Message root group (different fromm the spec message root group)
+        self.rootGroup = Group(name: self.type.name)
+        
+        // give ref of the spec to our segment objects
+        for s in segments {
+            s.specMessage = self.specMessage
+        }
+        
+        // populate groups with message values and repetitions
+        self.specMessage?.rootGroup.populate(group: self.rootGroup, root: self.rootGroup, from: self)
     }
     
     
@@ -214,22 +249,7 @@ public struct Message {
         }
     }
 
-    
-    
-    
-    /// Validates a message
-    func validate() -> Bool {
-        if self.specMessage == nil {
-            return false
-        }
-        
-        // TODO: Validate message against the HL7 spec
-        // 1. check required segments
-        // 2. check required fields/components
-        // 3. check datatypes and values
-        
-        return true
-    }
+
     
     
     
