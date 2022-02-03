@@ -350,6 +350,7 @@ public struct Message {
      let mshString = message.description[i..<j])
      ```
      */
+    /*
     public func getPositionInMessage(_ ofSegment: Segment) -> (Int, Int)? {
         var index = -1
         var sum = 0
@@ -378,11 +379,42 @@ public struct Message {
         
         return (sum, sum + ofSegment.description.count)
     }
+    */
+    
+    public func getPositionInMessage(_ ofSegment: Segment) -> NSRange? {
+        var index = -1
+        var sum = 0
+        
+        for (i, s) in segments.enumerated() where index == -1 {
+            if s.code == ofSegment.code {
+                index = i
+            }
+        }
+        
+        // Segment not found
+        if index == -1 {
+            return nil
+        }
+        
+        // sum(segments[0..<index].description.count)
+        for j in 0..<index {
+            sum += segments[j].description.utf16.count + 2//"\r\n".utf16.description.count + 1 // TODO replace by sep.count, but it's a char :/
+        }
+        
+        /*
+        if ofSegment.code != "MSH" {
+            sum += 1
+        }
+         */
+        
+        return NSRange(location: sum, length: ofSegment.description.utf16.count)
+    }
     
     /**
      Returns the start index and the end index of the given field in the message string
      */
-    public func getPositionInMessage(_ ofField: Field) -> (Int, Int)? {
+    
+    public func getPositionInMessage(_ ofField: Field) -> NSRange? {//(Int, Int)? {
         let index = ofField.index
         var sum = 0
         guard let segment = ofField.parent as? Segment else {
@@ -393,12 +425,12 @@ public struct Message {
             return nil
         }
         
-        sum = pos.0
+        sum = pos.location
         
         // sum(segment.fields[0..<ofField.index].description.count + 1)
         for i in 0..<index {
             if let field = segment.fields[i] {
-                sum += field.description.count + 1// for the pipe
+                sum += field.description.utf16.count + 1// for the pipe
             } else {
                 sum += 1
             }
@@ -410,23 +442,21 @@ public struct Message {
             sum -= 1
         }
         
-        sum += segment.code.count
+        sum += segment.code.utf16.count
         
-        return (sum, sum + ofField.description.count)
+        return NSRange(location: sum, length: ofField.description.utf16.count)
     }
+ 
     
     
-    public func getPositionInMessage(_ ofCell: Cell) -> (Int, Int)? {
+    public func getPositionInMessage(_ ofCell: Cell) -> NSRange? {//(Int, Int)? {
         var index = -1
         var subindex = -1
         
-        guard let parentCell = ofCell.parent as? Cell else {
-            print("eee")
-            return nil
-        }
+        let parentCell = ofCell.parent as? Cell
         
         
-        guard let field = parentCell.parent as? Field else {
+        guard let field = parentCell?.parent as? Field else {
             return nil
         }
         
@@ -442,7 +472,7 @@ public struct Message {
         } else {
             // Find the index of the cell
             for (i, cell) in field.cells.enumerated() {
-                if cell.description == parentCell.description {
+                if cell.description == parentCell!.description {
                     index = i
                     for (j, component) in cell.components.enumerated() {
                         if component.description == ofCell.description {
@@ -461,26 +491,28 @@ public struct Message {
             return nil
         }
         
-        sum = pos.0
+        sum = pos.location
             
         // sum(field.cells[0..<index])
         for i in 0..<index {
             let cell = field.cells[i]
-            sum += cell.description.count + 1
+            sum += cell.description.utf16.count + 1 // for the ^ char
             
         }
         
         if subindex != -1 {
             for i in 0..<subindex {
-                sum += field.cells[index].components[i].description.count + 1
+                sum += field.cells[index].components[i].description.utf16.count + 1 // for the & char
             }
         }
         
-        print(ofCell.description)
-        print(ofCell.description.count)
+        // print(ofCell.description)
+        // print(ofCell.description.count)
         
-        return (sum, sum + ofCell.description.count)
+        //return (sum, sum + ofCell.description.count)
+        return NSRange(location: sum, length: ofCell.description.utf16.count)
     }
+ 
  
     public func desc() -> String {
         var str = ""
@@ -515,6 +547,23 @@ extension Message: CustomStringConvertible {
 extension String {
     func substring(with nsrange: NSRange) -> Substring? {
         guard let range = Range(nsrange, in: self) else { return nil }
+        return self[range]
+    }
+}
+
+extension String {
+    func range(from nsRange: NSRange) -> Range<String.Index>? {
+        guard
+            let from16 = utf16.index(utf16.startIndex, offsetBy: nsRange.location, limitedBy: utf16.endIndex),
+            let to16 = utf16.index(utf16.startIndex, offsetBy: nsRange.location + nsRange.length, limitedBy: utf16.endIndex),
+            let from = from16.samePosition(in: self),
+            let to = to16.samePosition(in: self)
+            else { return nil }
+        return from ..< to
+    }
+    
+    func substr(with nsrange: NSRange) -> Substring? {
+        guard let range = self.range(from: nsrange) else { return nil }
         return self[range]
     }
 }

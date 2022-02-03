@@ -292,68 +292,38 @@ final class HL7SwiftTests: XCTestCase {
             let msh = message[HL7.MSH]!
             let mshRange = message.getPositionInMessage(msh)
             assert(mshRange != nil)
-            var i = message.description.index(start, offsetBy: mshRange!.0)
-            var j = message.description.index(start, offsetBy: mshRange!.1)
-        
-            print(message.description[i..<j])
-            assert(message[HL7.MSH]!.description == message.description[i..<j])
-            
-            
+            assert(message[HL7.MSH]!.description == message.description.substring(with: mshRange!)!)
             
             let sft = message[HL7.SFT]!
             let sftRange = message.getPositionInMessage(sft)
-        
-            i = message.description.index(start, offsetBy: sftRange!.0)
-            j = message.description.index(start, offsetBy: sftRange!.1)
-            
             assert(sftRange != nil)
-            print(message.description[i..<j])
-            assert(message[HL7.SFT]!.description == message.description[i..<j])
-
+            assert(message[HL7.SFT]!.description == message.description.substring(with: sftRange!)!)
 
             let pid = message[HL7.PID]!
             let pidRange = message.getPositionInMessage(pid)
             assert(pidRange != nil)
-            i = message.description.index(start, offsetBy: pidRange!.0)
-            j = message.description.index(start, offsetBy: pidRange!.1)
-            print(message.description[i..<j])
-            assert(message[HL7.PID]!.description == message.description[i..<j])
+            assert(message[HL7.PID]!.description == message.description.substring(with: pidRange!)!)
 
             // Get position in message for a given field
-
+            
             let f1 = message[HL7.SFT]?.fields[2]!
             let f1Range = message.getPositionInMessage(f1!)
             assert(f1Range != nil)
-            i = message.description.index(start, offsetBy: f1Range!.0)
-            j = message.description.index(start, offsetBy: f1Range!.1)
-            print(message.description[i..<j], f1Range)
-            assert(message.description[i..<j] == "1.2.3")
+            assert("1.2.3" == message.description.substring(with: f1Range!)!)
             
             let f2 = message[HL7.MSH]?.fields[1]!
             let f2Range = message.getPositionInMessage(f2!)
             assert(f2Range != nil)
-            i = message.description.index(start, offsetBy: f2Range!.0)
-            j = message.description.index(start, offsetBy: f2Range!.1)
-            assert(message.description[i..<j] == "|")
-            
+            assert("|" == message.description.substring(with: f2Range!)!)
+
             let c1 = message[HL7.SFT]?.fields[1]?.cells[0].components[0]
             let c1Range = message.getPositionInMessage(c1!)
             assert(c1Range != nil)
-            i = message.description.index(start, offsetBy: c1Range!.0)
-            j = message.description.index(start, offsetBy: c1Range!.1)
-//            print(message.description[i..<j])
-//            print(message[HL7.SFT]?.fields[1]?.cells[0])
-//            print(message[HL7.SFT]?.fields[1]?.cells[0].components[0])
-            assert(message.description[i..<j] == "Lab Information System")
-            
-//            print(message[HL7.SFT]?.fields)
-//            print(message[HL7.SFT]?.fields[1])
-//            print(message[HL7.SFT]?.fields[1]?.cells)
-
-            
-            
+            assert("Lab Information System" == message.description.substring(with: c1Range!)!)
+        
             let c2 = message[HL7.SFT]?.fields[1]?.cells[0].components[5]
             print(c2)
+ 
         }
     }
     
