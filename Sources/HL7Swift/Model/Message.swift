@@ -349,38 +349,7 @@ public struct Message {
  
      let mshString = message.description[i..<j])
      ```
-     */
-    /*
-    public func getPositionInMessage(_ ofSegment: Segment) -> (Int, Int)? {
-        var index = -1
-        var sum = 0
-        
-        for (i, s) in segments.enumerated() where index == -1 {
-            if s.code == ofSegment.code {
-                index = i
-            }
-        }
-        
-        // Segment not found
-        if index == -1 {
-            return nil
-        }
-        
-        // sum(segments[0..<index].description.count)
-        for j in 0..<index {
-            sum += segments[j].description.count + 1 // TODO replace by sep.count, but it's a char :/
-        }
-        
-        /*
-        if ofSegment.code != "MSH" {
-            sum += 1
-        }
-         */
-        
-        return (sum, sum + ofSegment.description.count)
-    }
-    */
-    
+     */    
     public func getPositionInMessage(_ ofSegment: Segment) -> NSRange? {
         var index = -1
         var sum = 0
@@ -400,12 +369,6 @@ public struct Message {
         for j in 0..<index {
             sum += segments[j].description.utf16.count + 2//"\r\n".utf16.description.count + 1 // TODO replace by sep.count, but it's a char :/
         }
-        
-        /*
-        if ofSegment.code != "MSH" {
-            sum += 1
-        }
-         */
         
         return NSRange(location: sum, length: ofSegment.description.utf16.count)
     }
@@ -509,11 +472,7 @@ public struct Message {
                 sum += field.cells[index].components[i].description.utf16.count + 1 // for the & char
             }
         }
-        
-        // print(ofCell.description)
-        // print(ofCell.description.count)
-        
-        //return (sum, sum + ofCell.description.count)
+
         return NSRange(location: sum, length: ofCell.description.utf16.count)
     }
  
