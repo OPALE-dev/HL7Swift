@@ -285,7 +285,6 @@ final class HL7SwiftTests: XCTestCase {
     func testGetPosition() throws {
         if let url = Bundle.module.url(forResource: "ORU_R01 - 3", withExtension: "txt") {
             let message = try Message(withFileAt: url, hl7: hl7)
-            let start = message.description.startIndex
             
             // Get position in message for a given segment
             
@@ -326,8 +325,10 @@ final class HL7SwiftTests: XCTestCase {
             assert(c1Range != nil)
             assert("Lab Information System" == message.description.substring(with: c1Range!)!)
         
-            let c2 = message[HL7.SFT]?.fields[1]?.cells[0].components[5]
-            print(c2)
+            let c2 = message[HL7.SFT]?.fields[1]?.cells[0].components[5].components[0]
+            let c2Range = message.getPositionInMessage(c2!)
+            assert(c2Range != nil)
+            assert("LIS" == message.description.substring(with: c2Range!)!)
         }
     }
     

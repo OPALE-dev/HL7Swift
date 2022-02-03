@@ -31,11 +31,14 @@ public class Cell:Node {
                 for component in str.split(separator: "^", maxSplits: 20, omittingEmptySubsequences: false) {
                     
                     if component.contains("&") {
-                        var componentsArray: [Cell] = []
+                        let parentCell = Cell(text: "", parent: self, components: [])
+                        
                         for subcomponent in component.split(separator: "&", maxSplits: 20, omittingEmptySubsequences: false) {
-                            componentsArray.append(Cell(text: String(subcomponent), parent: self, components: []))
+                            parentCell.components.append(Cell(text: String(subcomponent), parent: parentCell, components: []))
                         }
-                        components.append(Cell(text: "", parent: self, components: componentsArray))
+                        
+                        components.append(parentCell)
+                        // components.append(Cell(text: "", parent: self, components: componentsArray))
                     } else {
                         components.append(Cell(text: String(component), parent: self, components: []))
                     }
