@@ -2,6 +2,7 @@ extension HL7 {
   class V23: Versioned {
       override func type(forName name:String) -> Typable? {
           switch name {
+              case "ACK"     : return ACK()
               case "MFK_M01" : return MFK_M01()
               case "OMD_O01" : return OMD_O01()
               case "OMN_O01" : return OMN_O01()
@@ -16,6 +17,10 @@ extension HL7 {
       }
 
 
+    }
+    
+    class ACK: Typable {
+         var name:String = "ACK"
     }
 
       class MFK_M01: Typable {

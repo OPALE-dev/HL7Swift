@@ -133,8 +133,8 @@ extension HL7Server : ChannelInboundHandler, ChannelOutboundHandler {
         }
         
         // reply ACK/NAK
-        if let type = spec.type(forName: "ACK") {
-            if let ack = try? Message(type, spec: spec, preloadSegments: ["MSH", "MSA"]) {
+        if let type = try? HL7.V251(.v251).type(forName: "ACK") {
+            if let ack = try? Message(type, spec: HL7.V251(.v251), preloadSegments: ["MSH", "MSA"]) {
                 // fill MSH
                 ack[HL7.MSH]![HL7.Version_ID] = message.version.rawValue
                 
