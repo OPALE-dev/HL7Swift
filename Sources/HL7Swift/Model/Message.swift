@@ -392,9 +392,17 @@ public struct Message {
     
     public func getPositionInMessage(_ ofCell: Cell) -> (Int, Int)? {
         var index = -1
-        guard let field = ofCell.parent as? Field else {
+        
+        guard let parentCell = ofCell.parent as? Cell else {
+            print("eee")
             return nil
         }
+        
+        
+        guard let field = parentCell.parent as? Field else {
+            return nil
+        }
+        
         var sum = 0
         
         // Find the index of the cell
@@ -421,7 +429,8 @@ public struct Message {
             
         }
         
-
+        print(ofCell.description)
+        print(ofCell.description.count)
         
         return (sum, sum + ofCell.description.count)
     }
