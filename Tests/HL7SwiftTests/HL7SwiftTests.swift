@@ -319,6 +319,8 @@ final class HL7SwiftTests: XCTestCase {
             let f2Range = message.getPositionInMessage(f2!)
             assert(f2Range != nil)
             assert("|" == message.description.substring(with: f2Range!)!)
+            
+            // Get position in message for a given cell
 
             let c1 = message[HL7.SFT]?.fields[1]?.cells[0].components[0]
             let c1Range = message.getPositionInMessage(c1!)

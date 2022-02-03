@@ -38,7 +38,6 @@ public class Cell:Node {
                         }
                         
                         components.append(parentCell)
-                        // components.append(Cell(text: "", parent: self, components: componentsArray))
                     } else {
                         components.append(Cell(text: String(component), parent: self, components: []))
                     }
