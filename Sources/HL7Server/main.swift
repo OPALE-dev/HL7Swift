@@ -71,6 +71,10 @@ struct HL7Server: ParsableCommand, HL7ServerDelegate {
     func server(_ server: HL7Swift.HL7Server, ACKStatusFor message:Message) -> AcknowledgeStatus {
         return .AA
     }
+    
+    func server(_ server: HL7Swift.HL7Server, channelDidBecomeInactive: Channel) {
+        
+    }
 }
 
 
