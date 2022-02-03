@@ -295,6 +295,7 @@ final class HL7SwiftTests: XCTestCase {
             var i = message.description.index(start, offsetBy: mshRange!.0)
             var j = message.description.index(start, offsetBy: mshRange!.1)
         
+            print(message.description[i..<j])
             assert(message[HL7.MSH]!.description == message.description[i..<j])
             
             
@@ -315,7 +316,7 @@ final class HL7SwiftTests: XCTestCase {
             assert(pidRange != nil)
             i = message.description.index(start, offsetBy: pidRange!.0)
             j = message.description.index(start, offsetBy: pidRange!.1)
-
+            print(message.description[i..<j])
             assert(message[HL7.PID]!.description == message.description[i..<j])
 
             // Get position in message for a given field
