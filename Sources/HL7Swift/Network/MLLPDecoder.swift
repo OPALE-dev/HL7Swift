@@ -43,7 +43,7 @@ public struct MLLPDecoder: ByteToMessageDecoder {
                     // read last CR
                     byte = buffer.readString(length: 1)
                     
-                    if byte == "\r" {
+                    if byte == "\r" || byte == "\u{1C}" {
                         endFound = true
                     }
                 }
