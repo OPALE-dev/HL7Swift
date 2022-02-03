@@ -306,6 +306,11 @@ final class HL7SwiftTests: XCTestCase {
 
             // Get position in message for a given field
             
+            let f0 = message[HL7.MSH]?.fields[12]!
+            let f0Range = message.getPositionInMessage(f0!)
+            assert(f0Range != nil)
+            assert("2.5.1" == message.description.substring(with: f0Range!)!)
+            
             let f1 = message[HL7.SFT]?.fields[2]!
             let f1Range = message.getPositionInMessage(f1!)
             assert(f1Range != nil)
@@ -323,7 +328,6 @@ final class HL7SwiftTests: XCTestCase {
         
             let c2 = message[HL7.SFT]?.fields[1]?.cells[0].components[5]
             print(c2)
- 
         }
     }
     
