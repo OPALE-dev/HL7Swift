@@ -73,11 +73,11 @@ struct HL7Server: ParsableCommand, HL7ServerDelegate {
     }
     
     func server(_ server: HL7Swift.HL7Server, channelDidBecomeInactive channel: Channel) {
-        
+        print("channelDidBecomeInactive \(channel.remoteAddress)")
     }
     
     func server(_ server: HL7Swift.HL7Server, channelDidBecomeActive channel: Channel) {
-        
+        print("channelDidBecomeActive \(channel.remoteAddress)")
     }
 }
 
