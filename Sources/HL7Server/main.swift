@@ -72,7 +72,7 @@ struct HL7Server: ParsableCommand, HL7ServerDelegate {
         return .AA
     }
     
-    func server(_ server: HL7Swift.HL7Server, channelDidBecomeInactive channelID: String?) {
+    func server(_ server: HL7Swift.HL7Server, channelDidBecomeInactive channel: Channel) {
         
     }
     
