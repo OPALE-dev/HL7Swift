@@ -14,6 +14,7 @@ public protocol HL7ServerDelegate {
     func server(_ server:HL7Server, send message:Message, to:String?)
     func server(_ server:HL7Server, ACKStatusFor message:Message) -> AcknowledgeStatus
     func server(_ server:HL7Server, channelDidBecomeInactive:Channel)
+    func server(_ server:HL7Server, channelDidBecomeActive:Channel)
 }
 
 
@@ -97,8 +98,15 @@ extension HL7Server : ChannelInboundHandler, ChannelOutboundHandler {
     public typealias InboundIn = Message
     public typealias OutboundOut = Message
     
+    public func channelActive(context: ChannelHandlerContext) {
+        if let delegate = self.delegate {
+            DispatchQueue.main.async {
+                delegate.server(self, channelDidBecomeActive: context.channel)
+            }
+        }
+    }
+    
     public func channelInactive(context: ChannelHandlerContext) {
-        print("channelInactive")
         if let delegate = self.delegate {
             DispatchQueue.main.async {
                 delegate.server(self, channelDidBecomeInactive: context.channel)
