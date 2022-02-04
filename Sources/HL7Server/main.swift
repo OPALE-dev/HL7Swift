@@ -50,11 +50,11 @@ struct HL7Server: ParsableCommand, HL7ServerDelegate {
         
     
     // MARK: -
-    func server(_ server: HL7Swift.HL7Server, send message: Message, to: String?) {
+    func server(_ server: HL7Swift.HL7Server, send message: Message, to: String?, channel:Channel) {
         
     }
     
-    func server(_ server: HL7Swift.HL7Server, receive message: Message, from: String?) {
+    func server(_ server: HL7Swift.HL7Server, receive message: Message, from: String?, channel:Channel) {
         let timeInterval = NSDate().timeIntervalSince1970
 
         do {
@@ -68,15 +68,15 @@ struct HL7Server: ParsableCommand, HL7ServerDelegate {
     }
     
     
-    func server(_ server: HL7Swift.HL7Server, ACKStatusFor message:Message) -> AcknowledgeStatus {
+    func server(_ server: HL7Swift.HL7Server, ACKStatusFor message:Message, channel:Channel) -> AcknowledgeStatus {
         return .AA
     }
     
-    func server(_ server: HL7Swift.HL7Server, channelDidBecomeInactive: Channel) {
+    func server(_ server: HL7Swift.HL7Server, channelDidBecomeInactive channel: Channel) {
         
     }
     
-    func server(_ server: HL7Swift.HL7Server, channelDidBecomeActive: Channel) {
+    func server(_ server: HL7Swift.HL7Server, channelDidBecomeActive channel: Channel) {
         
     }
 }

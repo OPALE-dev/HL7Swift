@@ -10,11 +10,11 @@ import NIO
 
 
 public protocol HL7ServerDelegate {
-    func server(_ server:HL7Server, receive message:Message, from:String?)
-    func server(_ server:HL7Server, send message:Message, to:String?)
-    func server(_ server:HL7Server, ACKStatusFor message:Message) -> AcknowledgeStatus
-    func server(_ server:HL7Server, channelDidBecomeInactive:Channel)
-    func server(_ server:HL7Server, channelDidBecomeActive:Channel)
+    func server(_ server:HL7Server, receive message:Message, from:String?, channel:Channel)
+    func server(_ server:HL7Server, send message:Message, to:String?, channel:Channel)
+    func server(_ server:HL7Server, ACKStatusFor message:Message, channel:Channel) -> AcknowledgeStatus
+    func server(_ server:HL7Server, channelDidBecomeInactive channel:Channel)
+    func server(_ server:HL7Server, channelDidBecomeActive channel:Channel)
 }
 
 
@@ -136,7 +136,7 @@ extension HL7Server : ChannelInboundHandler, ChannelOutboundHandler {
         
         if let delegate = self.delegate {
             DispatchQueue.main.async {
-                delegate.server(self, receive: message, from: fromTo)
+                delegate.server(self, receive: message, from: fromTo, channel: context.channel)
             }
         }
         
@@ -148,7 +148,7 @@ extension HL7Server : ChannelInboundHandler, ChannelOutboundHandler {
         var status = AcknowledgeStatus.AA
         
         if let delegate = self.delegate {
-            status = delegate.server(self, ACKStatusFor: message)
+            status = delegate.server(self, ACKStatusFor: message, channel: context.channel)
         }
         
         // reply ACK/NAK
@@ -178,7 +178,7 @@ extension HL7Server : ChannelInboundHandler, ChannelOutboundHandler {
                 
                 if let delegate = self.delegate {
                     DispatchQueue.main.async {
-                        delegate.server(self, send: ack, to: fromTo)
+                        delegate.server(self, send: ack, to: fromTo, channel: context.channel)
                     }
                 }
                 
