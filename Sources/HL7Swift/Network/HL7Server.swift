@@ -98,6 +98,15 @@ extension HL7Server : ChannelInboundHandler, ChannelOutboundHandler {
     public typealias InboundIn = Message
     public typealias OutboundOut = Message
     
+    
+    public func channelUnregistered(context: ChannelHandlerContext) {
+        if let delegate = self.delegate {
+            DispatchQueue.main.async {
+                delegate.server(self, channelDidBecomeInactive: context.channel)
+            }
+        }
+    }
+    
     public func channelActive(context: ChannelHandlerContext) {
         if let delegate = self.delegate {
             DispatchQueue.main.async {
@@ -107,11 +116,7 @@ extension HL7Server : ChannelInboundHandler, ChannelOutboundHandler {
     }
     
     public func channelInactive(context: ChannelHandlerContext) {
-        if let delegate = self.delegate {
-            DispatchQueue.main.async {
-                delegate.server(self, channelDidBecomeInactive: context.channel)
-            }
-        }
+        // see channelUnregistered()
     }
     
     public func channelRead(context: ChannelHandlerContext, data: NIOAny) {
