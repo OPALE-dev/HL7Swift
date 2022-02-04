@@ -100,23 +100,27 @@ extension HL7Server : ChannelInboundHandler, ChannelOutboundHandler {
     
     
     public func channelUnregistered(context: ChannelHandlerContext) {
-        if let delegate = self.delegate {
-            DispatchQueue.main.async {
-                delegate.server(self, channelDidBecomeInactive: context.channel)
-            }
-        }
+//        if let delegate = self.delegate {
+//            DispatchQueue.main.async {
+//                delegate.server(self, channelDidBecomeInactive: channel)
+//            }
+//        }
     }
     
     public func channelActive(context: ChannelHandlerContext) {
         if let delegate = self.delegate {
             DispatchQueue.main.async {
-                delegate.server(self, channelDidBecomeActive: context.channel)
+                delegate.server(self, channelDidBecomeActive: self.channel)
             }
         }
     }
     
     public func channelInactive(context: ChannelHandlerContext) {
-        // see channelUnregistered()
+        if let delegate = self.delegate {
+            DispatchQueue.main.async {
+                delegate.server(self, channelDidBecomeInactive: self.channel)
+            }
+        }
     }
     
     public func channelRead(context: ChannelHandlerContext, data: NIOAny) {
