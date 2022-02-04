@@ -109,17 +109,17 @@ extension HL7Server : ChannelInboundHandler, ChannelOutboundHandler {
     
     public func channelActive(context: ChannelHandlerContext) {
         if let delegate = self.delegate {
-            DispatchQueue.main.async {
-                delegate.server(self, channelDidBecomeActive: self.channel)
-            }
+            //DispatchQueue.main.async {
+                delegate.server(self, channelDidBecomeActive: context.channel)
+            //}
         }
     }
     
     public func channelInactive(context: ChannelHandlerContext) {
         if let delegate = self.delegate {
-            DispatchQueue.main.async {
+            //DispatchQueue.main.async {
                 delegate.server(self, channelDidBecomeInactive: self.channel)
-            }
+            //}
         }
     }
     
