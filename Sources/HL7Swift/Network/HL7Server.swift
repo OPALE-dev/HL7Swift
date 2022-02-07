@@ -10,11 +10,24 @@ import NIO
 
 
 public protocol HL7ServerDelegate {
+    func server(serverStarted server:HL7Server)
+    func server(serverStopped server:HL7Server)
     func server(_ server:HL7Server, receive message:Message, from:String?, channel:Channel)
     func server(_ server:HL7Server, send message:Message, to:String?, channel:Channel)
     func server(_ server:HL7Server, ACKStatusFor message:Message, channel:Channel) -> AcknowledgeStatus
     func server(_ server:HL7Server, channelDidBecomeActive channel:Channel)
     func server(_ server:HL7Server, channelDidBecomeInactive channel:Channel)
+}
+
+
+public extension HL7ServerDelegate {
+    func server(serverStarted server:HL7Server) {
+        
+    }
+    
+    func server(serverStopped server:HL7Server) {
+        
+    }
 }
 
 
@@ -76,6 +89,10 @@ public class HL7Server {
         
         Logger.info("Server listening on port \(port)...")
         
+        if let delegate = self.delegate {
+            delegate.server(serverStarted: self)
+        }
+        
         try channel.closeFuture.wait()
     }
     
@@ -84,6 +101,10 @@ public class HL7Server {
     public func stop() throws {
         if channel != nil {
             channel.close(mode: .all, promise: nil)
+            
+            if let delegate = self.delegate {
+                delegate.server(serverStopped: self)
+            }
             
             Logger.info("Server stopped.")
         }
