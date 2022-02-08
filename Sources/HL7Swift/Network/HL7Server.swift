@@ -7,7 +7,8 @@
 
 import Foundation
 import NIO
-
+import NIOTLS
+import NIOSSL
 
 public protocol HL7ServerDelegate {
     func server(serverStarted server:HL7Server)
@@ -31,11 +32,29 @@ public extension HL7ServerDelegate {
 }
 
 
+public struct ServerConfiguration {
+    public var hl7:HL7!
+
+    public var name:String         = "HL7SERVER"
+    public var facility:String     = "HL7SERVER"
+
+    public var TLSEnabled:Bool          = false
+    public var certificatePath:String?  = nil
+    public var privateKeyPath:String?   = nil
+    
+    public init(_ hl7: HL7) {
+        self.hl7 = hl7
+    }
+}
+
+
 public class HL7Server {
-    var hl7:HL7!
+    var hl7:HL7
     
     public var host:String  = "0.0.0.0"
     public var port:Int     = 2575
+    
+    public var config:ServerConfiguration
     
     var name:String         = "HL7SERVER"
     var facility:String     = "HL7SERVER"
@@ -47,20 +66,43 @@ public class HL7Server {
     var group:MultiThreadedEventLoopGroup!
     var bootstrap:ServerBootstrap!
     
+    var tlsConfiguration:TLSConfiguration? = nil
+    var sslContext:NIOSSLContext? = nil
     
-    public init(host: String, port: Int, hl7:HL7, delegate: HL7ServerDelegate? = nil) throws {
-        self.hl7        = hl7
+    public init(host: String, port: Int, config:ServerConfiguration, delegate: HL7ServerDelegate? = nil) throws {
+        self.config     = config
+        self.hl7        = config.hl7
         self.host       = host
         self.port       = port
         self.delegate   = delegate
         
         self.responder = HL7Responder(hl7: hl7, spec: hl7.spec(ofVersion: .v282)!, facility: facility, app: name)
+        
+        if config.TLSEnabled {
+            if let certificatePath = config.certificatePath,
+               let privateKeyPath = config.privateKeyPath {
+                self.tlsConfiguration = TLSConfiguration.makeServerConfiguration(
+                    certificateChain: try NIOSSLCertificate.fromPEMFile(certificatePath).map { .certificate($0) },
+                    privateKey: .file(privateKeyPath)
+                )
+                if let conf = self.tlsConfiguration {
+                    self.sslContext = try NIOSSLContext(configuration: conf)
+                }
+            }
+        }
          
         self.group = MultiThreadedEventLoopGroup(numberOfThreads: System.coreCount)
         self.bootstrap = ServerBootstrap(group: group)
             .serverChannelOption(ChannelOptions.backlog, value: 256)
             .serverChannelOption(ChannelOptions.socketOption(.so_reuseaddr), value: 1)
             .childChannelInitializer { channel in
+                if self.config.TLSEnabled {
+                    if let context = self.sslContext {
+                        let TLShandler = NIOSSLServerHandler(context: context)
+                        _ = channel.pipeline.addHandler(TLShandler as ChannelHandler)
+                    }
+                }
+                
                 return channel.pipeline.addHandlers([
                     MessageToByteHandler(MLLPEncoder()),
                     ByteToMessageHandler(MLLPDecoder(withHL7: self.hl7, responder: self.responder)),
