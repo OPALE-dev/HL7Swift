@@ -17,6 +17,7 @@ let package = Package(
     dependencies: [
         // Dependencies declare other packages that this package depends on.
         .package(url: "https://github.com/apple/swift-nio.git", from: "2.0.0"),
+        .package(url: "https://github.com/apple/swift-nio-ssl.git", from: "2.17.2"),
         .package(url: "https://github.com/apple/swift-argument-parser", from: "0.4.0")
     ],
     targets: [
@@ -27,6 +28,8 @@ let package = Package(
             dependencies: [
                 "SwiftGenerator",
                 .product(name: "NIO", package: "swift-nio"),
+                .product(name: "NIOTLS", package: "swift-nio"),
+                .product(name: "NIOSSL", package: "swift-nio-ssl")
             ],
             resources: [
                 .process("Resources"),
