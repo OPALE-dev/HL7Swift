@@ -17,8 +17,8 @@ _Also, this is a WIP, so it is still subject to many breaking API changes that w
 
 - Parse HL7 message (v2.x)
 - Build standardized HL7 messages
-- Send HL7 messages over TCP/IP (HL7 client)
-- Receive HL7 messages over TCP/IP (HL7 server)
+- Send HL7 messages over TCP/IP/TLS (HL7 client)
+- Receive HL7 messages over TCP/IP/TLS (HL7 server)
 
 ## TODO
 
@@ -171,6 +171,49 @@ _TBD_
 
 _TBD_
 
+## Notes about TLS
+
+Both `HL7Server` and `HL7Client` supports TLS connection with encryption. They are compatible with `dcm4chee` TLS implemention.
+
+Below an example of auto-signed setup with `HL7Server` and `hl7snd` binary tool from `dcm4chee` package:
+
+1. Create auto signed in macOS Keychain app (`Menu > Keychain > Certificate assistant > Create certficate`)
+2. Then export certificate and private key (`Right-click > Export`):
+    1. Certificate as PEM as `exported_certificates/cert.pem`
+    2. Private Key as P12 as `exported_certificates/private_key.p12`
+3. Convert P12 private key to PEM with passphrase : 
+
+        cd exported_certificates/
+        openssl pkcs12 -in private_key.p12 -out private_key.pem -nodes -clcerts
+        
+        # choose a 6 digits minimum passphrase
+
+4. Combine the 2 PEM files in `cert.pem`
+
+        cat private_key.pem > cert.pem
+        
+5. Import combined certificate to JAVA system keystore: 
+
+        sudo keytool -import -alias server_keystore -keystore "$(/usr/libexec/java_home)/lib/security/cacerts" -file cert.pem
+
+        # don't mess with sudo/keystore/passphrase passwords
+        # default password of system keystore seems to be either `changeit` or not set, so you will be ask for creating a new one
+        
+6. Create keystore for `hl7snd` with combined certificate : 
+
+        keytool -import -trustcacerts -alias server_keystore -file cert.pem -keystore server_keystore.jks
+
+7. Start the `HL7Server` with the following arguments:
+
+        HL7Server --tls=true \
+        --certificate="exported_certificates/cert.pem" \
+        --private-key="exported_certificates/private_key.pem"
+
+8. Launch `hl7snd` from `dcm4chee`package with following args : 
+
+        cd dcm4chee-5.x/bin/
+        ./hl7snd --tls --trust-store "$(/usr/libexec/java_home)/lib/security/cacerts" --trust-store-pass changeit --key-pass "123456" --key-store-pass "123456" --key-store server_keystore.jks -c 127.0.0.1:2575 /path/to/file.hl7
+
 ## Contributors
 
 * Rafaël Warnault <rw@opale.pro>
@@ -180,7 +223,7 @@ _TBD_
 
 MIT License
 
-Copyright (c) 2021 - OPALE, https://www.opale.fr
+Copyright (c) 2022 - OPALE, https://www.opale.fr
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
