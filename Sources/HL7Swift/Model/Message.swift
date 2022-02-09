@@ -379,7 +379,11 @@ public struct Message {
         
         for (i, s) in segments.enumerated() where index == -1 {
             if s.code == ofSegment.code {
-                index = i
+                //index = i
+                // Not a complexity killer
+                if s.description == ofSegment.description {
+                    index = i
+                }
             }
         }
         
