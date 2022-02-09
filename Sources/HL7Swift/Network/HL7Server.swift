@@ -41,6 +41,7 @@ public struct ServerConfiguration {
     public var TLSEnabled:Bool          = false
     public var certificatePath:String?  = nil
     public var privateKeyPath:String?   = nil
+    public var passphrase:String?       = nil
     
     public init(_ hl7: HL7) {
         self.hl7 = hl7
@@ -80,12 +81,22 @@ public class HL7Server {
         
         if config.TLSEnabled {
             if let certificatePath = config.certificatePath,
-               let privateKeyPath = config.privateKeyPath {
+               let privateKeyPath = config.privateKeyPath,
+               let passphrase = config.passphrase {
+                let key = try NIOSSLPrivateKey(file: privateKeyPath, format: .pem) { completion in
+                    completion(passphrase.utf8)
+                }
+                
                 self.tlsConfiguration = TLSConfiguration.makeServerConfiguration(
                     certificateChain: try NIOSSLCertificate.fromPEMFile(certificatePath).map { .certificate($0) },
-                    privateKey: .file(privateKeyPath)
+                    privateKey: .privateKey(key)
                 )
-                if let conf = self.tlsConfiguration {
+                
+                if var conf = self.tlsConfiguration {
+                    conf.certificateVerification = .none
+                    
+                    print(conf)
+                    
                     self.sslContext = try NIOSSLContext(configuration: conf)
                 }
             }
@@ -99,7 +110,13 @@ public class HL7Server {
                 if self.config.TLSEnabled {
                     if let context = self.sslContext {
                         let TLShandler = NIOSSLServerHandler(context: context)
-                        _ = channel.pipeline.addHandler(TLShandler as ChannelHandler)
+                        return channel.pipeline.addHandler(TLShandler).flatMap {
+                            channel.pipeline.addHandlers([
+                                MessageToByteHandler(MLLPEncoder()),
+                                ByteToMessageHandler(MLLPDecoder(withHL7: self.hl7, responder: self.responder)),
+                                self
+                            ])
+                                }
                     }
                 }
                 

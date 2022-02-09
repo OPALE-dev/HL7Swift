@@ -26,6 +26,9 @@ struct HL7Server: ParsableCommand, HL7ServerDelegate {
     @Option(name: [.customShort("k"), .long], help: "Private key path for TLS")
     var privateKey: String?
     
+    @Option(name: [.customShort("s"), .long], help: "Passphrase for the private key")
+    var passphrase: String = ""
+    
     @Argument(help: "HL7 file output directory (default ~/hl7)")
     var dirPath: String = "~/hl7"
     
@@ -47,7 +50,8 @@ struct HL7Server: ParsableCommand, HL7ServerDelegate {
             config.TLSEnabled = tls
             config.certificatePath = certificate
             config.privateKeyPath = privateKey
-            
+            config.passphrase = passphrase
+
             // start the server
             let server = try HL7Swift.HL7Server(
                 host: self.hostname,
@@ -58,6 +62,7 @@ struct HL7Server: ParsableCommand, HL7ServerDelegate {
             try server.start()
             
         } catch let e {
+            print(e)
             Logger.error(e.localizedDescription)
         }
     }
