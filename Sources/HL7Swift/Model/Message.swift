@@ -337,6 +337,29 @@ public struct Message {
         
         return Version(rawValue: vString)
     }
+    
+    public func getPositionInMessage(_ ofGroup: Group) -> NSRange? {
+        var minLowerBound = self.description.utf16.count
+        var maxUpperBound = 0
+        
+        for item in ofGroup.items {
+            switch item {
+            case .group(let g):
+                if let gRange = self.getPositionInMessage(g) {
+                    maxUpperBound = max(gRange.upperBound, maxUpperBound)
+                    minLowerBound = min(gRange.lowerBound, minLowerBound)
+                }
+                
+            case .segment(let s):
+                if let sRange = self.getPositionInMessage(s) {
+                    maxUpperBound = max(sRange.upperBound, maxUpperBound)
+                    minLowerBound = min(sRange.lowerBound, minLowerBound)
+                }
+            }
+        }
+        
+        return NSRange(location: minLowerBound, length: maxUpperBound - minLowerBound)
+    }
 
     /**
      Returns the start index and the end index of the given segment in the message string

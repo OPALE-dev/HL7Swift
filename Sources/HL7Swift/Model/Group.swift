@@ -101,6 +101,10 @@ public class Group:Node {
             case .group(let itemGroup):
                 if itemGroup.name == name {
                     return itemGroup
+                } else {
+                    if let foundGroup = itemGroup[name] {
+                        return foundGroup
+                    }
                 }
             default:
                 continue
