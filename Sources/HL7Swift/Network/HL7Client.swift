@@ -7,42 +7,78 @@
 
 import Foundation
 import NIO
+import NIOTLS
+import NIOSSL
 
 public class HL7CLient {
     public var host:String!
     public var port:Int!
     public var localPort:Int? = nil
+    public var TLSEnabled:Bool = false
+    public var privateKeyPath:String? = nil
+    public var passphrase:String? = nil
     
     var hl7:HL7!
     var channel:Channel?
     var promise: EventLoopPromise<Message>?
 
+    var tlsConfiguration:TLSConfiguration? = nil
+    var sslContext:NIOSSLContext? = nil
     
-    public init(host: String, port: Int, hl7: HL7) throws {
-        self.host = host
-        self.port = port
-        self.hl7  = hl7
+    
+    public init(host: String, port: Int, hl7: HL7, TLSEnabled:Bool = false) throws {
+        self.host       = host
+        self.port       = port
+        self.hl7        = hl7
+        self.TLSEnabled = TLSEnabled
     }
 
     
     
     // MARK: -
     
-    public func connect() -> EventLoopFuture<Void> {
+    public func connect() throws -> EventLoopFuture<Void> {
         let responder = HL7Responder(hl7: hl7, spec: hl7.spec(ofVersion: .v282)!, facility: "HL7SWIFT", app: "HL7CLIENT")
 
-        let group = MultiThreadedEventLoopGroup(numberOfThreads: 1)
+        if self.TLSEnabled {
+            if let privateKeyPath = self.privateKeyPath,
+               let passphrase = self.passphrase
+            {
+                let key = try NIOSSLPrivateKey(file: privateKeyPath, format: .pem) { completion in
+                    completion(passphrase.utf8)
+                }
+                
+                var conf = TLSConfiguration.makeClientConfiguration()
+                conf.certificateVerification = .none
+                conf.privateKey = .privateKey(key)
+                
+                self.tlsConfiguration = conf
+                self.sslContext = try NIOSSLContext(configuration: conf)
+            }
+        }
         
+        let group = MultiThreadedEventLoopGroup(numberOfThreads: 1)
         let bootstrap = ClientBootstrap(group: group)
             .channelOption(ChannelOptions.socket(SocketOptionLevel(SOL_SOCKET), SO_REUSEADDR), value: 1)
             .channelOption(ChannelOptions.maxMessagesPerRead, value: 10)
             .channelInitializer { channel in
-                channel.pipeline.addHandlers([
+                if let sslContext = self.sslContext, self.TLSEnabled {
+                    let TLShandler = NIOSSLServerHandler(context: sslContext)
+                    return channel.pipeline.addHandler(TLShandler).flatMap {
+                        channel.pipeline.addHandlers([
+                            MessageToByteHandler(MLLPEncoder()),
+                            ByteToMessageHandler(MLLPDecoder(withHL7: self.hl7, responder: responder)),
+                            self
+                        ])
+                    }
+                }
+                
+                return channel.pipeline.addHandlers([
                     MessageToByteHandler(MLLPEncoder()),
                     ByteToMessageHandler(MLLPDecoder(withHL7: self.hl7, responder: responder)),
                     self
                 ])
-        }
+            }
         
         return bootstrap
             .connect(host: self.host, port: self.port)
