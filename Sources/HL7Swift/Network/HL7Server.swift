@@ -82,7 +82,8 @@ public class HL7Server {
         if config.TLSEnabled {
             if let certificatePath = config.certificatePath,
                let privateKeyPath = config.privateKeyPath,
-               let passphrase = config.passphrase {
+               let passphrase = config.passphrase
+            {
                 let key = try NIOSSLPrivateKey(file: privateKeyPath, format: .pem) { completion in
                     completion(passphrase.utf8)
                 }
@@ -94,9 +95,7 @@ public class HL7Server {
                 
                 if var conf = self.tlsConfiguration {
                     conf.certificateVerification = .none
-                    
-                    print(conf)
-                    
+                                        
                     self.sslContext = try NIOSSLContext(configuration: conf)
                 }
             }
@@ -116,7 +115,7 @@ public class HL7Server {
                                 ByteToMessageHandler(MLLPDecoder(withHL7: self.hl7, responder: self.responder)),
                                 self
                             ])
-                                }
+                        }
                     }
                 }
                 

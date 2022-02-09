@@ -17,13 +17,22 @@ struct HL7Client: ParsableCommand {
     @Option(name: .shortAndLong, help: "Port the client connects")
     var port: Int = 2575
     
+    @Option(name: .shortAndLong, help: "Enable TLS")
+    var tls: Bool = false
+    
+    @Option(name: [.customShort("k"), .long], help: "Private key path for TLS")
+    var privateKey: String?
+    
+    @Option(name: [.customShort("s"), .long], help: "Passphrase for the private key")
+    var passphrase: String = ""
+    
     @Argument(help: "HL7 file to send")
     var filePath: String
     
     mutating func run() throws {
         let hl7 = try HL7()
         
-        let client = try HL7Swift.HL7CLient(host: hostname, port: port, hl7: hl7)
+        let client = try HL7Swift.HL7CLient(host: hostname, port: port, hl7: hl7, TLSEnabled: tls)
             
         try client.connect().wait()
         
