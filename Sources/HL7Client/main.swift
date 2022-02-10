@@ -20,6 +20,9 @@ struct HL7Client: ParsableCommand {
     @Option(name: .shortAndLong, help: "Enable TLS")
     var tls: Bool = false
     
+    @Option(name: .shortAndLong, help: "Certificate path for TLS")
+    var certificate: String?
+    
     @Option(name: [.customShort("k"), .long], help: "Private key path for TLS")
     var privateKey: String?
     
@@ -30,21 +33,30 @@ struct HL7Client: ParsableCommand {
     var filePath: String
     
     mutating func run() throws {
-        let hl7 = try HL7()
-        
-        let client = try HL7Swift.HL7CLient(host: hostname, port: port, hl7: hl7, TLSEnabled: tls)
+        do {
+            let hl7 = try HL7()
+            let client = try HL7Swift.HL7CLient(host: hostname, port: port, hl7: hl7, TLSEnabled: tls)
             
-        try client.connect().wait()
-        
-        Logger.info("Connected to \(hostname):\(port)...")
-        
-        if let response = try client.send(fileAt: filePath) {
-            Logger.info("Received \(response.type.name)")
+            client.TLSEnabled = tls
+            client.certificateKeyPath = certificate
+            client.privateKeyPath = privateKey
+            client.passphrase = passphrase
+            
+            let future = try client.connect()
+            try future.wait()
+            
+            Logger.info("Connected to \(hostname):\(port)...")
+            
+            if let response = try client.send(fileAt: filePath) {
+                Logger.info("Received \(response.type.name)")
+                Logger.debug("\n\n\(response.description)\n")
+            }
 
-            Logger.debug("\n\n\(response.description)\n")
+            //client.disconnect()
+        } catch let e {
+            print(e)
+            Logger.error(e.localizedDescription)
         }
-
-        client.disconnect()
     }
 }
 

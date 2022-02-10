@@ -15,6 +15,7 @@ public class HL7CLient {
     public var port:Int!
     public var localPort:Int? = nil
     public var TLSEnabled:Bool = false
+    public var certificateKeyPath:String? = nil
     public var privateKeyPath:String? = nil
     public var passphrase:String? = nil
     
@@ -41,35 +42,33 @@ public class HL7CLient {
         let responder = HL7Responder(hl7: hl7, spec: hl7.spec(ofVersion: .v282)!, facility: "HL7SWIFT", app: "HL7CLIENT")
 
         if self.TLSEnabled {
-            if let privateKeyPath = self.privateKeyPath,
-               let passphrase = self.passphrase
-            {
-                let key = try NIOSSLPrivateKey(file: privateKeyPath, format: .pem) { completion in
-                    completion(passphrase.utf8)
-                }
-                
-                var conf = TLSConfiguration.makeClientConfiguration()
-                conf.certificateVerification = .none
-                conf.privateKey = .privateKey(key)
-                
-                self.tlsConfiguration = conf
-                self.sslContext = try NIOSSLContext(configuration: conf)
-            }
+            try initTLS()
         }
         
         let group = MultiThreadedEventLoopGroup(numberOfThreads: 1)
         let bootstrap = ClientBootstrap(group: group)
             .channelOption(ChannelOptions.socket(SocketOptionLevel(SOL_SOCKET), SO_REUSEADDR), value: 1)
-            .channelOption(ChannelOptions.maxMessagesPerRead, value: 10)
+            .channelOption(ChannelOptions.maxMessagesPerRead, value: 16)
             .channelInitializer { channel in
                 if let sslContext = self.sslContext, self.TLSEnabled {
-                    let TLShandler = NIOSSLServerHandler(context: sslContext)
-                    return channel.pipeline.addHandler(TLShandler).flatMap {
-                        channel.pipeline.addHandlers([
-                            MessageToByteHandler(MLLPEncoder()),
-                            ByteToMessageHandler(MLLPDecoder(withHL7: self.hl7, responder: responder)),
-                            self
-                        ])
+                    print("SSL context OK")
+                    do {
+                        let TLShandler = try NIOSSLClientHandler(context: sslContext, serverHostname: self.host, customVerificationCallback: { certs, promise in
+                            print("customVerificationCallback success")
+                            return promise.succeed(.certificateVerified)
+                        })
+                        
+                        print("TLShandler OK")
+                        
+                        return channel.pipeline.addHandler(TLShandler).flatMap {
+                            channel.pipeline.addHandlers([
+                                MessageToByteHandler(MLLPEncoder()),
+                                ByteToMessageHandler(MLLPDecoder(withHL7: self.hl7, responder: responder)),
+                                self
+                            ])
+                        }
+                    } catch let e {
+                        print(e)
                     }
                 }
                 
@@ -79,6 +78,8 @@ public class HL7CLient {
                     self
                 ])
             }
+        
+        
         
         return bootstrap
             .connect(host: self.host, port: self.port)
@@ -137,6 +138,37 @@ public class HL7CLient {
 
 
 
+private extension HL7CLient {
+    func initTLS() throws {
+        Logger.debug("TLS enabled")
+        
+        if let certificateKeyPath = self.certificateKeyPath,
+           let privateKeyPath = self.privateKeyPath,
+           let passphrase = self.passphrase
+        {
+            Logger.debug("TLS config OK")
+            
+            let cert = try NIOSSLCertificate(file: certificateKeyPath, format: .pem)
+            let key = try NIOSSLPrivateKey(file: privateKeyPath, format: .pem) { completion in
+                completion(passphrase.utf8)
+            }
+                    
+            var conf = TLSConfiguration.makeClientConfiguration()
+            conf.certificateVerification = .fullVerification
+//            conf.renegotiationSupport = .none
+//            conf.privateKey = .privateKey(key)
+//            conf.trustRoots = .certificates([cert])
+
+            self.tlsConfiguration = conf
+            self.sslContext = try NIOSSLContext(configuration: conf)
+            
+            Logger.debug("TLS init done")
+        }
+    }
+}
+
+
+
 // MARK: -
 
 extension HL7CLient: ChannelInboundHandler {
@@ -177,6 +209,7 @@ extension HL7CLient: ChannelInboundHandler {
     
     
     public func errorCaught(context: ChannelHandlerContext, error: Error) {
+        print("errorCaught \(error)")
         promise?.fail(error)
     }
 }

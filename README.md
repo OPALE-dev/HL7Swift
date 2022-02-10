@@ -212,7 +212,7 @@ Below an example of auto-signed setup with `HL7Server` and `hl7snd` binary tool 
 8. Launch `hl7snd` from `dcm4chee`package with following args : 
 
         cd dcm4chee-5.x/bin/
-        ./hl7snd --tls --trust-store "$(/usr/libexec/java_home)/lib/security/cacerts" --trust-store-pass changeit --key-pass "123456" --key-store-pass "123456" --key-store server_keystore.jks -c 127.0.0.1:2575 /path/to/file.hl7
+        ./hl7snd --tls --trust-store "$(/usr/libexec/java_home)/lib/security/cacerts" --trust-store-pass "changeit" --key-store-pass "123456" --key-store server_keystore.jks -c 127.0.0.1:2575 /path/to/file.hl7
 
 ## Contributors
 

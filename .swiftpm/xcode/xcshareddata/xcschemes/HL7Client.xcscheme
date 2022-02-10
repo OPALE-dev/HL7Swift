@@ -76,7 +76,19 @@
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = "-h 127.0.0.1 -p 2575 --tls=true"
+            argument = "-h localhost -p 2575 --tls=true"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "--passphrase=123456"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "--certificate=&quot;/Users/nark/Desktop/hashelset-test-tls-cert/Hashelset-cert.pem&quot;"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "--private-key=&quot;/Users/nark/Desktop/hashelset-test-tls-cert/Hashelset-pk.pem&quot;"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument

@@ -80,6 +80,10 @@
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
+            argument = "--passphrase=123456"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
             argument = "--certificate=&quot;/Users/nark/Desktop/hashelset-test-tls-cert/Hashelset-cert.pem&quot;"
             isEnabled = "YES">
          </CommandLineArgument>
