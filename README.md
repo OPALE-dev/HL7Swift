@@ -73,11 +73,11 @@ To parse a message, you don't need to know its specific version as the parser wi
 
 You can load a HL7 message from a file:
 
-    let message = Message(withFileAt: fileURL)
+    let message = Message(withFileAt: fileURL, hl7: hl7)
     
 Or directly from string:
 
-    let message = Message(hl7String)
+    let message = Message(hl7String, hl7: hl7)
     
 When initialized, the `Message` object parses HL7 segments and fields to determine the message version (`MSH-12`) and type (`MSH-9`).
 Based in these informations, it provides a related `SpecMessage` instance if available which represent the HL7 message specification.
@@ -131,13 +131,17 @@ _NB: if existing, a previous segment with the same code will be replaced, otherw
 
 Set a field:
 
-    message[HL7.MSH]?[HL7.Message_Type] = Field("ACK")
+    message[HL7.MSH]?[HL7.Message_Type] = "ACK"
 
 ### Spec Message
 
 The `SpecMessage` class provides a set of tools to help categorize parsed messages regarding to the HL7 specification. It supplies a `Group` instance (`specMessage.rootGroup`) that represents the [HL7 model](https://build.fhir.org/ig/FHIR/fluentpath/v2-class-model.png) as define by the specification.
 
 ### Terser
+
+_TBD_
+
+### Network
 
 _TBD_
 
@@ -165,11 +169,55 @@ Or with swift doc:
 
 ### HL7Client
 
-_TBD_
+`HL7Client` is a very basic HL7 client writen in Swift against HL7Swift library. It supports multiple files input and minimal TLS communications.
 
+    USAGE: hl7-client [--hostname <hostname>] [--port <port>] [--tls <tls>] [<file-paths> ...]
+
+    ARGUMENTS:
+      <file-paths>            HL7 file to send
+
+    OPTIONS:
+      -h, --hostname <hostname>
+                              Hostname client connects to (default: 127.0.0.1)
+      -p, --port <port>       Port client connects to (default: 2575)
+      -t, --tls <tls>         Enable TLS (default: false)
+      -h, --help              Show help information.
+
+Basic example (TLS enabled):
+
+    ./HL7Client -t true -h localhost -p 2575 /path/to/ORU.hl7
+    
+    # Use `localhost` or FQDN if TLS enabled, IP address doesn't work.
+    
 ### HL7Server
 
-_TBD_
+`HL7Server` is a very basic HL7 server writen in Swift against HL7Swift library.
+
+    USAGE: hl7-server [--hostname <hostname>] [--port <port>] [--tls <tls>] [--certificate <certificate>] [--private-key <private-key>] [--passphrase <passphrase>] [<dir-path>]
+
+    ARGUMENTS:
+      <dir-path>              HL7 file output directory (default ~/hl7) (default: ~/hl7)
+
+    OPTIONS:
+      -h, --hostname <hostname>
+                              Hostname the server binds (default 127.0.0.1) (default: 127.0.0.1)
+      -p, --port <port>       Port the server binds (default 2575) (default: 2575)
+      -t, --tls <tls>         Enable TLS (default: false)
+      -c, --certificate <certificate>
+                              Certificate path for TLS
+      -k, --private-key <private-key>
+                              Private key path for TLS
+      -s, --passphrase <passphrase>
+                              Passphrase for the private key
+      -h, --help              Show help information.
+
+Basic example:
+
+    ./HL7Server -p 2575
+
+TLS example:
+
+    ./HL7Server -t true -s 123456 -s /path/to/cert.pem -k /path/to/pk.pem
 
 ## Notes about TLS
 

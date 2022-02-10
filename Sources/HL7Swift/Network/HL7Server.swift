@@ -35,8 +35,11 @@ public extension HL7ServerDelegate {
 public struct ServerConfiguration {
     public var hl7:HL7!
 
-    public var name:String         = "HL7SERVER"
-    public var facility:String     = "HL7SERVER"
+    public var host:String              = "0.0.0.0"
+    public var port:Int                 = 2575
+    
+    public var name:String              = "HL7SERVER"
+    public var facility:String          = "HL7SERVER"
 
     public var TLSEnabled:Bool          = false
     public var certificatePath:String?  = nil
@@ -52,14 +55,7 @@ public struct ServerConfiguration {
 public class HL7Server {
     var hl7:HL7
     
-    public var host:String  = "0.0.0.0"
-    public var port:Int     = 2575
-    
     public var config:ServerConfiguration
-    
-    var name:String         = "HL7SERVER"
-    var facility:String     = "HL7SERVER"
-
     public var delegate:HL7ServerDelegate?
     var responder:HL7Responder!
     
@@ -70,14 +66,12 @@ public class HL7Server {
     var tlsConfiguration:TLSConfiguration? = nil
     var sslContext:NIOSSLContext? = nil
     
-    public init(host: String, port: Int, config:ServerConfiguration, delegate: HL7ServerDelegate? = nil) throws {
+    public init(_ config:ServerConfiguration, delegate: HL7ServerDelegate? = nil) throws {
         self.config     = config
         self.hl7        = config.hl7
-        self.host       = host
-        self.port       = port
         self.delegate   = delegate
         
-        self.responder = HL7Responder(hl7: hl7, spec: hl7.spec(ofVersion: .v282)!, facility: facility, app: name)
+        self.responder = HL7Responder(hl7: hl7, spec: hl7.spec(ofVersion: .v282)!, facility: config.facility, app: config.name)
         
         if config.TLSEnabled {
             try initTLS()
@@ -91,7 +85,7 @@ public class HL7Server {
                 if self.config.TLSEnabled {
                     if let context = self.sslContext {
                         let TLShandler = NIOSSLServerHandler(context: context) { certs, promise in
-                            print("NIOSSLServerHandler")
+                            Logger.debug("NIOSSLServerHandler")
                             promise.succeed(.certificateVerified)
                         }
                         return channel.pipeline.addHandler(TLShandler).flatMap {
@@ -128,9 +122,9 @@ public class HL7Server {
     
     
     public func start() throws {
-        channel = try bootstrap.bind(host: host, port: port).wait()
+        channel = try bootstrap.bind(host: config.host, port: config.port).wait()
         
-        Logger.info("Server listening on port \(port)...")
+        Logger.info("Server listening on port \(config.port)...")
         
         if let delegate = self.delegate {
             delegate.server(serverStarted: self)
@@ -224,7 +218,7 @@ extension HL7Server : ChannelInboundHandler, ChannelOutboundHandler {
         guard let spec = hl7.spec(ofVersion: message.version) else {
             Logger.error(HL7Error.unsupportedVersion(message: "Cannor read version").localizedDescription)
             
-            //try? responder.replyNAK(withMessage: "Cannor read version", inContext: context)
+            //try? responder.replyNAK(withMessage: "Cannot read version", inContext: context)
             
             return
         }
@@ -268,8 +262,8 @@ extension HL7Server : ChannelInboundHandler, ChannelOutboundHandler {
                     ack[HL7.MSH]![HL7.Receiving_Application] = r
                 }
                 
-                ack[HL7.MSH]![HL7.Sending_Facility] = facility
-                ack[HL7.MSH]![HL7.Sending_Application] = name
+                ack[HL7.MSH]![HL7.Sending_Facility] = config.facility
+                ack[HL7.MSH]![HL7.Sending_Application] = config.name
                 
                 ack[HL7.MSH]![HL7.Message_Type] = "ACK"
                 // fill MSA
@@ -302,6 +296,7 @@ extension HL7Server : ChannelInboundHandler, ChannelOutboundHandler {
         
         Logger.error(error.localizedDescription)
         
+        // Reply NAK in case of error
         // TODO: test test test
         try? responder.replyNAK(withMessage: error.localizedDescription, inContext: context)
     }

@@ -10,6 +10,24 @@ import NIO
 import NIOTLS
 import NIOSSL
 
+
+public struct ClientConfiguration {
+    public var hl7:HL7!
+
+    public var host:String      = "127.0.0.1"
+    public var port:Int         = 2575
+    
+    public var name:String      = "HL7CLIENT"
+    public var facility:String  = "HL7CLIENT"
+
+    public var TLSEnabled:Bool  = false
+    
+    public init(_ hl7: HL7) {
+        self.hl7 = hl7
+    }
+}
+
+
 public class HL7CLient {
     public var host:String!
     public var port:Int!

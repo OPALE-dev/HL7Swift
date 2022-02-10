@@ -25,20 +25,20 @@ class HL7Responder {
         let version = spec.version
 
         if let spec = hl7.spec(ofVersion: version) {
-            let nak = try Message(HL7.V282.ACK(), spec: spec, preloadSegments: [HL7.MSH, HL7.MSA])
-            
-            print(nak[HL7.MSH]![HL7.Receiving_Application]!)
-            
+            let nak = try Message(HL7.V282.ACK(), spec: spec, preloadSegments: [HL7.MSH, HL7.MSA, HL7.ERR])
+                        
             // MSH
-//            nak[HL7.MSH]![HL7.Receiving_Facility]! = Field("UNKNOW")
-//            //nak[HL7.MSH]![HL7.Receiving_Application]! = Field("UNKNOW")
-//            nak[HL7.MSH]![HL7.Sending_Facility]! = Field(facility)
-//            nak[HL7.MSH]![HL7.Sending_Application]! = Field(app)
-            nak[HL7.MSH]![HL7.Message_Type]! = "NAK"
+            nak[HL7.MSH]?[HL7.Sending_Facility]?        = facility
+            nak[HL7.MSH]?[HL7.Sending_Application]?     = app
+            nak[HL7.MSH]?[HL7.Message_Type]?            = "NAK"
             
             // MSA
-            nak[HL7.MSA]![HL7.Acknowledgment_Code]! = AcknowledgeStatus.AR.rawValue
-//            nak[HL7.MSA]![HL7.Message_Control_ID]! = Field("KO")
+            nak[HL7.MSA]?[HL7.Acknowledgment_Code]? = AcknowledgeStatus.AR.rawValue
+            nak[HL7.MSA]?[HL7.Message_Control_ID]?  = "KO"
+            
+            // ERR
+            nak[HL7.ERR]?[HL7.User_Message]? = "HL7 Error"
+            nak[HL7.ERR]?[HL7.Diagnostic_Information]? = text
             
             Logger.info("### Reply NAK (\(nak.version.rawValue)):\n\n\(nak)\n")
             

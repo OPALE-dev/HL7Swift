@@ -55,12 +55,7 @@ struct HL7Server: ParsableCommand, HL7ServerDelegate {
             config.passphrase = passphrase
 
             // start the server
-            let server = try HL7Swift.HL7Server(
-                host: self.hostname,
-                port: self.port,
-                config: config,
-                delegate: self)
-            
+            let server = try HL7Swift.HL7Server( config, delegate: self)
             try server.start()
             
         } catch let e {
