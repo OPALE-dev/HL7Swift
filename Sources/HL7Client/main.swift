@@ -11,17 +11,17 @@ import ArgumentParser
 import NIO
 
 struct HL7Client: ParsableCommand {
-    @Option(name: .shortAndLong, help: "Hostname the client connects")
+    @Option(name: .shortAndLong, help: "Hostname client connects to")
     var hostname: String = "127.0.0.1"
     
-    @Option(name: .shortAndLong, help: "Port the client connects")
+    @Option(name: .shortAndLong, help: "Port client connects to")
     var port: Int = 2575
     
     @Option(name: .shortAndLong, help: "Enable TLS")
     var tls: Bool = false
     
     @Argument(help: "HL7 file to send")
-    var filePath: String
+    var filePaths: [String]
     
     mutating func run() throws {
         do {
@@ -35,9 +35,13 @@ struct HL7Client: ParsableCommand {
             
             Logger.info("Connected to \(hostname):\(port)...")
             
-            if let response = try client.send(fileAt: filePath) {
-                Logger.info("### Received \(response.type.name)")
-                Logger.debug("\n\n\(response.description)\n")
+            for filePath in filePaths {
+                Logger.info("Send file: \(filePath)")
+                
+                if let response = try client.send(fileAt: filePath) {
+                    Logger.info("### Received \(response.type.name)")
+                    Logger.debug("\n\n\(response.description)\n")
+                }
             }
 
             client.disconnect()

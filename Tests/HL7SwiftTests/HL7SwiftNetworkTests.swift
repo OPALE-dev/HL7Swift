@@ -29,7 +29,7 @@ final class HL7SwiftNetworkTests: XCTestCase {
 
         var server:HL7Server? = nil
         
-        server = try HL7Server(host: host, port: port, config: ServerConfiguration(hl7))
+        server = try HL7Server(ServerConfiguration(hl7))
         
         queue.async {
             do {
@@ -61,7 +61,7 @@ final class HL7SwiftNetworkTests: XCTestCase {
         var client:HL7CLient? = nil
         
         client = try HL7CLient(host: host, port: port, hl7: self.hl7)
-        server = try HL7Server(host: host, port: port, config: ServerConfiguration(hl7))
+        server = try HL7Server(ServerConfiguration(hl7))
         
         serialQueue.async {
             do {
@@ -123,7 +123,7 @@ final class HL7SwiftNetworkTests: XCTestCase {
         var client:HL7CLient? = nil
         
         client = try HL7CLient(host: host, port: port, hl7: self.hl7)
-        server = try HL7Server(host: host, port: port, config: ServerConfiguration(hl7))
+        server = try HL7Server(ServerConfiguration(hl7))
         
         serialQueue.async {
             do {
