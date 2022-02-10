@@ -80,25 +80,7 @@ public class HL7Server {
         self.responder = HL7Responder(hl7: hl7, spec: hl7.spec(ofVersion: .v282)!, facility: facility, app: name)
         
         if config.TLSEnabled {
-            if let certificatePath = config.certificatePath,
-               let privateKeyPath = config.privateKeyPath,
-               let passphrase = config.passphrase
-            {
-                let key = try NIOSSLPrivateKey(file: privateKeyPath, format: .pem) { completion in
-                    completion(passphrase.utf8)
-                }
-                
-                self.tlsConfiguration = TLSConfiguration.makeServerConfiguration(
-                    certificateChain: try NIOSSLCertificate.fromPEMFile(certificatePath).map { .certificate($0) },
-                    privateKey: .privateKey(key)
-                )
-                
-                if var conf = self.tlsConfiguration {
-                    conf.certificateVerification = .none
-                                        
-                    self.sslContext = try NIOSSLContext(configuration: conf)
-                }
-            }
+            try initTLS()
         }
          
         self.group = MultiThreadedEventLoopGroup(numberOfThreads: System.coreCount)
@@ -169,6 +151,35 @@ public class HL7Server {
     }
 }
     
+
+
+private extension HL7Server {
+    func initTLS() throws {
+        Logger.debug("TLS enabled")
+        
+        if let certificatePath = config.certificatePath,
+           let privateKeyPath = config.privateKeyPath,
+           let passphrase = config.passphrase
+        {
+            let key = try NIOSSLPrivateKey(file: privateKeyPath, format: .pem) { completion in
+                completion(passphrase.utf8)
+            }
+            
+            self.tlsConfiguration = TLSConfiguration.makeServerConfiguration(
+                certificateChain: try NIOSSLCertificate.fromPEMFile(certificatePath).map { .certificate($0) },
+                privateKey: .privateKey(key)
+            )
+            
+            if var conf = self.tlsConfiguration {
+                //conf.certificateVerification = .noHostnameVerification
+                                    
+                self.sslContext = try NIOSSLContext(configuration: conf)
+                
+                Logger.debug("TLS init done")
+            }
+        }
+    }
+}
     
 
 // MARK: -
@@ -272,6 +283,8 @@ extension HL7Server : ChannelInboundHandler, ChannelOutboundHandler {
     }
     
     public func errorCaught(context: ChannelHandlerContext, error: Error) {
+        print(error)
+        
         Logger.error(error.localizedDescription)
         
         // TODO: test test test
