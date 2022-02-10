@@ -76,23 +76,11 @@
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
+            argument = "&quot;/Users/nark/Desktop/hl7/ORU_R01 - .4.hl7&quot;"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
             argument = "-h localhost -p 2575 --tls=true"
-            isEnabled = "YES">
-         </CommandLineArgument>
-         <CommandLineArgument
-            argument = "--passphrase=123456"
-            isEnabled = "YES">
-         </CommandLineArgument>
-         <CommandLineArgument
-            argument = "--certificate=&quot;/Users/nark/Desktop/hashelset-test-tls-cert/Hashelset-cert.pem&quot;"
-            isEnabled = "YES">
-         </CommandLineArgument>
-         <CommandLineArgument
-            argument = "--private-key=&quot;/Users/nark/Desktop/hashelset-test-tls-cert/Hashelset-pk.pem&quot;"
-            isEnabled = "YES">
-         </CommandLineArgument>
-         <CommandLineArgument
-            argument = "&quot;/Users/nark/Development/Opale/Swift/hl7swift/Tests/HL7SwiftTests/Resources/OML_O21 - 5.txt&quot;"
             isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>
