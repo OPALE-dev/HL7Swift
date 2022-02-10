@@ -34,6 +34,8 @@ struct HL7Server: ParsableCommand, HL7ServerDelegate {
     
     
     mutating func run() throws {
+        Logger.setMaxLevel(.VERBOSE)
+        
         do {
             let hl7 = try HL7()
             
@@ -93,11 +95,11 @@ struct HL7Server: ParsableCommand, HL7ServerDelegate {
     }
     
     func server(_ server: HL7Swift.HL7Server, channelDidBecomeInactive channel: Channel) {
-        print("channelDidBecomeInactive \(channel.remoteAddress)")
+
     }
     
     func server(_ server: HL7Swift.HL7Server, channelDidBecomeActive channel: Channel) {
-        print("channelDidBecomeActive \(channel.remoteAddress)")
+
     }
 }
 

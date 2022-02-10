@@ -90,7 +90,10 @@ public class HL7Server {
             .childChannelInitializer { channel in
                 if self.config.TLSEnabled {
                     if let context = self.sslContext {
-                        let TLShandler = NIOSSLServerHandler(context: context)
+                        let TLShandler = NIOSSLServerHandler(context: context) { certs, promise in
+                            print("NIOSSLServerHandler")
+                            promise.succeed(.certificateVerified)
+                        }
                         return channel.pipeline.addHandler(TLShandler).flatMap {
                             channel.pipeline.addHandlers([
                                 MessageToByteHandler(MLLPEncoder()),
@@ -155,7 +158,7 @@ public class HL7Server {
 
 private extension HL7Server {
     func initTLS() throws {
-        Logger.debug("TLS enabled")
+        Logger.info("TLS enabled")
         
         if let certificatePath = config.certificatePath,
            let privateKeyPath = config.privateKeyPath,
@@ -171,11 +174,11 @@ private extension HL7Server {
             )
             
             if var conf = self.tlsConfiguration {
-                //conf.certificateVerification = .noHostnameVerification
-                                    
+                conf.certificateVerification = .none
                 self.sslContext = try NIOSSLContext(configuration: conf)
-                
+                                
                 Logger.debug("TLS init done")
+                Logger.debug("\(self.tlsConfiguration!)")
             }
         }
     }
@@ -188,16 +191,17 @@ extension HL7Server : ChannelInboundHandler, ChannelOutboundHandler {
     public typealias InboundIn = Message
     public typealias OutboundOut = Message
     
+    public func channelRegistered(context: ChannelHandlerContext) {
+        Logger.debug("Channel registered \(context.channel)")
+    }
     
     public func channelUnregistered(context: ChannelHandlerContext) {
-//        if let delegate = self.delegate {
-//            DispatchQueue.main.async {
-//                delegate.server(self, channelDidBecomeInactive: channel)
-//            }
-//        }
+        Logger.debug("Channel unregistered \(context.channel)")
     }
     
     public func channelActive(context: ChannelHandlerContext) {
+        Logger.debug("Channel active \(context.channel)")
+        
         if let delegate = self.delegate {
             //DispatchQueue.main.async {
                 delegate.server(self, channelDidBecomeActive: context.channel)
@@ -206,6 +210,7 @@ extension HL7Server : ChannelInboundHandler, ChannelOutboundHandler {
     }
     
     public func channelInactive(context: ChannelHandlerContext) {
+        Logger.debug("Channel inactive \(context.channel)")
         if let delegate = self.delegate {
             //DispatchQueue.main.async {
                 delegate.server(self, channelDidBecomeInactive: self.channel)
@@ -237,7 +242,8 @@ extension HL7Server : ChannelInboundHandler, ChannelOutboundHandler {
             delegate.server(self, receive: message, from: fromTo, channel: context.channel)
         }
         
-        Logger.info("### Receive HL7 (\(spec.version.rawValue)) message:\n\n\(message)\n")
+        Logger.info("### Received HL7 (\(spec.version.rawValue)) message \(message.type.name)")
+        Logger.debug("\n\n\(message)\n")
         
         // get remote name and facility (TODO: handle optionals below)
         let remoteName = message[HL7.MSH]![HL7.Sending_Application]
@@ -270,8 +276,8 @@ extension HL7Server : ChannelInboundHandler, ChannelOutboundHandler {
                 ack[HL7.MSA]![HL7.Acknowledgment_Code] = status.rawValue
                 ack[HL7.MSA]![HL7.Message_Control_ID] = "OK"
                 
-                Logger.info("### Reply ACK (\(ack.version.rawValue)):\n\n\(ack)\n")
-                
+                Logger.info("### Reply ACK (\(ack.version.rawValue))")
+                Logger.debug("\n\n\(ack)\n")
                 
                 if let delegate = self.delegate {
                     delegate.server(self, send: ack, to: fromTo, channel: context.channel)
@@ -283,7 +289,16 @@ extension HL7Server : ChannelInboundHandler, ChannelOutboundHandler {
     }
     
     public func errorCaught(context: ChannelHandlerContext, error: Error) {
-        print(error)
+        // Ignore unclean shutdown from TLS
+        // TODO: check if it's OK in this particular case
+        // hint: https://github.com/apple/swift-nio-ssl/issues/18
+        if let nioError = error as? NIOSSLError {
+            if self.config.TLSEnabled {
+                if nioError == .uncleanShutdown {
+                    return
+                }
+            }
+        }
         
         Logger.error(error.localizedDescription)
         

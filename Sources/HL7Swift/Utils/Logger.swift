@@ -114,7 +114,7 @@ public class Logger {
             if let bundleName = Bundle.main.object(forInfoDictionaryKey: "CFBundleName") as? String {
                 return bundleName
             }
-            return "DcmSwift"
+            return "HL7Swift"
         }
     }
     
