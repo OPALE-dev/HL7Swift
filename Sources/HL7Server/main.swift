@@ -103,3 +103,4 @@ struct HL7Server: ParsableCommand, HL7ServerDelegate {
 // MARK: -
 
 HL7Server.main()
+
