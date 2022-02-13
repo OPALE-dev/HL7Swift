@@ -5,6 +5,10 @@ import PackageDescription
 
 let package = Package(
     name: "HL7Swift",
+    platforms: [
+        .macOS(.v10_13),
+        .iOS(.v12)
+    ],
     products: [
         // Products define the executables and libraries a package produces, and make them visible to other packages.
         .library(
@@ -18,7 +22,9 @@ let package = Package(
         // Dependencies declare other packages that this package depends on.
         .package(url: "https://github.com/apple/swift-nio.git", from: "2.37.0"),
         .package(url: "https://github.com/apple/swift-nio-ssl.git", from: "2.17.2"),
-        .package(url: "https://github.com/apple/swift-argument-parser", from: "0.4.0")
+        .package(url: "https://github.com/apple/swift-argument-parser", from: "0.4.0"),
+        .package(url: "https://github.com/apple/FHIRModels.git", .upToNextMajor(from: "0.2.0")),
+        .package(url: "https://github.com/swiftcsv/SwiftCSV.git", from: "0.6.1")
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
@@ -27,6 +33,8 @@ let package = Package(
             name: "HL7Swift",
             dependencies: [
                 "SwiftGenerator",
+                "SwiftCSV",
+                .product(name: "ModelsR4", package: "FHIRModels"),
                 .product(name: "NIO", package: "swift-nio"),
                 .product(name: "NIOTLS", package: "swift-nio"),
                 .product(name: "NIOSSL", package: "swift-nio-ssl")
