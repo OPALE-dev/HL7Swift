@@ -7,6 +7,7 @@
 
 import XCTest
 import HL7Swift
+import ModelsR4
 @testable import HL7Swift
 
 
@@ -352,6 +353,25 @@ final class HL7SwiftTests: XCTestCase {
             assert(r3 != nil)
             assert(Array(r3!.keys).count == 15)
         }
+    }
+    
+    
+    
+    func testFHIR() {
+        let converter = HL7v2ToFHIR4Converter()
+        
+        
+//        let patient = Patient()
+//
+//        patient.name = [HumanName()]
+//        patient.name?[0].given = ["John"]
+//        patient.name?[0].family = "Doe"
+//
+//        let encoder = JSONEncoder()
+//        let data = try? encoder.encode(patient)
+//        let string = String(data: data!, encoding: .utf8)
+//
+//        print(string!)
     }
     
 

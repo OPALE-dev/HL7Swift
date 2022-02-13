@@ -68,7 +68,7 @@ public class HL7CLient {
                 if let sslContext = self.sslContext, self.TLSEnabled {
                     do {
                         let TLShandler = try NIOSSLClientHandler(context: sslContext, serverHostname: self.host, customVerificationCallback: { certs, promise in
-
+                            print("customVerificationCallback")
                             return promise.succeed(.certificateVerified)
                         })
                                                 
@@ -160,6 +160,10 @@ private extension HL7CLient {
         var conf = TLSConfiguration.makeClientConfiguration()
         conf.certificateVerification = .none
 
+        // Test with hl7rcv (dcm4chee)
+//         conf.minimumTLSVersion = .tlsv12
+//         conf.cipherSuiteValues = [.TLS_RSA_WITH_AES_128_CBC_SHA]
+        
         self.tlsConfiguration = conf
         self.sslContext = try NIOSSLContext(configuration: conf)
         

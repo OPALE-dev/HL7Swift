@@ -2,6 +2,15 @@
   "object": {
     "pins": [
       {
+        "package": "FHIRModels",
+        "repositoryURL": "https://github.com/apple/FHIRModels.git",
+        "state": {
+          "branch": null,
+          "revision": "c91e5bb74397136f79656bebdfda76a523d3e88c",
+          "version": "0.3.2"
+        }
+      },
+      {
         "package": "swift-argument-parser",
         "repositoryURL": "https://github.com/apple/swift-argument-parser",
         "state": {
@@ -26,6 +35,15 @@
           "branch": null,
           "revision": "52a486ff6de9bc3e26bf634c5413c41c5fa89ca5",
           "version": "2.17.2"
+        }
+      },
+      {
+        "package": "SwiftCSV",
+        "repositoryURL": "https://github.com/swiftcsv/SwiftCSV.git",
+        "state": {
+          "branch": null,
+          "revision": "039cc273dcc91f4c9d85e05a2514bbe63e7dde60",
+          "version": "0.6.1"
         }
       }
     ]
