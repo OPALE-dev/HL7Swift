@@ -16,22 +16,22 @@ import ModelsR4
  Represents a postal address
  */
 public struct XAD {
-    var streetAddress:String?
-    var otherDesignation:String?
-    var city:String?
-    var stateOrProvince:String?
-    var zipOrPostalCode:String?
-    var country:String?
-    var addressType:String?
-    var otherGeographicDesignation:String?
-    var countyParishCode:String?
-    var censusTract:String?
-    var addressRepresentationCode:String?
-    var addressValidityRange:String?
-    var effectiveDate:String?
-    var expirationDate:String?
+    public var streetAddress:String?
+    public var otherDesignation:String?
+    public var city:String?
+    public var stateOrProvince:String?
+    public var zipOrPostalCode:String?
+    public var country:String?
+    public var addressType:String?
+    public var otherGeographicDesignation:String?
+    public var countyParishCode:String?
+    public var censusTract:String?
+    public var addressRepresentationCode:String?
+    public var addressValidityRange:String?
+    public var effectiveDate:String?
+    public var expirationDate:String?
     
-    var cell:Cell
+    public var cell:Cell
 
     public init(_ cell:Cell) {
         self.cell = cell
@@ -94,7 +94,7 @@ public struct XAD {
     }
     
     
-    var addressUse:AddressUse? {
+    public var addressUse:AddressUse? {
         if addressType?.lowercased() == "BA".lowercased() || addressType == "Bad address".lowercased() {
             return .old
         }

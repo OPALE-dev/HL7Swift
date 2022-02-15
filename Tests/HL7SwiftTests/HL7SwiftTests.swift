@@ -358,64 +358,6 @@ final class HL7SwiftTests: XCTestCase {
     }
     
     
-    
-    func testHL7v2ToFHIRR4Converter() throws {
-        if let url = Bundle.module.url(forResource: "ORU_R01 - 3", withExtension: "txt") {
-            let expectation = XCTestExpectation(description: "Connect to server")
-            
-            expectation.expectedFulfillmentCount = 1
-            
-            let message = try Message(withFileAt: url, hl7: hl7)
-
-            let converter = try HL7v2ToFHIRR4Converter()
-
-            if let jsonString = try converter.convert(message) {
-                let httpClient = HTTPClient(eventLoopGroupProvider: .createNew)
-                
-                defer {
-                    try? httpClient.syncShutdown()
-                }
-                
-                var request = try HTTPClient.Request(url: "http://localhost:8080/fhir/Bundle", method: .POST)
-                request.headers.add(name: "Content-Type", value: "application/fhir+json")
-                request.body = HTTPClient.Body.string(jsonString)
-
-                httpClient.execute(request: request).whenComplete { result in
-                    switch result {
-                    case .failure(let error):
-                        print("ERROR \(error)")
-                        
-                    case .success(let response):
-                        print(response)
-                        
-                        expectation.fulfill()
-                        
-                        if response.status == .ok {
-                            // handle response
-                        } else {
-                            // handle remote error
-                        }
-                    }
-                }
-                
-                wait(for: [expectation], timeout: 5.0)
-            }
-        }
-                
-        
-//        let patient = Patient()
-//
-//        patient.name = [HumanName()]
-//        patient.name?[0].given = ["John"]
-//        patient.name?[0].family = "Doe"
-//
-//        let encoder = JSONEncoder()
-//        let data = try? encoder.encode(patient)
-//        let string = String(data: data!, encoding: .utf8)
-//
-//        print(string!)
-    }
-    
 
     // TODO : put this elsewhere! (integrate in CodeGen binary?)
 //        func testSegmentCodesList() {

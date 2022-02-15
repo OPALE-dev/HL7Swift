@@ -12,31 +12,31 @@ import ModelsR4
  Represents a Person Name
  */
 public struct XCN {
-    var idNumber:String?
-    var familyName:String?
-    var givenName:String?
-    var secondAndFurtherGivenNamesOrInitialsThereof:String?
-    var suffix:String?
-    var prefix:String?
-    var degree:String?
-    var sourceTable:String?
-    var assigningAuthority:String?
-    var nameTypeCode:String?
-    var identifierCheckDigit:String?
-    var checkDigitScheme:String?
-    var identifierTypeCode:String?
-    var assigningFacility:String?
-    var nameRepresentationCode:String?
-    var nameContext:String?
-    var nameValidityRange:String?
-    var nameAssenblyOrder:String?
-    var effectiveDate:String?
-    var expirationDate:String?
-    var professionalSuffix:String?
-    var assigningJurisdiction:String?
-    var assigningAgencyOrDepartment:String?
+    public var idNumber:String?
+    public var familyName:String?
+    public var givenName:String?
+    public var secondAndFurtherGivenNamesOrInitialsThereof:String?
+    public var suffix:String?
+    public var prefix:String?
+    public var degree:String?
+    public var sourceTable:String?
+    public var assigningAuthority:String?
+    public var nameTypeCode:String?
+    public var identifierCheckDigit:String?
+    public var checkDigitScheme:String?
+    public var identifierTypeCode:String?
+    public var assigningFacility:String?
+    public var nameRepresentationCode:String?
+    public var nameContext:String?
+    public var nameValidityRange:String?
+    public var nameAssenblyOrder:String?
+    public var effectiveDate:String?
+    public var expirationDate:String?
+    public var professionalSuffix:String?
+    public var assigningJurisdiction:String?
+    public var assigningAgencyOrDepartment:String?
     
-    var cell:Cell
+    public var cell:Cell
     
     public init(_ cell:Cell) {
         self.cell = cell
@@ -131,7 +131,7 @@ public struct XCN {
     }
     
     
-    var nameUse:NameUse? {
+    public var nameUse:NameUse? {
         if nameTypeCode == "B" {
             return .usual
         }

@@ -15,6 +15,9 @@ let package = Package(
             name: "HL7Swift",
             targets: ["HL7Swift"]),
         .library(
+            name: "FHIRSwift",
+            targets: ["FHIRSwift"]),
+        .library(
             name: "SwiftGenerator",
             targets: ["SwiftGenerator"]),
     ],
@@ -35,7 +38,6 @@ let package = Package(
             dependencies: [
                 "SwiftGenerator",
                 "SwiftCSV",
-                .product(name: "ModelsR4", package: "FHIRModels"),
                 .product(name: "NIO", package: "swift-nio"),
                 .product(name: "NIOTLS", package: "swift-nio"),
                 .product(name: "NIOSSL", package: "swift-nio-ssl"),
@@ -44,6 +46,19 @@ let package = Package(
             resources: [
                 .process("Resources"),
                 .process("Spec/Resources"),
+            ]),
+        .target(
+            name: "FHIRSwift",
+            dependencies: [
+                "HL7Swift",
+                .product(name: "ModelsR4", package: "FHIRModels"),
+                .product(name: "NIO", package: "swift-nio"),
+                .product(name: "NIOTLS", package: "swift-nio"),
+                .product(name: "NIOSSL", package: "swift-nio-ssl"),
+                .product(name: "AsyncHTTPClient", package: "async-http-client")
+            ],
+            resources: [
+                .process("Resources"),
             ]),
         .target(
             name: "SwiftGenerator"
@@ -70,6 +85,13 @@ let package = Package(
         .testTarget(
             name: "HL7SwiftTests",
             dependencies: ["HL7Swift", "SwiftGenerator"],
+            resources: [
+                .process("Resources"),
+            ]
+        ),
+        .testTarget(
+            name: "FHIRSwiftTests",
+            dependencies: ["FHIRSwift", "HL7Swift"],
             resources: [
                 .process("Resources"),
             ]

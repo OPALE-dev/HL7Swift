@@ -11,10 +11,10 @@ import Foundation
  Represents a Time String
  */
 public struct TS {
-    var time:String?
-    var degreeOfPrecision:String?
+    public var time:String?
+    public var degreeOfPrecision:String?
     
-    var field:Field
+    public var field:Field
 
     public init(_ field:Field) {
         self.field = field

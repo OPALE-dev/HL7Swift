@@ -12,19 +12,19 @@ import Foundation
  Represents a Person Location
  */
 public struct PL {
-    var pointOfCare:String?
-    var room:String?
-    var bed:String?
-    var facility:String?
-    var locationStatus:String?
-    var personLocationType:String?
-    var building:String?
-    var floor:String?
-    var locationDescription:String?
-    var comprehensiveLocationIdentifier:String?
-    var assigningAuthorityForLocation:String?
+    public var pointOfCare:String?
+    public var room:String?
+    public var bed:String?
+    public var facility:String?
+    public var locationStatus:String?
+    public var personLocationType:String?
+    public var building:String?
+    public var floor:String?
+    public var locationDescription:String?
+    public var comprehensiveLocationIdentifier:String?
+    public var assigningAuthorityForLocation:String?
     
-    var cell:Cell
+    public var cell:Cell
 
     public init(_ cell:Cell) {
         self.cell = cell

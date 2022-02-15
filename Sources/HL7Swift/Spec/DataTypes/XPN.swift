@@ -12,19 +12,19 @@ import ModelsR4
  Represents a Person Name
  */
 public struct XPN {
-    var familyName:String?
-    var givenName:String?
-    var secondAndFurtherGivenNamesOrInitialsThereof:String?
-    var suffix:String?
-    var prefix:String?
-    var degree:String?
-    var nameTypeCode:String?
-    var nameRepresentationCode:String?
-    var nameContext:String?
-    var nameValidityRange:String?
-    var nameAssemblyOrder:String?
+    public var familyName:String?
+    public var givenName:String?
+    public var secondAndFurtherGivenNamesOrInitialsThereof:String?
+    public var suffix:String?
+    public var prefix:String?
+    public var degree:String?
+    public var nameTypeCode:String?
+    public var nameRepresentationCode:String?
+    public var nameContext:String?
+    public var nameValidityRange:String?
+    public var nameAssemblyOrder:String?
     
-    var cell:Cell
+    public var cell:Cell
     
     public init(_ cell:Cell) {
         self.cell = cell
@@ -75,7 +75,7 @@ public struct XPN {
     }
     
     
-    var nameUse:NameUse? {
+    public var nameUse:NameUse? {
         if nameTypeCode == "B" {
             return .usual
         }

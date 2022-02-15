@@ -8,7 +8,7 @@
 import Foundation
 import ModelsR4
 import SwiftCSV
-
+import HL7Swift
 
 
 
@@ -36,7 +36,19 @@ public class HL7v2ToFHIRR4Converter: Converter, CustomStringConvertible {
         try load()
     }
     
-    public func convert(_ message:Message) throws -> String? {
+    
+    public func convert(_ message:Message, formatting: JSONEncoder.OutputFormatting = []) throws -> String? {
+        let encoder = JSONEncoder()
+        let bundle = try convert(message)
+        let data = try encoder.encode(bundle)
+        
+        encoder.outputFormatting = formatting
+        
+        return String(data: data, encoding: .utf8)
+    }
+    
+    
+    public func convert(_ message:Message) throws -> ModelsR4.Bundle? {
         guard csvMessages[message.type.name] != nil else {
             throw HL7v2ToFHIRR4Error.unsupportedMessage(
                 message: "HL7 Message of type \(message.type.name) is not supported by \(description)")
@@ -80,12 +92,8 @@ public class HL7v2ToFHIRR4Converter: Converter, CustomStringConvertible {
             
             bundle.entry?.append(BundleEntry(resource: ResourceProxy(with: patient)))
         }
-                
-        let encoder = JSONEncoder()
-        //encoder.outputFormatting = .prettyPrinted
-        let data = try encoder.encode(bundle)
         
-        return String(data: data, encoding: .utf8)
+        return bundle
     }
     
     
@@ -337,16 +345,6 @@ public class HL7v2ToFHIRR4Converter: Converter, CustomStringConvertible {
         }
         
         return patient
-    }
-    
-    
-    
-    
-    // MARK: - Generic, unused?
-    
-    public func convert(_ input:String) throws -> String? {
-
-        return nil
     }
 }
 

@@ -11,16 +11,16 @@ import Foundation
  Represents a Patient Identifier
  */
 public struct CX {
-    var id:String?
-    var checkDigit:String?
-    var checkDigitScheme:String?
-    var assigningAuthority:String?
-    var identifierTypeCode:String?
-    var assigningFacility:String?
-    var effectiveDate:Date?
-    var expirationDate:Date?
+    public var id:String?
+    public var checkDigit:String?
+    public var checkDigitScheme:String?
+    public var assigningAuthority:String?
+    public var identifierTypeCode:String?
+    public var assigningFacility:String?
+    public var effectiveDate:Date?
+    public var expirationDate:Date?
     
-    var cell:Cell
+    public var cell:Cell
 
     public init(_ cell:Cell) {
         self.cell = cell
