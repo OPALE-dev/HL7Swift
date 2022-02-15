@@ -22,6 +22,7 @@ let package = Package(
         // Dependencies declare other packages that this package depends on.
         .package(url: "https://github.com/apple/swift-nio.git", from: "2.37.0"),
         .package(url: "https://github.com/apple/swift-nio-ssl.git", from: "2.17.2"),
+        .package(url: "https://github.com/swift-server/async-http-client.git", from: "1.9.0"),
         .package(url: "https://github.com/apple/swift-argument-parser", from: "0.4.0"),
         .package(url: "https://github.com/apple/FHIRModels.git", .upToNextMajor(from: "0.2.0")),
         .package(url: "https://github.com/swiftcsv/SwiftCSV.git", from: "0.6.1")
@@ -37,7 +38,8 @@ let package = Package(
                 .product(name: "ModelsR4", package: "FHIRModels"),
                 .product(name: "NIO", package: "swift-nio"),
                 .product(name: "NIOTLS", package: "swift-nio"),
-                .product(name: "NIOSSL", package: "swift-nio-ssl")
+                .product(name: "NIOSSL", package: "swift-nio-ssl"),
+                .product(name: "AsyncHTTPClient", package: "async-http-client")
             ],
             resources: [
                 .process("Resources"),

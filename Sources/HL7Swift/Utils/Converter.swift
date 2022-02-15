@@ -8,7 +8,7 @@
 import Foundation
 
 internal protocol Converter {
-    func convert(_ input:String) -> String?
+    func convert(_ input:String) throws -> String?
 }
 
 
