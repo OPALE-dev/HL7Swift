@@ -12,20 +12,20 @@ import Foundation
  Represents a Phone Number
  */
 public struct XTN {
-    var telephoneNumber:String?
-    var telecommunicationUseCode:String?
-    var telecommunicationEquipmentType:String?
-    var emailAddress:String?
-    var countryCode:String?
-    var areaCityCode:String?
-    var localNumber:String?
-    var phoneExtension:String?
-    var anyText:String?
-    var extensionPrefix:String?
-    var speedDialCode:String?
-    var unformattedTelephoneNumber:String?
+    public var telephoneNumber:String?
+    public var telecommunicationUseCode:String?
+    public var telecommunicationEquipmentType:String?
+    public var emailAddress:String?
+    public var countryCode:String?
+    public var areaCityCode:String?
+    public var localNumber:String?
+    public var phoneExtension:String?
+    public var anyText:String?
+    public var extensionPrefix:String?
+    public var speedDialCode:String?
+    public var unformattedTelephoneNumber:String?
     
-    var cell:Cell
+    public var cell:Cell
 
     public init(_ cell:Cell) {
         self.cell = cell

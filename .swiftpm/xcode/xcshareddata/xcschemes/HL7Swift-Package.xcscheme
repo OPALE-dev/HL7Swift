@@ -118,6 +118,48 @@
                ReferencedContainer = "container:">
             </BuildableReference>
          </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "FHIRSwift"
+               BuildableName = "FHIRSwift"
+               BlueprintName = "FHIRSwift"
+               ReferencedContainer = "container:">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "HL7Swift_FHIRSwift"
+               BuildableName = "HL7Swift_FHIRSwift"
+               BlueprintName = "HL7Swift_FHIRSwift"
+               ReferencedContainer = "container:">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "HL7Swift_FHIRSwiftTests"
+               BuildableName = "HL7Swift_FHIRSwiftTests"
+               BlueprintName = "HL7Swift_FHIRSwiftTests"
+               ReferencedContainer = "container:">
+            </BuildableReference>
+         </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction
@@ -133,6 +175,16 @@
                BlueprintIdentifier = "HL7SwiftTests"
                BuildableName = "HL7SwiftTests"
                BlueprintName = "HL7SwiftTests"
+               ReferencedContainer = "container:">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "FHIRSwiftTests"
+               BuildableName = "FHIRSwiftTests"
+               BlueprintName = "FHIRSwiftTests"
                ReferencedContainer = "container:">
             </BuildableReference>
          </TestableReference>

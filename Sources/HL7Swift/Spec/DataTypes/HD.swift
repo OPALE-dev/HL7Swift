@@ -10,11 +10,11 @@ import Foundation
  Represents a Hierarchic Designator
  */
 public struct HD {
-    var namespaceID:String?
-    var universalID:String?
-    var universalIDType:String?
+    public var namespaceID:String?
+    public var universalID:String?
+    public var universalIDType:String?
 
-    var cell:Cell
+    public var cell:Cell
 
     public init(_ cell:Cell) {
         self.cell = cell
