@@ -81,6 +81,4 @@ extension Generator {
             }
         }
     }
-
-
 }
