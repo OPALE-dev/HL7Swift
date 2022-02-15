@@ -44,12 +44,13 @@ public class HL72FHIRR4Converter: Converter, CustomStringConvertible {
     /**
      Converts HL7Swift.Message to FHIR JSON string
      */
-    public func convert(_ message:Message, formatting: JSONEncoder.OutputFormatting = []) throws -> String? {
+    public func convert(message:Message, formatting: JSONEncoder.OutputFormatting = []) throws -> String? {
         let encoder = JSONEncoder()
         let bundle = try convert(message)
-        let data = try encoder.encode(bundle)
         
         encoder.outputFormatting = formatting
+
+        let data = try encoder.encode(bundle)
         
         return String(data: data, encoding: .utf8)
     }
@@ -69,15 +70,6 @@ public class HL72FHIRR4Converter: Converter, CustomStringConvertible {
         // MSH
         if let msh = message[HL7.MSH] {
             let header = try header(MSHSegment: msh)
-            
-            if let messageControlID = msh[HL7.Message_Control_ID] {
-                bundle.identifier = Identifier(value: messageControlID.asFHIRStringPrimitive())
-                bundle.id = messageControlID.asFHIRStringPrimitive()
-            } else {
-                let uuid = UUID().uuidString
-                bundle.identifier = Identifier(value: uuid.asFHIRStringPrimitive())
-                bundle.id = uuid.asFHIRStringPrimitive()
-            }
             
             if let header = header {
                 bundle.entry?.append(BundleEntry(resource: ResourceProxy(with: header)))
@@ -152,8 +144,10 @@ public class HL72FHIRR4Converter: Converter, CustomStringConvertible {
     func convert(PV1Segment pv1:Segment) throws -> Encounter? {
         guard let patientClass = pv1[2]?.description else { return nil }
         
-        let coding = Coding.init(code: patientClass.asFHIRStringPrimitive(), display: patientClass.asFHIRStringPrimitive(), system: "HL7 PV1 Patient Class".asFHIRURIPrimitive())
+        let coding = Coding.init(code: patientClass.asFHIRStringPrimitive(), system: "HL7")
         let encounter = Encounter(class: coding, location: [], status: EncounterStatus.unknown.asPrimitive())
+        
+        encounter.text = Narrative(div: "<div xmlns=\"http://www.w3.org/1999/xhtml\">Patient imported from HL7 with FHIRSwift:PV1</div>".asFHIRStringPrimitive(), status: NarrativeStatus.generated.asPrimitive())
         
         // Patient Location
         if let field = pv1[3] {
@@ -163,35 +157,35 @@ public class HL72FHIRR4Converter: Converter, CustomStringConvertible {
                 if let v = pl.pointOfCare {
                     let encounterLocation = EncounterLocation(location: Reference())
                     
-                    encounterLocation.physicalType = CodeableConcept(coding: [Coding.init(code: "Point Of Care")], text: v.asFHIRStringPrimitive())
+                    encounterLocation.physicalType = CodeableConcept(coding: [Coding.init(code: "Point Of Care", system: "HL7")], text: v.asFHIRStringPrimitive())
 
                     encounter.location?.append(encounterLocation)
                 }
                 
                 if let v = pl.room {
                     let encounterLocation = EncounterLocation(location: Reference())
-                    encounterLocation.physicalType = CodeableConcept(coding: [Coding.init(code: "Room")], text: v.asFHIRStringPrimitive())
+                    encounterLocation.physicalType = CodeableConcept(coding: [Coding.init(code: "Room", system: "HL7")], text: v.asFHIRStringPrimitive())
 
                     encounter.location?.append(encounterLocation)
                 }
                 
                 if let v = pl.bed {
                     let encounterLocation = EncounterLocation(location: Reference())
-                    encounterLocation.physicalType = CodeableConcept(coding: [Coding.init(code: "Bed")], text: v.asFHIRStringPrimitive())
+                    encounterLocation.physicalType = CodeableConcept(coding: [Coding.init(code: "Bed", system: "HL7")], text: v.asFHIRStringPrimitive())
 
                     encounter.location?.append(encounterLocation)
                 }
                 
                 if let v = pl.facility {
                     let encounterLocation = EncounterLocation(location: Reference())
-                    encounterLocation.physicalType = CodeableConcept(coding: [Coding.init(code: "Facility")], text: v.asFHIRStringPrimitive())
+                    encounterLocation.physicalType = CodeableConcept(coding: [Coding.init(code: "Facility", system: "HL7")], text: v.asFHIRStringPrimitive())
 
                     encounter.location?.append(encounterLocation)
                 }
                 
                 if let v = pl.floor {
                     let encounterLocation = EncounterLocation(location: Reference())
-                    encounterLocation.physicalType = CodeableConcept(coding: [Coding.init(code: "Floor")], text: v.asFHIRStringPrimitive())
+                    encounterLocation.physicalType = CodeableConcept(coding: [Coding.init(code: "Floor", system: "HL7")], text: v.asFHIRStringPrimitive())
 
                     encounter.location?.append(encounterLocation)
                 }
@@ -201,7 +195,7 @@ public class HL72FHIRR4Converter: Converter, CustomStringConvertible {
         
         // Admission Type
         if let field = pv1[4] {
-            encounter.type = [CodeableConcept(coding: [Coding.init(code: "Admission Type")], text: field.description.asFHIRStringPrimitive())]
+            encounter.type = [CodeableConcept(coding: [Coding.init(code: "Admission Type", system: "HL7")], text: field.description.asFHIRStringPrimitive())]
         }
         
         // Preadmit Number
@@ -233,6 +227,7 @@ public class HL72FHIRR4Converter: Converter, CustomStringConvertible {
                     
                 patient.identifier?.append(identifier)
             }
+            
         }
         
         // Patient Name
@@ -259,6 +254,9 @@ public class HL72FHIRR4Converter: Converter, CustomStringConvertible {
                 if let secondName = xpn.secondAndFurtherGivenNamesOrInitialsThereof {
                     hn.given?.append(secondName.asFHIRStringPrimitive())
                 }
+                
+                // set resource narrative
+                patient.text = Narrative(div: "<div xmlns=\"http://www.w3.org/1999/xhtml\">\(xpn.description)</div>".asFHIRStringPrimitive(), status: NarrativeStatus.generated.asPrimitive())
                 
                 patient.name?.append(hn)
             }

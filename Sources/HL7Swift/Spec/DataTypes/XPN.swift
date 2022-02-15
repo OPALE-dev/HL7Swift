@@ -11,7 +11,7 @@ import ModelsR4
 /**
  Represents a Person Name
  */
-public struct XPN {
+public struct XPN: CustomStringConvertible {
     public var familyName:String?
     public var givenName:String?
     public var secondAndFurtherGivenNamesOrInitialsThereof:String?
@@ -23,8 +23,25 @@ public struct XPN {
     public var nameContext:String?
     public var nameValidityRange:String?
     public var nameAssemblyOrder:String?
-    
     public var cell:Cell
+    
+    public var description: String {
+        var names:[String] = []
+        
+        if let fn = familyName {
+            names.append(fn)
+        }
+        
+        if let sn = secondAndFurtherGivenNamesOrInitialsThereof {
+            names.append(sn)
+        }
+            
+        if let gn = givenName {
+            names.append(gn)
+        }
+        
+        return names.joined(separator: " ")
+    }
     
     public init(_ cell:Cell) {
         self.cell = cell
