@@ -34,7 +34,7 @@ final class FHIRSwiftConverterTests: XCTestCase {
             let message   = try Message(withFileAt: url, hl7: hl7)
             let converter = try HL72FHIRR4Converter()
             
-            if let string = try converter.convert(message) {
+            if let string = try converter.convert(message: message, formatting: .prettyPrinted) {
                 print(string)
             }
         }
