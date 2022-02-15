@@ -12,7 +12,7 @@ import HL7Swift
 
 
 
-public enum HL7v2ToFHIRR4Error: LocalizedError, Equatable {
+public enum HL72FHIRR4Error: LocalizedError, Equatable {
     case unsupportedMessage(message: String)
 
     public var errorDescription: String? {
@@ -25,11 +25,15 @@ public enum HL7v2ToFHIRR4Error: LocalizedError, Equatable {
 }
 
 
-public class HL7v2ToFHIRR4Converter: Converter, CustomStringConvertible {
+/**
+ This class imlements HL7 (v2) to FHIR (Models R4) routines to help translate
+ HL7 messages to FHIRE resources.
+ */
+public class HL72FHIRR4Converter: Converter, CustomStringConvertible {
     var csvMessages:[String:CSV] = [:]
     
     public var description: String {
-        "HL7 v2.x To FHIR Models R4 Converter"
+        "HL7v2.x To FHIR ModelsR4 Converter"
     }
     
     public init() throws {
@@ -37,6 +41,9 @@ public class HL7v2ToFHIRR4Converter: Converter, CustomStringConvertible {
     }
     
     
+    /**
+     Converts HL7Swift.Message to FHIR JSON string
+     */
     public func convert(_ message:Message, formatting: JSONEncoder.OutputFormatting = []) throws -> String? {
         let encoder = JSONEncoder()
         let bundle = try convert(message)
@@ -48,9 +55,12 @@ public class HL7v2ToFHIRR4Converter: Converter, CustomStringConvertible {
     }
     
     
+    /**
+     Converts HL7Swift.Message to FHIR ModelsR4.Bundle
+     */
     public func convert(_ message:Message) throws -> ModelsR4.Bundle? {
         guard csvMessages[message.type.name] != nil else {
-            throw HL7v2ToFHIRR4Error.unsupportedMessage(
+            throw HL72FHIRR4Error.unsupportedMessage(
                 message: "HL7 Message of type \(message.type.name) is not supported by \(description)")
         }
                 
@@ -96,7 +106,9 @@ public class HL7v2ToFHIRR4Converter: Converter, CustomStringConvertible {
         return bundle
     }
     
-    
+    /**
+     Converts HL7 MSH segment to FHIR MessageHeader resource
+     */
     func header(MSHSegment msh:Segment) throws -> MessageHeader? {
         let source = MessageHeaderSource(endpoint: "hl7:undef".asFHIRURIPrimitive()!)
         let destination = MessageHeaderDestination(endpoint: "hl7:undef".asFHIRURIPrimitive()!)
@@ -134,6 +146,9 @@ public class HL7v2ToFHIRR4Converter: Converter, CustomStringConvertible {
         return header
     }
     
+    /**
+     Converts HL7 PV1 segment to FHIR Encounter resource
+     */
     func convert(PV1Segment pv1:Segment) throws -> Encounter? {
         guard let patientClass = pv1[2]?.description else { return nil }
         
@@ -201,6 +216,9 @@ public class HL7v2ToFHIRR4Converter: Converter, CustomStringConvertible {
         return encounter
     }
     
+    /**
+     Converts HL7 PID segment to FHIR Patient resource
+     */
     func convert(PIDSegment pid:Segment) throws -> Patient {
         let patient = Patient(address: [], identifier: [], name: [], telecom: [])
         
@@ -350,7 +368,7 @@ public class HL7v2ToFHIRR4Converter: Converter, CustomStringConvertible {
 
 
 // MARK: - Load CSV
-private extension HL7v2ToFHIRR4Converter {
+private extension HL72FHIRR4Converter {
     func load() throws {
         if let csvURLs = Bundle.module.urls(forResourcesWithExtension: "csv", subdirectory: nil) {
             for url in csvURLs {
