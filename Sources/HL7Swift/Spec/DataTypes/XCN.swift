@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import ModelsR4
+
 
 /**
  Represents a Person Name
@@ -128,29 +128,5 @@ public struct XCN {
         if cell.components.count > 22 {
             assigningAgencyOrDepartment = cell.components[22].description
         }
-    }
-    
-    
-    public var nameUse:NameUse? {
-        if nameTypeCode == "B" {
-            return .usual
-        }
-        else if nameTypeCode == "U" {
-            return .anonymous
-        }
-        else if nameTypeCode == "M" {
-            return .maiden
-        }
-        else if nameTypeCode == "A" {
-            return .nickname
-        }
-        else if nameTypeCode == "N" {
-            return .nickname
-        }
-        else if nameTypeCode == "L" {
-            return .official
-        }
-        
-        return .official
     }
 }
