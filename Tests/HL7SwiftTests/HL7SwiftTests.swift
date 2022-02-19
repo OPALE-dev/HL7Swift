@@ -334,6 +334,22 @@ final class HL7SwiftTests: XCTestCase {
             let c2Range = message.getPositionInMessage(c2!)
             assert(c2Range != nil)
             assert("LIS" == message.description.substring(with: c2Range!)!)
+            
+            // Get position in message for a given group
+            
+            let visit = message.rootGroup!["VISIT"]!
+            let pv1 = message[HL7.PV1]!
+            let visitRange = message.getPositionInMessage(visit)
+            let pv1Range = message.getPositionInMessage(pv1)
+            assert(visitRange != nil)
+            assert(pv1Range == visitRange)
+            
+            let patient = message.rootGroup!["PATIENT"]!
+
+            let patientRange = message.getPositionInMessage(patient)
+            let supposedPatientRange = pv1Range!.union(pidRange!)
+            assert(patientRange != nil)
+            assert(supposedPatientRange == patientRange)
         }
     }
     
