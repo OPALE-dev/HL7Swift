@@ -20,6 +20,8 @@ protocol DataTypable {
  */
 public class DataType: DataTypable, CustomStringConvertible {
     public var name: String
+    public var longName:String = ""
+    
     var base: String = ""
     
     public init(name: String) {
@@ -41,9 +43,8 @@ class SimpleType: DataType {
 /**
  Component HL7 datatype (they compose composite types, embedded in `ComposedType` as proxy)
  */
-class ComponentType: DataType {
+public class ComponentType: DataType {
     var type:String = ""
-    var longName:String = ""
     var index:Int = -1
     
     override public init(name: String) {
@@ -54,7 +55,7 @@ class ComponentType: DataType {
         self.index = Int(comps[1])!
     }
     
-    override var description: String {
+    public override var description: String {
         "\(Swift.type(of: self)) \(name).\(index) (\(longName))"
     }
 }
@@ -62,11 +63,11 @@ class ComponentType: DataType {
 /**
  A proxy type to encapsulate `ComponentType` alongside with `minOccurs` and `maxOccurs` attributes
  */
-class ComposedType: DataType {
+public class ComposedType: DataType {
     // -1 means unbounded
     var minOccurs:Int!
     var maxOccurs:Int!
-    var type:DataType!
+    public var type:DataType!
 
     public init(type: DataType, minOccurs: String = "0", maxOccurs: String = "0") {
         super.init(name: type.name)
