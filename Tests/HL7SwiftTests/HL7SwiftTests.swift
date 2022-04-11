@@ -119,6 +119,25 @@ final class HL7SwiftTests: XCTestCase {
         
     }
     
+    func testTersePath() throws {
+        let oru = Bundle.module.url(forResource: "ORU_R01 - 3", withExtension: "txt")
+        if let oruPath = oru {
+            print(oruPath)
+            let content = try String(contentsOf: oruPath)
+            let msg = try Message(content, hl7: hl7)
+            // Get position in message for a given segment
+            
+            let msh = msg[HL7.MSH]![3]
+            
+            print("msh", msh!)
+            print("terse", msh!.tersePath())
+            print("txt", msh!.cells[0].components[2])
+            print("comp", msh!.cells[0].components[2].tersePath())
+            print("comp", msg[HL7.PID]!.tersePath())
+            print("comp", msg[HL7.PID]!.tersePath())
+        }
+    }
+    
     func testGroup() {
         var rootGroup = Group(name: "R1", items: [])
         assert(rootGroup.appendGroup(group: Group(name: "R2", items: []), underGroupName: "R1"))

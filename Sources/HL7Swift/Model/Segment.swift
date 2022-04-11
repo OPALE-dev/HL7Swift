@@ -176,6 +176,14 @@ public class Segment: Node {
 //            }
         }
     }
+    
+    public func tersePath() -> String {
+        if let p = parent as? Group {
+            return "\(p.tersePath())/\(code)"
+        } else {
+            return "\(code)"
+        }
+    }
 }
 
 extension Segment: CustomStringConvertible {

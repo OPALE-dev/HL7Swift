@@ -293,6 +293,13 @@ public class Group:Node {
         return nil
     }
 
+    public func tersePath() -> String {
+        if let p = parent as? Group {
+            return "\(p.tersePath())/\(name)"
+        } else {
+            return ""
+        }
+    }
 }
 
 /// Shortens `"ORU_RO1.PATIENT_RESULT.CONTENT"` to `"PATIENT_RESULT"`
@@ -315,4 +322,13 @@ public func shortname(_ longName: String) -> String {
 public indirect enum Item {
     case group(Group)
     case segment(Segment)
+    
+    public func tersePath() -> String {
+        switch self {
+        case .group(let group):
+            return group.tersePath()
+        case .segment(let segment):
+            return segment.tersePath()
+        }
+    }
 }
