@@ -53,6 +53,18 @@ public class Cell:Node {
         self.text = text
         self.components = components
     }
+    
+    public func tersePath() -> String {
+        if let p = parent as? Field {
+            // let i = p.cells.firstIndex(where: { $0.text == self.text })
+            return "\(p.tersePath())"
+        } else if let p = parent as? Cell {
+            let i = p.components.firstIndex(where: { $0.text == self.text })
+            return "\(p.tersePath())-\(i!)"
+        } else {
+            return ""
+        }
+    }
 }
 
 
