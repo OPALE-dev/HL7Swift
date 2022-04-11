@@ -72,18 +72,24 @@ public class Segment: Node {
                 // append separator field (MSH-1)
                 let sepField = Field([Cell(String(separator), parent: self)], parent: self)
                 sepField.index = 1
+                sepField.name = "\(self.code)-\(sepField.index)"
                 sepField.cells[0].parent = sepField // (we  faked parent in Cell init)
                 fields[fields.keys.count+1] = sepField
                 
                 // append encoding field (MSH-2)
                 let encField = Field([Cell(String(strCloneSplit.remove(at: 0)), parent: self, isEncoding: true)], parent: self)
+                encField.index = 2
+                encField.name = "\(self.code)-\(encField.index)"
                 encField.cells[0].parent = encField // (we  faked parent in Cell init)
                 fields[fields.keys.count+1] = encField
             }
             
             // append other fields
             for field in strCloneSplit {
-                fields[fields.keys.count+1] = Field(String(field), parent: self)
+                let newField = Field(String(field), parent: self)
+                newField.index = fields.keys.count+1
+                newField.name = "\(self.code)-\(newField.index)"
+                fields[newField.index] = newField
             }
         }
     }

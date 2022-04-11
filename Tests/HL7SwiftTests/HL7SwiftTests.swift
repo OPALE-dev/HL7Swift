@@ -7,7 +7,6 @@
 
 import XCTest
 import HL7Swift
-import ModelsR4
 import AsyncHTTPClient
 
 @testable import HL7Swift
@@ -373,6 +372,41 @@ final class HL7SwiftTests: XCTestCase {
         }
     }
     
+    
+    
+    func testNodePath() throws {
+        if let url = Bundle.module.url(forResource: "ORU_R01 - 3", withExtension: "txt") {
+            let message = try Message(withFileAt: url, hl7: hl7)
+            
+            let root = message.rootGroup!
+            
+            print("Root path: \(root.path())")
+            
+            for item in root.items {
+                switch item {
+     
+                case .group(let g):
+                    print("   -> \(g.path())")
+                    for item2 in g.items {
+                        switch item2 {
+                        case .group(let g):
+                            print("      -> \(g.path())")
+                        case .segment(let g):
+                            print("      -> \(g.path())")
+                            for f in g.sortedFields {
+                                print("         >>> \(f.path())")
+                            }
+                        }
+                    }
+                case .segment(let g):
+                    print("   -> \(g.path())")
+                    for f in g.sortedFields {
+                        print("      >>> \(f.path())")
+                    }
+                }
+            }
+        }
+    }
     
 
     // TODO : put this elsewhere! (integrate in CodeGen binary?)
