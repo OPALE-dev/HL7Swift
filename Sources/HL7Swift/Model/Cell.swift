@@ -56,8 +56,14 @@ public class Cell:Node {
     
     public func tersePath() -> String {
         if let p = parent as? Field {
-            // let i = p.cells.firstIndex(where: { $0.text == self.text })
-            return "\(p.tersePath())"
+            if p.cells.count == 1 {
+                return "\(p.tersePath())"
+            } else {
+                // Get repetition index
+                let rep = p.cells.firstIndex(where: { $0.description == self.description })
+                return "\(p.tersePath())(\(rep!))"
+            }
+            
         } else if let p = parent as? Cell {
             let i = p.components.firstIndex(where: { $0.text == self.text })
             return "\(p.tersePath())-\(i!)"
