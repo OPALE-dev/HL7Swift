@@ -134,7 +134,12 @@ final class HL7SwiftTests: XCTestCase {
             print("txt", msh!.cells[0].components[2])
             print("comp", msh!.cells[0].components[2].tersePath())
             print("comp", msg[HL7.PID]!.tersePath())
-            print("comp", msg[HL7.PID]!.tersePath())
+            // print("comp", msg[HL7.PID]!.tersePath())
+            
+            // print("PID", msg[HL7.PID]![2]!.cells[1].components[1], msg[HL7.PID]![2]!.cells[1].components[1].tersePath())
+            print(msg[HL7.PID]![3]!.cells.description)
+            print(msg[HL7.PID]![3]!.cells[1].components.description)
+            print("PID", msg[HL7.PID]![3]!.cells[1].components[1].description, msg[HL7.PID]![3]!.cells[1].components[1].tersePath())
         }
     }
     
