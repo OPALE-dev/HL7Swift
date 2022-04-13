@@ -30,6 +30,9 @@ extension Versioned:XMLParserDelegate {
                 currentSequence = shortname(currentSequence!)
                 
                 parentGroup = currentMessage?.rootGroup[currentSequence!] ?? currentMessage?.rootGroup
+                if !groups.keys.contains(currentSequence!) {
+                    groups[currentSequence!] = [:]
+                }
                 
             } else if elementName == "xsd:element" {
                 if let ref = attributeDict["ref"] {
@@ -37,7 +40,7 @@ extension Versioned:XMLParserDelegate {
                         // is it a segment ?
                         if ref.count == 3 {
                             let segment = Segment(ref, parent: parentGroup, specMessage: currentMessage)
-                            segments[segment.code] = segment
+                            groups[currentSequence]![segment.code] = segment
                             
                             if let minO = attributeDict["minOccurs"] {
                                 if minO == "unbounded" {
@@ -66,11 +69,15 @@ extension Versioned:XMLParserDelegate {
                             }
                             
                             _ = currentMessage?.rootGroup?.appendSegment(segment: segment, underGroupName: currentSequence)
+                            
                         // it is a group
                         } else {
                             let groupName = shortname(ref)
                             
                             let group = Group(parent: parentGroup, name: groupName, items: [])
+                            if !groups.keys.contains(groupName) {
+                                groups[groupName] = [:]
+                            }
                             
                             _ = currentMessage?.rootGroup?.appendGroup(group: group, underGroupName: currentSequence)
                         }
@@ -174,21 +181,20 @@ extension Versioned:XMLParserDelegate {
                     if let ref = attributeDict["ref"] {
                         let index = Int(ref.split(separator: ".")[1])!
                         
-                        if let segment = segments[currentSegment!] {
-
-                            if let field = segment.fields[index] {
-                                
-                                field.minOccurs = Int(attributeDict["minOccurs"]!)!
-                                
-                                if attributeDict["maxOccurs"]! == "unbounded" {
-                                    field.maxOccurs = -1
-                                } else {
-                                    field.maxOccurs = Int(attributeDict["maxOccurs"]!)!
+                        for segmentDic in groups.values {
+                            if segmentDic.keys.contains(currentSegment!) {
+                                if let segment = segmentDic[currentSegment!] {
+                                    if let field = segment.fields[index] {
+                                        field.minOccurs = Int(attributeDict["minOccurs"]!)!
+                                        
+                                        if attributeDict["maxOccurs"]! == "unbounded" {
+                                            field.maxOccurs = -1
+                                        } else {
+                                            field.maxOccurs = Int(attributeDict["maxOccurs"]!)!
+                                        }
+                                    }
                                 }
-                                
-                         
                             }
-                            
                         }
                     }
                 }

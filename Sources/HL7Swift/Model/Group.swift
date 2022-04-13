@@ -192,13 +192,19 @@ public class Group:Node {
      Clone self into `group` and populate values from `message` segments.
      Also takes care to append segments with repetitions if needed.
      */
-    internal func populate(group:Group? = nil, root:Group?, from message:Message) {
+    internal func populate(group:Group? = nil, root:Group?, from message:Message, index: Int = 0) {
+        var ding = false
+        var superIndex = index
+        
         for item in items {
             switch item {
             case .segment(let segment):
                 // append messages segments (and repetitions)
-                for messageSegment in message.segments {
+                
+                for (sIndex, messageSegment) in message.segments[index...].enumerated() {
+                    
                     if messageSegment.code == segment.code {
+                        ding = true
                         var i = 1
                         
                         // populate segments attributes (longName, index, etc.), we already have the value
@@ -256,13 +262,18 @@ public class Group:Node {
                             }
                         }
                         
+                    } else {
+                        if ding {
+                            superIndex = sIndex
+                            break
+                        }
                     }
                 }
             case .group(let itemGroup):
                 let newGroup = Group(name: itemGroup.name)
                 
                 newGroup.parent = self
-                itemGroup.populate(group: newGroup, root: root, from: message)
+                itemGroup.populate(group: newGroup, root: root, from: message, index: superIndex)
                 
                 // append clone group to current group
                 group?.items.append(Item.group(newGroup))
@@ -293,9 +304,21 @@ public class Group:Node {
         return nil
     }
 
-    public func tersePath() -> String {
+    public func tersePath(_ segment: Segment?) -> String {
         if let p = parent as? Group {
-            return "\(p.tersePath())/\(name)"
+            if let s = segment {
+                
+                let sameSegments = segments.filter { seg in seg.code == s.code }
+                
+                if sameSegments.count == 1 {
+                    return "\(p.tersePath(nil))/\(name)"
+                } else {
+                    let rep = sameSegments.firstIndex(where: { $0.description == s.description })
+                    return "\(p.tersePath(nil))/\(name)(\(rep!))"
+                }
+            } else {
+                return "\(p.tersePath(nil))/\(name)"
+            }
         } else {
             return ""
         }
@@ -326,7 +349,7 @@ public indirect enum Item {
     public func tersePath() -> String {
         switch self {
         case .group(let group):
-            return group.tersePath()
+            return group.tersePath(nil)
         case .segment(let segment):
             return segment.tersePath()
         }
