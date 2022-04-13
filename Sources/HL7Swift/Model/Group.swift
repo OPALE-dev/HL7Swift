@@ -195,13 +195,14 @@ public class Group:Node {
     internal func populate(group:Group? = nil, root:Group?, from message:Message, index: Int = 0) {
         var ding = false
         var superIndex = index
+        // print("> index", index, "superIndex", superIndex)
         
         for item in items {
             switch item {
             case .segment(let segment):
                 // append messages segments (and repetitions)
                 
-                for (sIndex, messageSegment) in message.segments[index...].enumerated() {
+                for (sIndex, messageSegment) in message.segments[superIndex...].enumerated() {
                     
                     if messageSegment.code == segment.code {
                         ding = true
@@ -264,7 +265,9 @@ public class Group:Node {
                         
                     } else {
                         if ding {
-                            superIndex = sIndex
+                            superIndex = sIndex + superIndex
+                            // print("index", index, "superIndex", superIndex)
+                            // print("break", message.segments[index..<superIndex].map { s in s.code }, "current", messageSegment.code)
                             break
                         }
                     }
