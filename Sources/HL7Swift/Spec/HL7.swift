@@ -137,6 +137,7 @@ public class Versioned: NSObject, Versionable {
     // TODO remove, don't use it
     public var fields:[String:[Field]] = [:] // fields by segment
     public var segments: [String: Segment] = [:]
+    public var groups: [String: [String: Segment]] = [:]
     
     var loadMessagesFlag = false
     var loadSegmentsFlag = false
@@ -152,6 +153,7 @@ public class Versioned: NSObject, Versionable {
     var currentDataType:DataType? = nil
     var currentElement:String? = nil
     var currentSegment: String? = nil
+    var currentGroup: String? = nil
     
     var parentGroup:Group? = nil
     
