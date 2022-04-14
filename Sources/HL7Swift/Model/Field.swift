@@ -67,11 +67,7 @@ public class Field:Node {
     
     public func tersePath() -> String {
         if let p = parent as? Segment {
-            if p.fields.count == 1 {
-                return "\(p.tersePath())-\(index)"
-            } else {
-                return "\(p.tersePath())-\(index)"
-            }
+            return "\(p.tersePath())-\(index)"
         } else {
             return "-\(index)"
         }
