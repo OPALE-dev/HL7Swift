@@ -66,8 +66,18 @@ public class Cell:Node {
             }
             
         } else if let p = parent as? Cell {
-            let i = p.components.firstIndex(where: { $0.text == self.text })
-            return "\(p.tersePath())-\(i!)"
+            let rep = p.components.firstIndex(where: {
+                if $0.type == nil {
+                    return $0.description == self.description
+                } else {
+                    if $0.type!.name.isEmpty {
+                        return $0.type?.longName == self.type?.longName
+                    } else {
+                        return $0.type?.name == self.type?.name
+                    }
+                }
+            })
+            return "\(p.tersePath())-\(rep!)"
         } else {
             return ""
         }
