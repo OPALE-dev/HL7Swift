@@ -338,7 +338,11 @@ public class Group:Node {
                     
                     }
 
-                    return "\(p.tersePath(nil))/\(name)(\(rep))"
+                    if rep == 0 {
+                        return "\(p.tersePath(nil))/\(name)"
+                    } else {
+                        return "\(p.tersePath(nil))/\(name)(\(rep + 1))"
+                    }
                 }
             } else {
                 return "\(p.tersePath(nil))/\(name)"

@@ -62,9 +62,13 @@ public class Cell:Node {
             } else {
                 // Get repetition index
                 let rep = p.cells.firstIndex(where: { $0.description == self.description })
-                return "\(p.tersePath())(\(rep!))"
+                
+                if rep == 0 {
+                    return "\(p.tersePath())(\(rep!))"
+                } else {
+                    return "\(p.tersePath())(\(rep! + 1))"
+                }
             }
-            
         } else if let p = parent as? Cell {
             let rep = p.components.firstIndex(where: {
                 if $0.type == nil {
@@ -77,7 +81,7 @@ public class Cell:Node {
                     }
                 }
             })
-            return "\(p.tersePath())-\(rep!)"
+            return "\(p.tersePath())-\(rep! + 1)"
         } else {
             return ""
         }
