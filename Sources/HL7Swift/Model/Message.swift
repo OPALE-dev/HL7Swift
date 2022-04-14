@@ -82,6 +82,8 @@ public struct Message {
         // parse raw segments
         for segment in str.split(separator: sep) {
             segments.append(Segment(String(segment)))
+            //let yyy = segments
+            //print(yyy)
         }
         
         guard segments.count > 0 else {
@@ -219,7 +221,7 @@ public struct Message {
         }
         
         // populate groups with message values and repetitions
-        self.specMessage?.rootGroup.populate(group: self.rootGroup, root: self.rootGroup, from: self)
+        self.specMessage?.rootGroup.populate(group: self.rootGroup, from: self)
     }
     
     

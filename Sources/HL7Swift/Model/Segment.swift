@@ -179,10 +179,8 @@ public class Segment: Node {
     
     public func tersePath() -> String {
         if let p = parent as? Group {
-            // print(".")
             return "\(p.tersePath(self))/\(code)"
         } else {
-            // print(";")
             return "\(code)"
         }
     }

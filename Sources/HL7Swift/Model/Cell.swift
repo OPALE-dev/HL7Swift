@@ -12,6 +12,7 @@ import Foundation
  Components may be sTODO
  */
 public class Cell:Node {
+    // WARNING unused ? might be empty
     var text: String = ""
     public var name: String = ""
     public var parent: Node?
