@@ -82,8 +82,6 @@ public struct Message {
         // parse raw segments
         for segment in str.split(separator: sep) {
             segments.append(Segment(String(segment)))
-            //let yyy = segments
-            //print(yyy)
         }
         
         guard segments.count > 0 else {

@@ -195,19 +195,12 @@ public class Group:Node {
     internal func populate(group:Group? = nil, from message:Message, index: Int = 0) {
         var ding = false
         var superIndex = index
-        // print("> index", index, "superIndex", superIndex)
-        if message.version == .v251 {
-            print("")
-        }
         
         for item in items {
             switch item {
             case .segment(let segment):
-                if segment.code == "OBX" {
-                    print(segment)
-                }
-                // append messages segments (and repetitions)
                 
+                // append messages segments (and repetitions)
                 for (sIndex, messageSegment) in message.segments[superIndex...].enumerated() {
                     
                     if messageSegment.code == segment.code {
@@ -218,9 +211,7 @@ public class Group:Node {
                         
                         for f1 in segment.sortedFields {
                             if  i < messageSegment.fields.count + 1 {
-                                if segment.code == "OBX" {
-                                    print(segment)
-                                }
+
                                 // messageSegment.parent       = group // segment.parent
                                 messageSegment.minOccurs    = segment.minOccurs
                                 messageSegment.maxOccurs    = segment.maxOccurs
@@ -263,7 +254,6 @@ public class Group:Node {
                         
                         // append populated segment to the current group
                         group?.items.append(Item.segment(messageSegment))
-                        // group?.items.forEach() { $0.parent = group }
                         
                         // also append segment to root group segment array for efficiency
                         if let root = message.rootGroup {
@@ -275,8 +265,6 @@ public class Group:Node {
                     } else {
                         if ding {
                             superIndex = sIndex + superIndex
-                            // print("index", index, "superIndex", superIndex)
-                            // print("break", message.segments[index..<superIndex].map { s in s.code }, "current", messageSegment.code)
                             break
                         }
                     }
@@ -286,7 +274,6 @@ public class Group:Node {
                 
                 newGroup.parent = group // self
                 itemGroup.populate(group: newGroup, from: message, index: superIndex)
-                // itemGroup.parent = newGroup
                 
                 // append clone group to current group
                 group?.items.append(Item.group(newGroup))
