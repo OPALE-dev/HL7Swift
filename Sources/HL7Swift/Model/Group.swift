@@ -322,11 +322,9 @@ public class Group:Node {
     public func tersePath(_ segment: Segment?) -> String {
         if let p = parent as? Group {
             if let s = segment {
-                
-//                let sameSegments = segments.filter { seg in seg.code == s.code }
-                
+                                
                 var sameSegmentsCount = 0
-                for (ind, i) in items.enumerated() {
+                for i in items {
                     switch i {
                     case .segment(let s2):
                         if s2.code == s.code {
@@ -337,49 +335,22 @@ public class Group:Node {
                     }
                 }
                 
-                print(sameSegmentsCount)
-//                print(sameSegments)
-                
                 if sameSegmentsCount == 1 {
                     return "\(p.tersePath(nil))/\(name)"
                 } else {
                     var rep = 0
-//                    var rep = sameSegments.firstIndex(where: { $0.description == s.description }) ?? 0
-                    // print(sameSegments.map { se in se.description })
-                    // print(sameSegments.firstIndex(where: { $0 == s }))
-                    
-//                    print("_")
                     for (ind, i) in items.enumerated() {
                         switch i {
                         case .segment(let s2):
                             if s2.description == s.description {
                                 rep = ind
                             }
-                            // print(s)
-//                            print(s.description)
                         case .group(_):
                             let _ = 1
                         }
                     
                     }
-//                    for i in sameSegments {
-//                        // print(i.description)
-//                    }
-                    /*
-                    print(items.filter { i in
-                        switch i {
-                            case .group(let group):
-                                return false
-                            case .segment(let segment):
-                                return true
-                        } }.map { i in
-                            Item.segment(i)
-                        }
-                          
-                          //.filter { i in i != nil}
-                               .filter { se in se.code == s.code }
-                               .map { se in se.description })
-                     */
+
                     return "\(p.tersePath(nil))/\(name)(\(rep))"
                 }
             } else {
