@@ -192,14 +192,20 @@ public class Group:Node {
      Clone self into `group` and populate values from `message` segments.
      Also takes care to append segments with repetitions if needed.
      */
-    internal func populate(group:Group? = nil, root:Group?, from message:Message, index: Int = 0) {
+    internal func populate(group:Group? = nil, from message:Message, index: Int = 0) {
         var ding = false
         var superIndex = index
         // print("> index", index, "superIndex", superIndex)
+        if message.version == .v251 {
+            print("")
+        }
         
         for item in items {
             switch item {
             case .segment(let segment):
+                if segment.code == "OBX" {
+                    print(segment)
+                }
                 // append messages segments (and repetitions)
                 
                 for (sIndex, messageSegment) in message.segments[superIndex...].enumerated() {
@@ -212,8 +218,10 @@ public class Group:Node {
                         
                         for f1 in segment.sortedFields {
                             if  i < messageSegment.fields.count + 1 {
-
-                                messageSegment.parent       = segment.parent
+                                if segment.code == "OBX" {
+                                    print(segment)
+                                }
+                                // messageSegment.parent       = group // segment.parent
                                 messageSegment.minOccurs    = segment.minOccurs
                                 messageSegment.maxOccurs    = segment.maxOccurs
                                 // copy everything from the field except cells
@@ -255,9 +263,10 @@ public class Group:Node {
                         
                         // append populated segment to the current group
                         group?.items.append(Item.segment(messageSegment))
+                        // group?.items.forEach() { $0.parent = group }
                         
                         // also append segment to root group segment array for efficiency
-                        if let root = root {
+                        if let root = message.rootGroup {
                             if !root.segments.map({ $0.code }).contains(messageSegment.code) {
                                 root.segments.append(messageSegment)
                             }
@@ -275,13 +284,16 @@ public class Group:Node {
             case .group(let itemGroup):
                 let newGroup = Group(name: itemGroup.name)
                 
-                newGroup.parent = self
-                itemGroup.populate(group: newGroup, root: root, from: message, index: superIndex)
+                newGroup.parent = group // self
+                itemGroup.populate(group: newGroup, from: message, index: superIndex)
+                // itemGroup.parent = newGroup
                 
                 // append clone group to current group
                 group?.items.append(Item.group(newGroup))
             }
         }
+        
+        group?.items.forEach() { $0.setParent(group) }
     }
     
     
@@ -311,13 +323,64 @@ public class Group:Node {
         if let p = parent as? Group {
             if let s = segment {
                 
-                let sameSegments = segments.filter { seg in seg.code == s.code }
+//                let sameSegments = segments.filter { seg in seg.code == s.code }
                 
-                if sameSegments.count == 1 {
+                var sameSegmentsCount = 0
+                for (ind, i) in items.enumerated() {
+                    switch i {
+                    case .segment(let s2):
+                        if s2.code == s.code {
+                            sameSegmentsCount += 1
+                        }
+                    case .group(_):
+                        let _ = 1
+                    }
+                }
+                
+                print(sameSegmentsCount)
+//                print(sameSegments)
+                
+                if sameSegmentsCount == 1 {
                     return "\(p.tersePath(nil))/\(name)"
                 } else {
-                    let rep = sameSegments.firstIndex(where: { $0.description == s.description })
-                    return "\(p.tersePath(nil))/\(name)(\(rep!))"
+                    var rep = 0
+//                    var rep = sameSegments.firstIndex(where: { $0.description == s.description }) ?? 0
+                    // print(sameSegments.map { se in se.description })
+                    // print(sameSegments.firstIndex(where: { $0 == s }))
+                    
+//                    print("_")
+                    for (ind, i) in items.enumerated() {
+                        switch i {
+                        case .segment(let s2):
+                            if s2.description == s.description {
+                                rep = ind
+                            }
+                            // print(s)
+//                            print(s.description)
+                        case .group(_):
+                            let _ = 1
+                        }
+                    
+                    }
+//                    for i in sameSegments {
+//                        // print(i.description)
+//                    }
+                    /*
+                    print(items.filter { i in
+                        switch i {
+                            case .group(let group):
+                                return false
+                            case .segment(let segment):
+                                return true
+                        } }.map { i in
+                            Item.segment(i)
+                        }
+                          
+                          //.filter { i in i != nil}
+                               .filter { se in se.code == s.code }
+                               .map { se in se.description })
+                     */
+                    return "\(p.tersePath(nil))/\(name)(\(rep))"
                 }
             } else {
                 return "\(p.tersePath(nil))/\(name)"
@@ -355,6 +418,15 @@ public indirect enum Item {
             return group.tersePath(nil)
         case .segment(let segment):
             return segment.tersePath()
+        }
+    }
+    
+    public func setParent(_ n: Node?) {
+        switch self {
+        case .group(let group):
+            group.parent = n
+        case .segment(let segment):
+            segment.parent = n
         }
     }
 }
