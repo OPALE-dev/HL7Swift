@@ -55,7 +55,7 @@ public class TerserSuggestion {
     
     /// The node currently visited by the user.
     var currentNodeWithParent: Node? {
-        print("User input :", input)
+        // print("User input :", input)
         
         if input.isEmpty { return message.rootGroup }
         
