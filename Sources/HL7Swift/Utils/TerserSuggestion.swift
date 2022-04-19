@@ -38,12 +38,12 @@ public class TerserSuggestion {
     /// Dictionnary of suggestions of nodes.
     var nodes: [String:Node] {
         if input.isEmpty {
-            return allTerserPaths()
+            return allTerserPaths
         } else {
             if input == "/" {
-                return allTerserPaths()
+                return allTerserPaths
             } else {
-                return allTerserPaths().filter { $0.key.starts(with: input) }
+                return allTerserPaths.filter { $0.key.starts(with: input) }
             }
         }
     }
@@ -55,7 +55,7 @@ public class TerserSuggestion {
     
     /// The node currently visited by the user.
     var currentNodeWithParent: Node? {
-        // print("input", input)
+        print("User input :", input)
         
         if input.isEmpty { return message.rootGroup }
         
@@ -71,10 +71,20 @@ public class TerserSuggestion {
                 // Remove the unwanted part, ie "/goodpart/goodpart/uncompleted_par_"
                 let lastSlash = input.lastIndex(of: "/")
                 let parentString = String(input[..<lastSlash!])
-                // print("parent", parentString)
+                print("Checking parent...")
+                print("Parent string is :", parentString)
+                print("Result :", nodes[parentString])
+                print(nodes.keys)
+                self.input = parentString
+                
+                print("Result after change :", nodes[parentString])
+                print(nodes.keys)
+                print("All", allTerserPaths)
+                print("Result with all paths :", allTerserPaths[parentString])
                 // print(suggestions)
                 //print(input[...lastSlash!], "|", input[..<lastSlash!])
                 return nodes[parentString]
+                //return allTerserPaths()[parentString]
             }
         }
     }
@@ -115,7 +125,7 @@ public class TerserSuggestion {
     /**
      Returns all terser paths of the message, accordingly to the complete level.
      */
-    func allTerserPaths() -> [String:Node] {
+    lazy var allTerserPaths: [String:Node] = {
         guard let allItems = message.rootGroup?.items else { return [:] }
         
         var suggestionsNodes: [String:Node] = [:]
@@ -136,7 +146,7 @@ public class TerserSuggestion {
         }
         
         return suggestionsNodes
-    }
+    }()
     
     func terserPaths(for n: Group) -> [String:Node] {
         var suggestionsNodes: [String:Node] = [:]
