@@ -71,20 +71,10 @@ public class TerserSuggestion {
                 // Remove the unwanted part, ie "/goodpart/goodpart/uncompleted_par_"
                 let lastSlash = input.lastIndex(of: "/")
                 let parentString = String(input[..<lastSlash!])
-//                print("Checking parent...")
-//                print("Parent string is :", parentString)
-//                print("Result :", nodes[parentString])
-//                print(nodes.keys)
+
                 self.input = parentString
                 
-//                print("Result after change :", nodes[parentString])
-//                print(nodes.keys)
-//                print("All", allTerserPaths)
-//                print("Result with all paths :", allTerserPaths[parentString])
-                // print(suggestions)
-                //print(input[...lastSlash!], "|", input[..<lastSlash!])
                 return nodes[parentString]
-                //return allTerserPaths()[parentString]
             }
         }
     }
