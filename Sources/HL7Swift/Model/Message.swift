@@ -550,6 +550,21 @@ public struct Message {
         
         return str
     }
+    
+    /**
+     Gets a field containing a given text.
+     */
+    public func getFieldFromText(text: String) -> Field? {
+        for s in segments {
+            for f in s.fields.values {
+                if f.description.contains(text) {
+                    return f
+                }
+            }
+        }
+        
+        return nil
+    }
 }
 
 extension Message: CustomStringConvertible {
