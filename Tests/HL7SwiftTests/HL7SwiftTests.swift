@@ -413,6 +413,24 @@ final class HL7SwiftTests: XCTestCase {
         }
     }
     
+    func testToDelete() throws {
+        if let url = Bundle.module.url(forResource: "ORU_R01 - 3", withExtension: "txt") {
+            let message = try Message(withFileAt: url, hl7: hl7)
+        
+            let f = message[HL7.MSH]
+            let tp = f?.toTerserPath(message)
+            
+            let f2 = message[HL7.SFT]
+            let tp2 = f2?.toTerserPath(message)
+            
+            
+            let f3 = message.getFieldFromText(text: "DAVI")
+            
+            let tp3 = f3?.toTerserPath(message)
+            print(tp3?.nodes)
+            print(tp3?.indices())
+        }
+    }
     
     
     func testNodePath() throws {
