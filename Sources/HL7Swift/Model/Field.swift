@@ -72,26 +72,6 @@ public class Field:Node {
             return "-\(index)"
         }
     }
-    
-//    public func nodesPath() -> [Node] {
-//        var nodesArray = [self]
-//        
-//        if let p = parent {
-//            if let parentGroup = parent.parent as Group {
-//                nodesArray.insert(parentGroup, at: 0)
-//                
-//                if let grandparentGroup = parentGroup.parent as Group {
-//                    nodesArray.insert(grandparentGroup, at: 0)
-//                    
-//                    if let rootGroup = grandparentGroup.parent as Group {
-//                        nodesArray.insert(rootGroup, at: 0)
-//                    }
-//                }
-//            }
-//            
-//            nodesArray.insert(p, at: 0)
-//        }
-//    }
 }
 
 extension Field: CustomStringConvertible {
