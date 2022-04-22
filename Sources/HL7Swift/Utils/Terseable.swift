@@ -10,9 +10,9 @@ import Foundation
 public extension Node {
     
     /**
-     
+     Returns the indices of the node path.
      */
-    public func dices() -> [Int] {
+    func dices() -> [Int] {
         guard let root = self.root() else { return [] }
         let nodes = self.nodePath()
         
@@ -25,7 +25,7 @@ public extension Node {
         return _indices(root, currentNodes: nodes)
     }
     
-    func _indices(_ currentNode: Node, currentNodes: [Node]) -> [Int] {
+    private func _indices(_ currentNode: Node, currentNodes: [Node]) -> [Int] {
         if currentNodes.isEmpty { return [] }
         var nodesIndices: [Int] = []
         var indice = 0
@@ -38,13 +38,11 @@ public extension Node {
                 case .group(let g):
                     if let firstNode = currentNodes.first as? Group {
                         if firstNode.name == g.name {
-                            print("g.name", g.name)
                             nodesIndices.append(indice)
                             
                             var nextIndices = _indices(firstNode, currentNodes: Array(currentNodes.dropFirst()))
                             nextIndices = nextIndices.map { $0 + (nodesIndices.last ?? 0) + 1 }
                             nodesIndices.append(contentsOf: nextIndices)
-                            print("nodesIndices", nodesIndices)
                         } else {
                             indice += 1
                         }
@@ -60,7 +58,6 @@ public extension Node {
                             var nextIndices = _indices(firstNode, currentNodes: Array(currentNodes.dropFirst()))
                             nextIndices = nextIndices.map { $0 + (nodesIndices.last ?? 0) + 1 }
                             nodesIndices.append(contentsOf: nextIndices)
-                            print("nodesIndices", nodesIndices)
                         } else {
                             indice += 1
                         }
@@ -71,13 +68,11 @@ public extension Node {
             }
         } else if let currentSegment = currentNode as? Segment {
             
-            print("currentSegment", currentSegment.code)
             for field in currentSegment.sortedFields {
                 if let firstNode = currentNodes.first as? Field {
                     if firstNode.description == field.description {
                         
                         nodesIndices.append(indice)
-                        print("nodesIndices", nodesIndices)
                     } else {
                         indice += 1
                     }
@@ -92,10 +87,9 @@ public extension Node {
     
     
     /**
-     
+     Constructs a node path to self, ie `[Group, Group, Segment, Field]`.
      */
     func nodePath() -> [Node] {
-        print("nodePath")
         var nodes: [Node] = []
 
         if self is Group {
