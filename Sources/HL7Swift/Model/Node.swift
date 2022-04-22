@@ -14,6 +14,21 @@ public protocol Node: CustomStringConvertible {
 }
 
 extension Node {
+    public func root() -> Group? {
+        var root = false
+        var currentParent: Node = self
+        
+        while !root {
+            if let p = currentParent.parent {
+                currentParent = p
+            } else {
+                root = true
+            }
+        }
+        
+        return currentParent as? Group
+    }
+    
     public func path() -> String {
         if parent != nil {
             return "\(parent!.path())/\(name)"
@@ -53,11 +68,11 @@ extension Node {
                     }
                 }
             }
-        } else if let segment = self as? Segment {
+        } else if let _ = self as? Segment {
             
-        } else if let field = self as? Field {
+        } else if let _ = self as? Field {
             
-        } else if let cell = self as? Cell {
+        } else if let _ = self as? Cell {
             
         }
         
