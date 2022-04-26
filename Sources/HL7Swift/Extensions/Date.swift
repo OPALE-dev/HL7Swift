@@ -12,10 +12,6 @@ let dateAndTimeSimpleFormatter = DateFormatter()
 let dateAndTimeLongFormatter = DateFormatter()
 
 public extension Date {
-    
-    
-    // Global.HL7DateTimeFormatter.dateFormat = "yyyyMMddHHmmss"
-    
     static func HL7Date(from string: String) -> Date? {
         dateOnlyFormatter.dateFormat = "yyyyMMdd"
         dateAndTimeSimpleFormatter.dateFormat = "yyyyMMddHHmm"
