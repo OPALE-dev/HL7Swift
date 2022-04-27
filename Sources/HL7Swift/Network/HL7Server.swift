@@ -143,7 +143,7 @@ public class HL7Server {
                 delegate.server(serverStopped: self)
             }
             
-            Logger.info(NSLocalizedString("Server stopped.", comment: ""))
+            Logger.info("Server stopped.")
         }
     }
 }
