@@ -262,13 +262,18 @@ extension HL7Server : ChannelInboundHandler, ChannelOutboundHandler {
                     ack[HL7.MSH]![HL7.Receiving_Application] = r
                 }
                 
+                let messageControlID = message[HL7.MSH]?[HL7.Message_Control_ID]
+                
+                ack[HL7.MSH]![2] = message[HL7.MSH]?[2]
                 ack[HL7.MSH]![HL7.Sending_Facility] = config.facility
                 ack[HL7.MSH]![HL7.Sending_Application] = config.name
                 
+                ack[HL7.MSH]![HL7.Message_Control_ID] = messageControlID
                 ack[HL7.MSH]![HL7.Message_Type] = "ACK"
+                
                 // fill MSA
                 ack[HL7.MSA]![HL7.Acknowledgment_Code] = status.rawValue
-                ack[HL7.MSA]![HL7.Message_Control_ID] = "OK"
+                ack[HL7.MSA]![HL7.Message_Control_ID] = messageControlID
                 
                 Logger.info("### Reply ACK (\(ack.version.rawValue))")
                 Logger.debug("\n\n\(ack)\n")
