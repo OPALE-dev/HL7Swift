@@ -201,7 +201,9 @@ extension HL7CLient: ChannelInboundHandler {
             return
         }
         
-        if type.name == "ACK" || type.name == "NAK" {
+        print(response)
+        
+        if type.name.starts(with: "ACK") || type.name.starts(with: "NAK") {
             promise?.succeed(response)
 
         } else {
