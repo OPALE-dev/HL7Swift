@@ -12,7 +12,6 @@ import NIO
 import Yams
 
 
-
 extension Message {
     func fillTemplateKeys(fromMessage message:Message) -> String? {
         var hl7String = description
@@ -51,8 +50,7 @@ orur01_to_mdmt10:
   matching_predicate: "CONTAINS" # EQUALS, STARTS, STOPS, CONTAINS
   matching_value: "PATID5421" # the string to match with
   to_addresses: # list of remote destinations
-    - "hl7://127.0.0.1:5657"
-    - "hl7://127.0.0.2:5658"
+    - "hl7://127.0.0.1:2577"
   response_template: "~/hl7/templates/hl7/mdm.hl7" # optional: given template file with special terser path variables
   # filled up on the fly by values from the incoming message. Ex: PID|||000AB-{{/PATIENT/PID-3}}|...
   
@@ -155,7 +153,7 @@ struct HL7Router: ParsableCommand, HL7ServerDelegate {
                             // check terser condition
                             if  let matchingValue = routeDict["matching_value"] as? String,
                                 let predicate     = routeDict["matching_predicate"] as? String,
-                                let terserPath     = routeDict["terser_path"] as? String
+                                let terserPath    = routeDict["terser_path"] as? String
                             {
                                 let terser = Terser(message)
                                 
@@ -163,6 +161,7 @@ struct HL7Router: ParsableCommand, HL7ServerDelegate {
                                     let value = try terser.get(terserPath)
                                     var terserMatchOK = false
                                     
+                                    // check with given predicate
                                     switch predicate {
                                         case "EQUALS":
                                             if value == matchingValue {
@@ -188,6 +187,7 @@ struct HL7Router: ParsableCommand, HL7ServerDelegate {
                                         var response = message
                                         
                                         // check for response template
+                                        // if no response template, we just route the received message
                                         if var templatePath = routeDict["response_template"] as? String {
                                             templatePath = (templatePath as NSString).expandingTildeInPath
                                             
@@ -204,8 +204,31 @@ struct HL7Router: ParsableCommand, HL7ServerDelegate {
                                         }
                                         
                                         Logger.info("\n\n* -> [\(routeName)] matched\n\n")
-                                        Logger.debug("\n\n\(response.description)\n")
                                         
+                                        // for every destination address
+                                        if let destinations = routeDict["to_addresses"] as? [String] {
+                                            for address in destinations {
+                                                if let url = URL(string: address) {
+                                                    // check scheme (we may want to support HTTP/FHIR later)
+                                                    if let host = url.host, url.scheme == "hl7" {
+                                                        channel.eventLoop.execute {
+                                                            // send « response » to the destination address on the channel event-loop
+                                                            var config = ClientConfiguration(hl7)
+                                                            
+                                                            config.host = host
+                                                            config.port = url.port ?? 2575
+                                                            config.TLSEnabled = false
+                                                            
+                                                            let client = try? HL7Swift.HL7CLient(config)
+                                                            
+                                                            try? client?.connect().whenSuccess({ _ in
+                                                                _ = client?.channel?.writeAndFlush(response)
+                                                            })
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
                                     }
                                 } catch let e {
                                     print(e.localizedDescription)
