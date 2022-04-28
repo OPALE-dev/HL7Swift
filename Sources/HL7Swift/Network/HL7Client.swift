@@ -37,7 +37,7 @@ public class HL7CLient {
     public var config: ClientConfiguration
     
     var hl7: HL7!
-    var channel:Channel?
+    public var channel:Channel? // would be better private
     var promise: EventLoopPromise<Message>?
 
     var tlsConfiguration:TLSConfiguration? = nil
