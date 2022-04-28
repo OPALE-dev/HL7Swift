@@ -394,7 +394,7 @@ public struct Message {
         
         // sum(segments[0..<index].description.count)
         for j in 0..<index {
-            sum += segments[j].description.utf16.count + 2//"\r\n".utf16.description.count + 1 // TODO replace by sep.count, but it's a char :/
+            sum += segments[j].description.utf16.count + sep.utf16.count
         }
         
         return NSRange(location: sum, length: ofSegment.description.utf16.count)
