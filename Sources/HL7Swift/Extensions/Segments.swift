@@ -142,4 +142,5 @@ public extension HL7 {
     static let UB1 = "UB1"
     static let UB2 = "UB2"
     static let VAR = "VAR"
+    static let ZDS = "ZDS"
 }
