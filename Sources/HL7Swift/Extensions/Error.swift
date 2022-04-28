@@ -16,6 +16,7 @@ public enum HL7Error: LocalizedError, Equatable {
     case unsupportedMessage(message: String)
     case parserError(message: String)
     case initError(message: String)
+    case timeoutError(message: String)
     
     public var errorDescription: String? {
         switch self {
@@ -43,7 +44,9 @@ public enum HL7Error: LocalizedError, Equatable {
             
         case .initError(message: let message):
             return "Init error: \(message)"
-            
+           
+        case .timeoutError(message: let message):
+            return "TimeoutError error: \(message)"
         }
     }
 }
