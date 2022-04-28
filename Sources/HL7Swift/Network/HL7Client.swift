@@ -103,7 +103,7 @@ public class HL7CLient {
             
             // make promise to receive ACK/NAK
             self.promise    = self.channel?.eventLoop.makePromise(of: Message.self)
-                        
+                
             return channel.eventLoop.makeSucceededVoidFuture()
         }
     }
@@ -146,7 +146,10 @@ public class HL7CLient {
         
         Logger.info("### Sent Message \(message.type.name) (\(message.version.rawValue))")
         Logger.debug("\n\n\(message)\n")
-
+        channel?.eventLoop.scheduleTask(in: .seconds(Int64(self.config.readTimeout))) {
+            self.promise?.fail(HL7Error.timeoutError(message: "Timeout while sending message"))
+        }
+                
         return try promise?.futureResult.wait()
     }
 
@@ -201,9 +204,7 @@ extension HL7CLient: ChannelInboundHandler {
             promise?.fail(HL7Error.unsupportedMessage(message: message))
             return
         }
-        
-        print(response)
-        
+            
         if type.name.starts(with: "ACK") || type.name.starts(with: "NAK") {
             promise?.succeed(response)
 
