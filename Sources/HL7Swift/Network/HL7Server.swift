@@ -84,7 +84,7 @@ public class HL7Server {
         self.bootstrap = ServerBootstrap(group: group)
             .serverChannelOption(ChannelOptions.backlog, value: 256)
             .serverChannelOption(ChannelOptions.socketOption(.so_reuseaddr), value: 1)
-            .serverChannelOption(ChannelOptions.connectTimeout, value: .seconds(config.connectTimeout))
+            .serverChannelOption(ChannelOptions.connectTimeout, value: .seconds(Int64(config.connectTimeout)))
             .childChannelInitializer { channel in
                 if self.config.TLSEnabled {
                     if let context = self.sslContext {

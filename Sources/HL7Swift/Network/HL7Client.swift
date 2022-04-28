@@ -16,6 +16,7 @@ public struct ClientConfiguration {
 
     public var host:String      = "127.0.0.1"
     public var port:Int         = 2575
+    public var localPort:Int? = nil
     
     public var connectTimeout: Int = 5
     public var readTimeout: Int    = 5
@@ -32,12 +33,10 @@ public struct ClientConfiguration {
 
 
 public class HL7CLient {
-    public var host:String!
-    public var port:Int!
-    public var localPort:Int? = nil
-    public var TLSEnabled:Bool = false
+        
+    public var config: ClientConfiguration
     
-    var hl7:HL7!
+    var hl7: HL7!
     var channel:Channel?
     var promise: EventLoopPromise<Message>?
 
@@ -45,21 +44,19 @@ public class HL7CLient {
     var sslContext:NIOSSLContext? = nil
     
     
-    public init(host: String, port: Int, hl7: HL7, TLSEnabled:Bool = false) throws {
-        self.host       = host
-        self.port       = port
-        self.hl7        = hl7
-        self.TLSEnabled = TLSEnabled
+    public init(_ config: ClientConfiguration) throws {
+        self.config = config
+        self.hl7    = config.hl7
     }
 
     
     
     // MARK: -
     
-    public func connect(_ config: ClientConfiguration) throws -> EventLoopFuture<Void> {
+    public func connect() throws -> EventLoopFuture<Void> {
         let responder = HL7Responder(hl7: hl7, spec: hl7.spec(ofVersion: .v282)!, facility: "HL7SWIFT", app: "HL7CLIENT")
 
-        if self.TLSEnabled {
+        if self.config.TLSEnabled {
             try initTLS()
         }
         
@@ -67,11 +64,11 @@ public class HL7CLient {
         let bootstrap = ClientBootstrap(group: group)
             .channelOption(ChannelOptions.socket(SocketOptionLevel(SOL_SOCKET), SO_REUSEADDR), value: 1)
             .channelOption(ChannelOptions.maxMessagesPerRead, value: 16)
-            .channelOption(ChannelOptions.connectTimeout, value: .seconds(config.connectTimeout))
+            .channelOption(ChannelOptions.connectTimeout, value: .seconds(Int64(config.connectTimeout)))
             .channelInitializer { channel in
-                if let sslContext = self.sslContext, self.TLSEnabled {
+                if let sslContext = self.sslContext, self.config.TLSEnabled {
                     do {
-                        let TLShandler = try NIOSSLClientHandler(context: sslContext, serverHostname: self.host, customVerificationCallback: { certs, promise in
+                        let TLShandler = try NIOSSLClientHandler(context: sslContext, serverHostname: self.config.host, customVerificationCallback: { certs, promise in
                             print("customVerificationCallback")
                             return promise.succeed(.certificateVerified)
                         })
@@ -98,11 +95,11 @@ public class HL7CLient {
         
         
         return bootstrap
-            .connect(host: self.host, port: self.port)
+            .connect(host: self.config.host, port: self.config.port)
             .flatMap { channel in
                 
             self.channel    = channel
-            self.localPort  = self.channel?.localAddress?.port
+            self.config.localPort  = self.channel?.localAddress?.port
             
             // make promise to receive ACK/NAK
             self.promise    = self.channel?.eventLoop.makePromise(of: Message.self)
@@ -115,7 +112,7 @@ public class HL7CLient {
     
     public func disconnect() {
         self.channel?.closeFuture.whenComplete { _ in
-            Logger.info("Disconnected from \(self.host!):\(self.port!)")
+            Logger.info("Disconnected from \(self.config.host):\(self.config.port)")
         }
         
         self.promise?.fail(HL7Error.initError(message: ""))
