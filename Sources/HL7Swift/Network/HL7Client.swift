@@ -64,6 +64,7 @@ public class HL7CLient {
         let bootstrap = ClientBootstrap(group: group)
             .channelOption(ChannelOptions.socket(SocketOptionLevel(SOL_SOCKET), SO_REUSEADDR), value: 1)
             .channelOption(ChannelOptions.maxMessagesPerRead, value: 16)
+            .channelOption(ChannelOptions.connectTimeout, value: .seconds(2))
             .channelInitializer { channel in
                 if let sslContext = self.sslContext, self.TLSEnabled {
                     do {
@@ -143,9 +144,15 @@ public class HL7CLient {
                  
         try channel?.writeAndFlush(message).wait()
         
+        print("...")
+        
         Logger.info("### Sent Message \(message.type.name) (\(message.version.rawValue))")
         Logger.debug("\n\n\(message)\n")
-                
+        print("...")
+//        return try promise?.futureResult.whenComplete({
+//            print("Je suis complete")
+//        })
+        //.wait()
         return try promise?.futureResult.wait()
     }
 
