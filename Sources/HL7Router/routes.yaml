@@ -1,14 +1,25 @@
 ---
-# This is a example YAML route file for HL7Router
+# This is a example YAML routes file for HL7Router
                                             
-# ORU_R01 to MDM_T10 HL7 message conversion route
+# convert ORU_R01 to MDM_T10 HL7 message conversion route
 orur01_to_mdmt10:
   incoming_message_type: "ORU_R01" # careful to match every variation with _, -, ^, etc.
-  from_address: "*"
-  terser_path: "/PATIENT_RESULT/PATIENT/PID-3" # optional: if no terser path given, the matching is done on the whole message
-  matching_predicate: "CONTAINS" # EQUALS, STARTS, STOPS, CONTAINS
-  matching_value: "PATID5421" # the string to match with
+  from_hostname: "*"
+  and_conditions: # list of AND conditions
+    - terser_path: "/PATIENT_RESULT/PATIENT/PID-3" # optional: if no terser path given, the matching is done on the whole message
+      matching_predicate: "CONTAINS" # EQUALS, STARTS, STOPS, CONTAINS
+      matching_value: "PATID5421" # the string to match with
+    - terser_path: "/MSH-4"
+      matching_predicate: "EQUALS"
+      matching_value: "CIS"
   to_addresses: # list of remote destinations
     - "hl7://127.0.0.1:2577"
   response_template: "~/hl7/templates/hl7/mdm.hl7" # optional: given template file with special terser path variables
   # filled up on the fly by values from the incoming message. Ex: PID|||000AB-{{/PATIENT/PID-3}}|...
+
+# forward every MDM_T10 to hl7://127.0.0.1:2577
+mdmt10_to_2577:
+  incoming_message_type: "MDM_T10"
+  from_hostname: "*"
+  to_addresses:
+    - "hl7://127.0.0.1:2577"

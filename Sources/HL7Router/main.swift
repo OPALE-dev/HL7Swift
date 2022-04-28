@@ -21,7 +21,7 @@ import Yams
  See `mdm.hl7` file for more detailed examples.
  It simply returns a string, mostly to not modify the original template file.
  */
-extension Message {
+private extension Message {
     func fillTemplateKeys(fromMessage message:Message) -> String? {
         var hl7String = description
 
@@ -48,10 +48,38 @@ extension Message {
 }
 
 
+/**
+ The kinds of predicate the router supports
+ */
+private enum RouterPredicate:String {
+    case EQUALS     = "EQUALS"
+    case CONTAINS   = "CONTAINS"
+    case STARTS     = "STARTS"
+    case ENDS       = "ENDS"
+}
+
+/**
+ String helpers to symbolize YAML keys
+ */
+private extension String {
+    static let from_hostname            = "from_hostname"
+    static let incoming_message_type    = "incoming_message_type"
+    static let and_conditions           = "and_conditions"
+    
+    static let matching_value           = "matching_value"
+    static let matching_predicate       = "matching_predicate"
+    static let terser_path              = "terser_path"
+    
+    static let response_template        = "response_template"
+    static let to_addresses             = "to_addresses"
+}
+
+
 
 // Ugly, but eh.
 let hl7 = try HL7()
 var routes:[String: Any] = [:]
+
 
 /**
  Mostly a clone of `HL7Server` but embeding a routing system based on the `routes.yaml` file.
@@ -84,11 +112,7 @@ struct HL7Router: ParsableCommand, HL7ServerDelegate {
                 
         do {
             // prepare routes
-            let yamlString = try String(contentsOfFile: routesPath)
-            let yaml = try? Yams.load(yaml: yamlString)
-            if let rs = yaml as? [String: Any] {
-                routes = rs
-            }
+            try reloadRoutes()
             
             // config server
             var config = ServerConfiguration(hl7)
@@ -108,13 +132,21 @@ struct HL7Router: ParsableCommand, HL7ServerDelegate {
         }
     }
     
+    
+    
+    // MARK: -
+    
+    func reloadRoutes() throws {
+        let yamlString = try String(contentsOfFile: routesPath)
+        let yaml = try? Yams.load(yaml: yamlString)
+        if let rs = yaml as? [String: Any] {
+            routes = rs
+        }
+    }
+    
         
     
     // MARK: -
-    func server(_ server: HL7Swift.HL7Server, send message: Message, to: String?, channel:Channel) {
-        
-    }
-    
     /**
      We do all the logic here. Looping over the routes, checking route conditions, then sending response back to destinations.
      */
@@ -124,102 +156,95 @@ struct HL7Router: ParsableCommand, HL7ServerDelegate {
                 var fromOK = false
                 
                 // check from address
-                if let fromAddresses = routeDict["from_address"] as? String {
-                    if fromAddresses == "*" {
+                if let fromHotname = routeDict[.from_hostname] as? String {
+                    if fromHotname == "*" {
                         fromOK = true
                     }
-                    else if fromAddresses == channel.remoteAddress?.ipAddress {
+                    else if fromHotname == channel.remoteAddress?.ipAddress {
                         fromOK = true
                     }
                 }
                 
                 if fromOK {
                     // check message type
-                    if let messageType = routeDict["incoming_message_type"] as? String,
+                    if let messageType = routeDict[.incoming_message_type] as? String,
                            message.type.name == messageType
                     {
-                        // check terser condition
-                        if  let matchingValue = routeDict["matching_value"] as? String,
-                            let predicate     = routeDict["matching_predicate"] as? String,
-                            let terserPath    = routeDict["terser_path"] as? String
-                        {
-                            let terser = Terser(message)
+                        var conditionsOK = false
+                        
+                        // check AND conditions
+                        if let andConditions = routeDict[.and_conditions] as? [[String: String]] {
+                            for condition in andConditions {
+                                // check terser value
+                                if  let matchingValue = condition[.matching_value],
+                                    let predicate     = condition[.matching_predicate],
+                                    let terserPath    = condition[.terser_path]
+                                {
+                                    let terser = Terser(message)
+                                    
+                                    do {
+                                        let value = try terser.get(terserPath)
+                                        let predicate = RouterPredicate(rawValue: predicate) ?? .EQUALS
+                                        // check with given predicate
+                                        switch predicate {
+                                            case .EQUALS:   conditionsOK = value == matchingValue
+                                            case .CONTAINS: conditionsOK = value!.contains(matchingValue)
+                                            case .STARTS:   conditionsOK = value!.starts(with: matchingValue)
+                                            case .ENDS:     conditionsOK = value!.hasSuffix(matchingValue)
+                                        }
+                                    } catch { /* conditionsOK is false */ }
+                                }
+                            }
+                        } else {
+                            // if none AND conditons found in route
+                            conditionsOK = true
+                        }
+                        
+                        // continue
+                        if conditionsOK {
+                            var response = message
+                            // check for response template
+                            // if no response template, we just route the received message
+                            if var templatePath = routeDict[.response_template] as? String {
+                                templatePath = (templatePath as NSString).expandingTildeInPath
+                                
+                                if let hl7String = try? String(contentsOfFile: templatePath),
+                                   let templateMessage = try? Message(hl7String, hl7: hl7) {
+                                    
+                                    // fill template with terser values from received message
+                                    if let string = templateMessage.fillTemplateKeys(fromMessage: message) {
+                                        if let r = try? Message(string, hl7: hl7) {
+                                            response = r
+                                        }
+                                    }
+                                }
+                            }
                             
-                            do {
-                                let value = try terser.get(terserPath)
-                                var terserMatchOK = false
-                                
-                                // check with given predicate
-                                switch predicate {
-                                    case "EQUALS":
-                                        if value == matchingValue {
-                                            terserMatchOK = true
-                                        }
-                                    case "CONTAINS":
-                                        if value!.contains(matchingValue) {
-                                            terserMatchOK = true
-                                        }
-                                    case "STARTS":
-                                        if value!.starts(with: matchingValue) {
-                                            terserMatchOK = true
-                                        }
-                                    case "ENDS":
-                                        if value!.hasSuffix(matchingValue) {
-                                            terserMatchOK = true
-                                        }
-                                    default: break;
-                                }
-                                
-                                
-                                if terserMatchOK {
-                                    var response = message
-                                    
-                                    // check for response template
-                                    // if no response template, we just route the received message
-                                    if var templatePath = routeDict["response_template"] as? String {
-                                        templatePath = (templatePath as NSString).expandingTildeInPath
-                                        
-                                        if let hl7String = try? String(contentsOfFile: templatePath),
-                                           let templateMessage = try? Message(hl7String, hl7: hl7) {
-                                            
-                                            // fill template with terser values from received message
-                                            if let string = templateMessage.fillTemplateKeys(fromMessage: message) {
-                                                if let r = try? Message(string, hl7: hl7) {
-                                                    response = r
-                                                }
-                                            }
-                                        }
-                                    }
-                                    
-                                    Logger.info("\n\n* -> [\(routeName)] matched\n\n")
-                                    
-                                    // for every destination address
-                                    if let destinations = routeDict["to_addresses"] as? [String] {
-                                        for address in destinations {
-                                            if let url = URL(string: address) {
-                                                // check scheme (we may want to support HTTP/FHIR later)
-                                                if let host = url.host, url.scheme == "hl7" {
-                                                    channel.eventLoop.execute {
-                                                        // send « response » to the destination address on the channel event-loop
-                                                        var config = ClientConfiguration(hl7)
-                                                        
-                                                        config.host = host
-                                                        config.port = url.port ?? 2575
-                                                        config.TLSEnabled = false
-                                                        
-                                                        let client = try? HL7Swift.HL7CLient(config)
-                                                        
-                                                        try? client?.connect().whenSuccess({ _ in
-                                                            _ = client?.channel?.writeAndFlush(response)
-                                                        })
-                                                    }
-                                                }
+                            Logger.info("\n\n* -> [\(routeName)] matched\n")
+                            
+                            // for every destination address
+                            if let destinations = routeDict[.to_addresses] as? [String] {
+                                for address in destinations {
+                                    if let url = URL(string: address) {
+                                        // check scheme (we may want to support HTTP/FHIR later)
+                                        if let host = url.host, url.scheme == "hl7" {
+                                            channel.eventLoop.execute {
+                                                // send « response » to the destination address on the channel event-loop
+                                                var config = ClientConfiguration(hl7)
+                                                
+                                                config.host = host
+                                                config.port = url.port ?? 2575
+                                                config.TLSEnabled = false
+                                                
+                                                let client = try? HL7Swift.HL7CLient(config)
+                                                
+                                                try? client?.connect().whenSuccess({ _ in
+                                                    _ = client?.channel?.writeAndFlush(response)
+                                                })
                                             }
                                         }
                                     }
                                 }
-                            } catch let e {
-                                print(e.localizedDescription)
                             }
                         }
                     }
@@ -228,6 +253,10 @@ struct HL7Router: ParsableCommand, HL7ServerDelegate {
         }
     }
     
+    
+    func server(_ server: HL7Swift.HL7Server, send message: Message, to: String?, channel:Channel) {
+        
+    }
     
     func server(_ server: HL7Swift.HL7Server, ACKStatusFor message:Message, channel:Channel) -> AcknowledgeStatus {
         return .AA
