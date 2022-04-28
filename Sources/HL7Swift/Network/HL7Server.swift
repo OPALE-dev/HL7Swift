@@ -38,6 +38,9 @@ public struct ServerConfiguration {
     public var host:String              = "0.0.0.0"
     public var port:Int                 = 2575
     
+    public var connectTimeout: Int      = 5
+    public var readTimeout: Int         = 5
+    
     public var name:String              = "HL7SERVER"
     public var facility:String          = "HL7SERVER"
 
@@ -81,6 +84,7 @@ public class HL7Server {
         self.bootstrap = ServerBootstrap(group: group)
             .serverChannelOption(ChannelOptions.backlog, value: 256)
             .serverChannelOption(ChannelOptions.socketOption(.so_reuseaddr), value: 1)
+            .serverChannelOption(ChannelOptions.connectTimeout, value: .seconds(config.connectTimeout))
             .childChannelInitializer { channel in
                 if self.config.TLSEnabled {
                     if let context = self.sslContext {
