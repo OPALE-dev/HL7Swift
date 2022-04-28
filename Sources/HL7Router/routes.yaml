@@ -1,24 +1,14 @@
 ---
 # This is a example YAML route file for HL7Router
+                                            
+# ORU_R01 to MDM_T10 HL7 message conversion route
 orur01_to_mdmt10:
   incoming_message_type: "ORU_R01" # careful to match every variation with _, -, ^, etc.
   from_address: "*"
-  terser_path: "/PID-3-1" # optional: if no terser path given, the matching is done on the whole message
+  terser_path: "/PATIENT_RESULT/PATIENT/PID-3" # optional: if no terser path given, the matching is done on the whole message
   matching_predicate: "CONTAINS" # EQUALS, STARTS, STOPS, CONTAINS
   matching_value: "PATID5421" # the string to match with
   to_addresses: # list of remote destinations
     - "hl7://127.0.0.1:2577"
   response_template: "~/hl7/templates/hl7/mdm.hl7" # optional: given template file with special terser path variables
   # filled up on the fly by values from the incoming message. Ex: PID|||000AB-{{/PATIENT/PID-3}}|...
-  
-adt_route:
-  incoming_message_type: "ADT_A01"
-  incoming_message_version: "2.3" # optional
-  from_address: "hl7://127.0.0.1:2089"
-  terser_path: "/PATIENT/PID-3"
-  matching_predicate: "CONTAINS"
-  matching_value: "001345"
-  to_addresses:
-    - "https://127.0.0.1:8080/fhir"
-    - "https://127.0.0.1:9080/fhir2"
-  response_template: "~/hl7/templates/fhir/admission.json"
