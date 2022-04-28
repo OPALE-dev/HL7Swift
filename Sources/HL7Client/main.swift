@@ -26,11 +26,21 @@ struct HL7Client: ParsableCommand {
     mutating func run() throws {
         do {
             let hl7 = try HL7()
-            let client = try HL7Swift.HL7CLient(host: hostname, port: port, hl7: hl7, TLSEnabled: tls)
+//            let client = try HL7Swift.HL7CLient(host: hostname, port: port, hl7: hl7, TLSEnabled: tls)
             
             client.TLSEnabled = tls
             
-            let future = try client.connect()
+            var config = ClientConfiguration(hl7)
+            
+            config.host = hostname
+            config.port = port
+            config.TLSEnabled = tls
+//            config.certificatePath = certificate
+//            config.privateKeyPath = privateKey
+//            config.passphrase = passphrase
+//
+            
+            let future = try client.connect(config)
             try future.wait()
             
             Logger.info("Connected to \(hostname):\(port)...")
