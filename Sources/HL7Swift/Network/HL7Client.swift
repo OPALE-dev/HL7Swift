@@ -17,6 +17,9 @@ public struct ClientConfiguration {
     public var host:String      = "127.0.0.1"
     public var port:Int         = 2575
     
+    public var connectTimeout: Int = 5
+    public var readTimeout: Int    = 5
+    
     public var name:String      = "HL7CLIENT"
     public var facility:String  = "HL7CLIENT"
 
@@ -53,7 +56,7 @@ public class HL7CLient {
     
     // MARK: -
     
-    public func connect() throws -> EventLoopFuture<Void> {
+    public func connect(_ config: ClientConfiguration) throws -> EventLoopFuture<Void> {
         let responder = HL7Responder(hl7: hl7, spec: hl7.spec(ofVersion: .v282)!, facility: "HL7SWIFT", app: "HL7CLIENT")
 
         if self.TLSEnabled {
@@ -64,7 +67,7 @@ public class HL7CLient {
         let bootstrap = ClientBootstrap(group: group)
             .channelOption(ChannelOptions.socket(SocketOptionLevel(SOL_SOCKET), SO_REUSEADDR), value: 1)
             .channelOption(ChannelOptions.maxMessagesPerRead, value: 16)
-            .channelOption(ChannelOptions.connectTimeout, value: .seconds(2))
+            .channelOption(ChannelOptions.connectTimeout, value: .seconds(config.connectTimeout))
             .channelInitializer { channel in
                 if let sslContext = self.sslContext, self.TLSEnabled {
                     do {
@@ -112,7 +115,7 @@ public class HL7CLient {
     
     public func disconnect() {
         self.channel?.closeFuture.whenComplete { _ in
-            Logger.info("Disconnected form \(self.host!):\(self.port!)")
+            Logger.info("Disconnected from \(self.host!):\(self.port!)")
         }
         
         self.promise?.fail(HL7Error.initError(message: ""))
@@ -144,15 +147,9 @@ public class HL7CLient {
                  
         try channel?.writeAndFlush(message).wait()
         
-        print("...")
-        
         Logger.info("### Sent Message \(message.type.name) (\(message.version.rawValue))")
         Logger.debug("\n\n\(message)\n")
-        print("...")
-//        return try promise?.futureResult.whenComplete({
-//            print("Je suis complete")
-//        })
-        //.wait()
+
         return try promise?.futureResult.wait()
     }
 
