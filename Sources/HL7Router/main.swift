@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Dispatch
 import HL7Swift
 import ArgumentParser
 import NIO
@@ -75,8 +76,10 @@ private extension String {
 }
 
 
+// MARK: -
 
 // Ugly, but eh.
+
 let hl7 = try HL7()
 var routes:[String: Any] = [:]
 
@@ -109,10 +112,10 @@ struct HL7Router: ParsableCommand, HL7ServerDelegate {
     
     mutating func run() throws {
         Logger.setMaxLevel(.VERBOSE)
-                
+            
         do {
             // prepare routes
-            try reloadRoutes()
+            HL7Router.reloadRoutes(routesPath)
             
             // config server
             var config = ServerConfiguration(hl7)
@@ -132,19 +135,18 @@ struct HL7Router: ParsableCommand, HL7ServerDelegate {
         }
     }
     
-    
-    
-    // MARK: -
-    
-    func reloadRoutes() throws {
-        let yamlString = try String(contentsOfFile: routesPath)
-        let yaml = try? Yams.load(yaml: yamlString)
-        if let rs = yaml as? [String: Any] {
-            routes = rs
+    static func reloadRoutes(_ path:String) {
+        do {
+            let yamlString = try String(contentsOfFile: path)
+            let yaml = try Yams.load(yaml: yamlString)
+            if let rs = yaml as? [String: Any] {
+                routes = rs
+            }
+        } catch {
+            
         }
     }
     
-        
     
     // MARK: -
     /**
@@ -270,8 +272,6 @@ struct HL7Router: ParsableCommand, HL7ServerDelegate {
 
     }
 }
-
-
 
 // MARK: -
 

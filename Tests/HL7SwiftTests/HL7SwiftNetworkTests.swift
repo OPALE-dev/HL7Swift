@@ -13,13 +13,17 @@ import HL7Swift
 
 final class HL7SwiftNetworkTests: XCTestCase {
     var hl7:HL7!
-    var host = "127.0.0.1"
-    var port = 7777
+    var config:ClientConfiguration!
     
     override func setUpWithError() throws {
         try super.setUpWithError()
 
         self.hl7 = try HL7()
+        
+        var config = ClientConfiguration(self.hl7)
+        
+        config.host = "127.0.0.1"
+        config.port = 7777
     }
     
     
@@ -59,8 +63,8 @@ final class HL7SwiftNetworkTests: XCTestCase {
         
         var server:HL7Server? = nil
         var client:HL7CLient? = nil
-        
-        client = try HL7CLient(host: host, port: port, hl7: self.hl7)
+
+        client = try HL7CLient(config)
         server = try HL7Server(ServerConfiguration(hl7))
         
         serialQueue.async {
@@ -122,7 +126,7 @@ final class HL7SwiftNetworkTests: XCTestCase {
         var server:HL7Server? = nil
         var client:HL7CLient? = nil
         
-        client = try HL7CLient(host: host, port: port, hl7: self.hl7)
+        client = try HL7CLient(config)
         server = try HL7Server(ServerConfiguration(hl7))
         
         serialQueue.async {
