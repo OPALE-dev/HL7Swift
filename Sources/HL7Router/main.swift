@@ -78,7 +78,7 @@ private extension String {
 
 // MARK: -
 
-// Ugly, but eh.
+// Ugly but, eh.
 
 let hl7 = try HL7()
 var routes:[String: Any] = [:]
