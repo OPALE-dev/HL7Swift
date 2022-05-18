@@ -41,7 +41,9 @@ public struct Message {
     public var forcedVersion:Version!
     
     public var type:Typable!
-
+    public var triggerEvent:String?
+    public var messageStructure:String?
+    
     var segments: [Segment] = []
     var internalType:Typable?
     
@@ -288,7 +290,7 @@ public struct Message {
     /// Some messages have types on one cell, eg ACK
     /// Others have their type on two cells, eg PPR^PC1
     /// Others have their type on three cells, eg VXU^V04^VXU_V04
-    private func getType() throws -> String {
+    private mutating func getType() throws -> String {
         var str = ""
         
         guard let segment = self["MSH"] else {
@@ -304,9 +306,12 @@ public struct Message {
             str = field.cells[0].text
         } else {
             if field.cells[0].components.count == 3 {
-                str = field.cells[0].components[2].text
+                str = field.cells[0].components[0].text + "_" + field.cells[0].components[1].text
+                self.triggerEvent = field.cells[0].components[1].text
+                self.messageStructure = field.cells[0].components[2].text
             } else {
                 str = field.cells[0].components[0].text + "_" + field.cells[0].components[1].text
+                self.triggerEvent = field.cells[0].components[1].text
             }
         }
         
