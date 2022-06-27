@@ -49,8 +49,40 @@ public struct Message {
     
     public init(withFileAt url: URL, hl7: HL7) throws {
         do {
-            let content = try String(contentsOf: url)
-                                
+            let asciiContent = try String(contentsOf: url, encoding: .ascii)
+            var msh = ""
+            
+            if let newliner = asciiContent.firstIndex(of: "\r") {
+                msh = String(asciiContent[..<newliner])
+            } else if let newlinern = asciiContent.firstIndex(of: "\r\n") {
+                msh = String(asciiContent[..<newlinern])
+            } else if let newlinen = asciiContent.firstIndex(of: "\n") {
+                msh = String(asciiContent[..<newlinen])
+            }
+
+            var count = 0
+            var encoding: String.Encoding? = nil
+            
+            for i in msh.indices {
+                
+                if msh[i] == "|" {
+                    count += 1
+                }
+                
+                if count == 17 {
+                    let encodingString = String(msh[i...])
+                    if encodings.keys.contains(encodingString) {
+                        encoding = encodings[encodingString]!
+                    }
+                }
+            }
+            
+            if count != 17 {
+                encoding = default_encoding
+            }
+            
+            let content = try String(contentsOf: url, encoding: encoding!)
+            
             try self.init(content, hl7: hl7)
             
         } catch let e {
@@ -68,9 +100,10 @@ public struct Message {
         self.forcedVersion = forcedVersion
         
         // sanitize check to exclude non-HL7 strings
-        guard (str.range(of: #"(^|\n)([A-Z]{2}[A-Z0-9]{1})(?=[\|])"#, options: .regularExpression) != nil) else {
+        /*guard (str.range(of: #"(^|\n)([A-Z]{2}[A-Z0-9]{1})(?=[\|])"#, options: .regularExpression) != nil) else {
             throw HL7Error.unsupportedMessage(message: "Not HL7 message")
         }
+        */
         
         // The separator depends on the implementation, not on the standard
         if str.split(separator: "\r").count > 1 {
