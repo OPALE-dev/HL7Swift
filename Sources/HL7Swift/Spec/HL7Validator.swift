@@ -262,7 +262,7 @@ private extension DefaultValidator {
         var results:[ValidationResult] = []
         
         for segment in message.segments {
-            for (index, field) in segment.sortedFields.enumerated() {
+            for (_, field) in segment.sortedFields.enumerated() {
 
                 let fieldRealLength = field.description.count
                 

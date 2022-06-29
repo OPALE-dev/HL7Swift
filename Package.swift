@@ -45,7 +45,6 @@ let package = Package(
                 .product(name: "AsyncHTTPClient", package: "async-http-client")
             ],
             resources: [
-                .process("Resources"),
                 .process("Spec/Resources"),
             ]),
         .target(
@@ -89,6 +88,9 @@ let package = Package(
                 "HL7Swift",
                 "Yams",
                 .product(name: "ArgumentParser", package: "swift-argument-parser")
+            ],
+            resources: [
+                .process("Resources")
             ]),
         .testTarget(
             name: "HL7SwiftTests",

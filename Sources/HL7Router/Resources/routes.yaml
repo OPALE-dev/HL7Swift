@@ -1,7 +1,9 @@
 ---
 # This is a example YAML routes file for HL7Router
                                             
-# convert ORU_R01 to MDM_T10 HL7 message conversion route
+# Convert ORU_R01 to MDM_T10 HL7 message conversion route if incoming
+# message contains `PATID5421` at terser path `/PATIENT_RESULT/PATIENT/PID-3`
+# and `/MSH-4` is equals to `CIS` value.
 orur01_to_mdmt10:
   incoming_message_type: "ORU_R01" # careful to match every variation with _, -, ^, etc.
   from_hostname: "*"
