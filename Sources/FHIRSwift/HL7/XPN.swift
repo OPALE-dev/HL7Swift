@@ -14,7 +14,7 @@ import HL7Swift
  Represents a Person Name
  */
 public extension XPN {
-    public var nameUse:NameUse? {
+    var nameUse:NameUse? {
         if nameTypeCode == "B" {
             return .usual
         }
