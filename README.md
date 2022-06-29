@@ -1,47 +1,49 @@
 # HL7Swift
 
-HL7Swift is a minimal implementation of the HL7 2.x standard written in Swift. It provides a few tools to parse, send and receive HL7 pipe delimited messages with ease. It is based the official HL7 implementation guides and resources (XML data that defines the specification) to provide comprehensive tool to address the complexity and vast definitions the specification brought.
+HL7Swift is an implementation of the HL7 2.x standard written in Swift. It provides a few tools to parse, edit, send and receive HL7 pipe delimited messages with ease. It is based the official HL7 implementation guides and resources (XML data that defines the specification) to provide comprehensive tools to address the complexity and vast definitions the specification brought.
 
 ## Disclaimer
 
 HL7Swift is *not* a production ready library and is not intented to be used as such. It focuses on the computing aspects of the HL7 standard, and provides a powerful set of tools to deal with HL7 specification. The authors of this source code cannot be held responsible for its misuses or malfunctions, as it is defined in the license below.
 
-_Also, this is a WIP, so it is still subject to many breaking API changes that will make your life very very hard._
+_Also, this is a WIP, so it is still subject to many breaking API changes that will make your life very very hard, sorry. :-)_
 
 ## Dependencies
 
 * **SwiftNIO**: [https://github.com/apple/swift-nio](https://github.com/apple/swift-nio)
 * **Swift Argument Parser** : [https://github.com/apple/swift-argument-parser](https://github.com/apple/swift-argument-parser)
 
+## Dependents
+
+* The Hashelset app for macOS is a proof of concept for HL7Swift library
+* The HL7Swift project comes with various binary tools built against this implementation (see below)  
+
 ## Features
 
-- Parse HL7 message (v2.x)
-- Build standardized HL7 messages
-- Send HL7 messages over TCP/IP/TLS (HL7 client)
-- Receive HL7 messages over TCP/IP/TLS (HL7 server)
+- Parse, edit and write HL7 message (v2.x)
+- Build standardized HL7 messages from scratch
+- Send HL7 messages over TCP/IP (HL7 client)
+- Receive HL7 messages over TCP/IP (HL7 server)
 
 ## TODO
 
-- Documentation
-- Message validation
-- Handle exceptions
-- Convert to XML
-- Read message with the correct encoding
+- More documentation
+- Convert HL7 to XML
 - Terser for groups
-- Tests groups generation for all tests messages (get all specs too)
+- Tests groups generation for all tests messages (get all specs too) (?)
 - Implement HL7 v3
-- Impelment HL7 FHIR
+- Impelment HL7 FHIR (partial, in progress)
 
 ## Getting Started
 
 ### Installation
 
-To use the `HL7Swift` library in a Swift Package Manager project, add it to the dependencies for your package and your command-line executable target:
+To use the `HL7Swift` library in a Swift Package Manager (SPM) project, add it to the dependencies for your package and your command-line executable target:
 
     let package = Package(
         // name, platforms, products, etc.
         dependencies: [
-            .package(url: "https://github.com/opale-paris/hl7swift", branch: "master"),
+            .package(url: "https://github.com/OPALE-dev/HL7Swift", branch: "main"),
         ],
         targets: [
             .executableTarget(name: "your-program", dependencies: [
@@ -55,7 +57,8 @@ To use the `HL7Swift` library in a Swift Package Manager project, add it to the 
 Before everything you have to instanciate the `HL7` specification object as follow:
 
     let hl7 = HL7()
-    
+ 
+If you don't want to know the details, skip to <a href="#parse-messages">Parse messages</a> section.
 The library manages all the 2.x HL7 versions implementation for you. An (kinda) enum defines the multiple versions, for example:
 
     let version = Version.v251
