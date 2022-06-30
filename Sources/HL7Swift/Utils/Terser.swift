@@ -170,7 +170,15 @@ public struct Terser {
         component -= 1
         
         if scanner.isAtEnd {
-            return message.getSegment(code, repetition: repetitions)?[field]?.cells[repetition].components[component].description
+            if let a = message.getSegment(code, repetition: repetitions) {
+                if let b = a[field] {
+                    // TODO bad code, we should handle that somewhere else
+                    if b.cells.count < repetition || b.cells[repetition].components.count < component {
+                        return nil
+                    }
+                    return b.cells[repetition].components[component].description
+                }
+            }
         }
         
         // SUBCOMPONENT
