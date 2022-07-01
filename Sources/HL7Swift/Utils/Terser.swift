@@ -57,6 +57,38 @@ public struct Terser {
         return try self.getAux(comps, currentGroup: current)
     }
     
+    public func val(_ path: String, value: String) throws -> Bool {
+        // Check path is correct
+        let result = path.range(
+            of: REGEX_RULE,
+            options: .regularExpression
+        )
+
+        if result == nil {
+            throw TerserError.incorrectTersePath(message: "Terse path doesn't respect regular expression (\\/[A-za-z0-9_\\-\\(\\)]*)+")
+        }
+        
+        let comps = path.split(separator: "/")
+        
+        guard let current = message.specMessage?.rootGroup else {
+            return false
+        }
+        
+        let node = try self.__get(comps, currentGroup: current)
+
+        if let cell = node as? Cell {
+            cell.text = value
+            
+            return true
+        } else if let field = node as? Field {
+            field.cells.first?.text = value
+            
+            return true
+        } else {
+            return false
+        }
+    }
+    
     func getAux(_ comps: [String.SubSequence], currentGroup: Group, repetitions: UInt = 1) throws -> String? {
         var components = comps
         var reps: UInt = repetitions
@@ -121,6 +153,104 @@ public struct Terser {
             
             return (UInt(group[a1..<b])!, groupName)
         }
+    }
+
+    func __get(_ comps: [String.SubSequence], currentGroup: Group, repetitions: UInt = 1) throws -> Node? {
+        var components = comps
+        var reps: UInt = repetitions
+        var groupName = ""
+        
+        // If there's only one component, there's just a segment's code
+        if comps.count == 1 {
+            return scanSegPath(String(comps[0]), repetitions: reps)
+ 
+        } else {
+            // handle segment repetition
+            let result = getRepetitionFromGroup(String(comps[0]))
+            reps = result.0
+            groupName = result.1
+            
+            for item in currentGroup.items {
+                switch item {
+                case .group(let subGroup):
+
+                    if subGroup.name == groupName {
+                        components.removeFirst()
+                        return try self.__get(components, currentGroup: subGroup, repetitions: reps)
+                    }
+                case .segment(_):
+                    break
+                }
+            }
+        }
+        
+        return nil
+    }
+    
+    private func scanSegPath(_ segment: String, repetitions: UInt = 1) -> Node? {
+        var path = segment
+        var field: Int = 0
+        var repetition: Int = 0
+        var component: Int = 0
+        var subcomponent: Int = 0
+        
+        // CODE
+        let code = String(path.prefix(3))
+        path.removeFirst(3)
+        
+        let scanner = Scanner(string: path)
+        
+        if path.isEmpty {
+            return message.getSegment(code, repetition: repetitions)
+        }
+        
+        // FIELD
+        scanner.charactersToBeSkipped = CharacterSet(charactersIn: "-")
+        scanner.scanInt(&field)
+        //field -= 1 // index offset is now managed by segment subscript itself
+        
+        if scanner.isAtEnd {
+            return message.getSegment(code, repetition: repetitions)?[field]
+        }
+        
+        // REPETITION, optional
+        if scanner.scanString("(", into: nil) {
+            if scanner.scanInt(&repetition) {
+                scanner.scanString(")", into: nil)
+                repetition -= 1
+            }
+            
+            if scanner.isAtEnd {
+                return message.getSegment(code, repetition: repetitions)?[field]?.cells[repetition]
+            }
+        }
+        
+        // COMPONENT
+        scanner.scanInt(&component)
+        component -= 1
+        
+        if scanner.isAtEnd {
+            if let a = message.getSegment(code, repetition: repetitions) {
+                if let b = a[field] {
+                    // TODO bad code, we should handle that somewhere else
+                    if b.cells.count < repetition || b.cells[repetition].components.count < component {
+                        return nil
+                    }
+                    return b.cells[repetition].components[component]
+                }
+            }
+        }
+        
+        // SUBCOMPONENT
+        scanner.scanInt(&subcomponent)
+        subcomponent -= 1
+        
+        if scanner.isAtEnd {
+            return message.getSegment(code, repetition: repetitions)?[field]?.cells[repetition].components[component].components[subcomponent]
+        }
+        
+        // TODO throw error, path too long
+        return nil
     }
     
     /**
