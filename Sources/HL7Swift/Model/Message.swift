@@ -49,42 +49,8 @@ public struct Message {
     
     public init(withFileAt url: URL, hl7: HL7) throws {
         do {
-            let asciiContent = try String(contentsOf: url, encoding: .ascii)
-            var msh = ""
-            
-            if let newliner = asciiContent.firstIndex(of: "\r") {
-                msh = String(asciiContent[..<newliner])
-            } else if let newlinern = asciiContent.firstIndex(of: "\r\n") {
-                msh = String(asciiContent[..<newlinern])
-            } else if let newlinen = asciiContent.firstIndex(of: "\n") {
-                msh = String(asciiContent[..<newlinen])
-            }
-
-            var count = 0
-            var encoding: String.Encoding? = nil
-            
-            for i in msh.indices {
-                
-                if msh[i] == "|" {
-                    count += 1
-                }
-                
-                if count == 17 {
-                    let encodingString = String(msh[i...])
-                    if encodings.keys.contains(encodingString) {
-                        encoding = encodings[encodingString]!
-                    }
-                }
-            }
-            
-            if count != 17 {
-                encoding = default_encoding
-            }
-            
-            let content = try String(contentsOf: url, encoding: encoding!)
-            
+            let content = try String(contentsOf: url, encoding: .ascii)
             try self.init(content, hl7: hl7)
-            
         } catch let e {
             throw HL7Error.fileNotFound(message: e.localizedDescription)
         }
@@ -99,6 +65,46 @@ public struct Message {
     public init(_ str: String, hl7: HL7, force forcedVersion:Version? = nil) throws {
         self.forcedVersion = forcedVersion
         
+        // Get encoding of file
+        var msh = ""
+        
+        if let newliner = str.firstIndex(of: "\r") {
+            msh = String(str[..<newliner])
+        } else if let newlinern = str.firstIndex(of: "\r\n") {
+            msh = String(str[..<newlinern])
+        } else if let newlinen = str.firstIndex(of: "\n") {
+            msh = String(str[..<newlinen])
+        }
+
+        var count = 0
+        var encoding: String.Encoding? = nil
+        
+        for i in msh.indices {
+            
+            if msh[i] == "|" {
+                count += 1
+            }
+            
+            if count == 17 {
+                let encodingString = String(msh[i...])
+                if encodings.keys.contains(encodingString) {
+                    encoding = encodings[encodingString]!
+                }
+            }
+        }
+        
+        if count != 17 {
+            encoding = default_encoding
+        }
+        
+        //let content = try String(contentsOf: url, encoding: encoding!)
+        // str.encode(to: encoding!)
+
+        let data = str.data(using: encoding!)
+
+        let encodedString = String(data: data!, encoding: encoding!)!
+        
+        
         // sanitize check to exclude non-HL7 strings
         /*guard (str.range(of: #"(^|\n)([A-Z]{2}[A-Z0-9]{1})(?=[\|])"#, options: .regularExpression) != nil) else {
             throw HL7Error.unsupportedMessage(message: "Not HL7 message")
@@ -106,16 +112,16 @@ public struct Message {
         */
         
         // The separator depends on the implementation, not on the standard
-        if str.split(separator: "\r").count > 1 {
+        if encodedString.split(separator: "\r").count > 1 {
             sep = "\r"
-        } else if str.split(separator: "\n").count > 1 {
+        } else if encodedString.split(separator: "\n").count > 1 {
             sep = "\n"
-        } else if str.split(separator: "\r\n").count > 1 {
+        } else if encodedString.split(separator: "\r\n").count > 1 {
             sep = "\r\n"
         }
 
         // parse raw segments
-        for segment in str.split(separator: sep) {
+        for segment in encodedString.split(separator: sep) {
             segments.append(Segment(String(segment)))
         }
         
