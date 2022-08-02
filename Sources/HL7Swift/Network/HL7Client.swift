@@ -186,7 +186,7 @@ extension HL7CLient: ChannelInboundHandler {
     
     
     public func channelActive(context: ChannelHandlerContext) {
-        Logger.debug("[HL7CLient] channelActive")
+        Logger.debug("[HL7CLient] channelActive \(context.channel)")
     }
     
     

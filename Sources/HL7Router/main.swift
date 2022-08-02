@@ -201,18 +201,19 @@ struct HL7Router: ParsableCommand, HL7ServerDelegate {
                             // if none AND conditons found in route
                             conditionsOK = true
                         }
-                        
+
                         // continue
                         if conditionsOK {
                             var response = message
                             // check for response template
                             // if no response template, we just route the received message
+                            
                             if var templatePath = routeDict[.response_template] as? String {
                                 templatePath = (templatePath as NSString).expandingTildeInPath
                                 
                                 if let hl7String = try? String(contentsOfFile: templatePath),
                                    let templateMessage = try? Message(hl7String, hl7: hl7) {
-                                    
+                                                                        
                                     // fill template with terser values from received message
                                     if let string = templateMessage.fillTemplateKeys(fromMessage: message) {
                                         if let r = try? Message(string, hl7: hl7) {
@@ -223,6 +224,8 @@ struct HL7Router: ParsableCommand, HL7ServerDelegate {
                             }
                             
                             Logger.info("\n\n* -> [\(routeName)] matched\n")
+                            
+                            print(response)
                             
                             // for every destination address
                             if let destinations = routeDict[.to_addresses] as? [String] {
@@ -238,10 +241,13 @@ struct HL7Router: ParsableCommand, HL7ServerDelegate {
                                                 config.port = url.port ?? 2575
                                                 config.TLSEnabled = false
                                                 
-                                                let client = try? HL7Swift.HL7CLient(config)
                                                 
+                                                let client = try? HL7Swift.HL7CLient(config)
                                                 try? client?.connect().whenSuccess({ _ in
-                                                    _ = client?.channel?.writeAndFlush(response)
+                                                    
+                                                    _ = client?.channel?.writeAndFlush(response).whenComplete({ res in
+                                                        Logger.info("\n\n* -> [\(routeName)] \(String(describing: response.type)) message sent")
+                                                    })
                                                 })
                                             }
                                         }
