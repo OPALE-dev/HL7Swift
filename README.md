@@ -1,6 +1,8 @@
 # HL7Swift
 
-HL7Swift is an implementation of the HL7 2.x standard written in Swift. It provides a few tools to parse, edit, send and receive HL7 pipe delimited messages with ease. It is based the official HL7 implementation guides and resources (XML data that defines the specification) to provide comprehensive tools to address the complexity and vast definitions the specification brought.
+HL7Swift is an independent suite of Swift libraries for healthcare interoperability. Its modular products cover HL7 v2, FHIR, CDA and mappings between standards without imposing an application architecture or business model on their users.
+
+The project is being modernized incrementally. See the [modernization plan](Documentation/MODERNIZATION_PLAN.md) for its scope, architecture principles, standards roadmap and qualification criteria.
 
 ## Disclaimer
 
@@ -8,31 +10,51 @@ HL7Swift is *not* a production ready library and is not intented to be used as s
 
 _Also, this is a WIP, so it is still subject to many breaking API changes that will make your life very very hard, sorry. :-)_
 
+## Library products
+
+Import only the product your application needs:
+
+| Product | Purpose |
+| --- | --- |
+| `HL7V2` | Parse, build, inspect and transport HL7 v2 messages |
+| `FHIR` | Work with FHIR resources and REST services |
+| `CDA` | Read and model CDA R2 documents |
+| `HL7Mapping` | Perform explicit transformations between supported standards |
+| `HL7Swift` | Compatibility facade for the historical HL7 v2 API |
+| `FHIRSwift` | Compatibility facade for the historical FHIR API |
+
+`FHIR`, `CDA` and `HL7V2` are designed to remain usable independently. Compatibility products will be preserved through documented migration periods.
+
 ## Dependencies
 
 * **SwiftNIO**: [https://github.com/apple/swift-nio](https://github.com/apple/swift-nio)
+* **SwiftNIO SSL**: [https://github.com/apple/swift-nio-ssl](https://github.com/apple/swift-nio-ssl)
+* **AsyncHTTPClient**: [https://github.com/swift-server/async-http-client](https://github.com/swift-server/async-http-client)
 * **Swift Argument Parser** : [https://github.com/apple/swift-argument-parser](https://github.com/apple/swift-argument-parser)
+* **FHIRModels**: [https://github.com/apple/FHIRModels](https://github.com/apple/FHIRModels)
+* **SwiftCSV**: [https://github.com/swiftcsv/SwiftCSV](https://github.com/swiftcsv/SwiftCSV)
+* **Yams**: [https://github.com/jpsim/Yams](https://github.com/jpsim/Yams)
 
 ## Dependents
 
 * The Hashelset app for macOS is a proof of concept for HL7Swift library
 * The HL7Swift project comes with various binary tools built against this implementation (see below)  
 
-## Features
+## Current features
 
 - Parse, edit and write HL7 message (v2.x)
 - Build standardized HL7 messages from scratch
 - Send HL7 messages over TCP/IP (HL7 client)
 - Receive HL7 messages over TCP/IP (HL7 server)
+- Access FHIR R4 models and REST services
+- Convert selected HL7 v2 content to FHIR
+- Read the basic structure and metadata of CDA R2 documents
 
-## TODO
+These capabilities currently have different maturity levels. Passing the test suite does not by itself establish full normative conformance. Consult the [modernization plan](Documentation/MODERNIZATION_PLAN.md) for the qualification model and detailed roadmap.
 
-- More documentation
-- Convert HL7 to XML
-- Terser for groups
-- Tests groups generation for all tests messages (get all specs too) (?)
-- Implement HL7 v3
-- Impelment HL7 FHIR (partial, in progress)
+## Roadmap
+
+The roadmap prioritizes library quality and developer usability, HL7 v2 qualification, versioned FHIR support and validation, CDA R2, then explicit mappings. It deliberately excludes RIS/PACS business logic and DICOM services.
 
 ## Getting Started
 
