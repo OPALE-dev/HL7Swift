@@ -78,7 +78,7 @@ public class HL72FHIRR4Converter: Converter, CustomStringConvertible {
                 message: "HL7 Message of type \(message.type.name) is not supported by \(description)")
         }
                 
-        let bundle = ModelsR4.Bundle(entry: [], type: BundleType.message.asPrimitive())
+        var bundle = ModelsR4.Bundle(entry: [], type: BundleType.message.asPrimitive())
                 
         // MSH
         if let msh = message[HL7.MSH] {
@@ -95,7 +95,7 @@ public class HL72FHIRR4Converter: Converter, CustomStringConvertible {
             
             // PV1
             if let pv1 = message[HL7.PV1] {
-                if let encounter = try convert(PV1Segment: pv1) {
+                if var encounter = try convert(PV1Segment: pv1) {
                     encounter.subject = Reference(
                         display: patient.id, id: patient.id,
                         identifier: patient.identifier?.first,
@@ -119,8 +119,8 @@ public class HL72FHIRR4Converter: Converter, CustomStringConvertible {
             throw HL72FHIRR4Error.unsupportedSegment(message: segment.code)
         }
         
-        let source = MessageHeaderSource(endpoint: "hl7:undef".asFHIRURIPrimitive()!)
-        let destination = MessageHeaderDestination(endpoint: "hl7:undef".asFHIRURIPrimitive()!)
+        var source = MessageHeaderSource(endpoint: "hl7:undef".asFHIRURIPrimitive()!)
+        var destination = MessageHeaderDestination(endpoint: "hl7:undef".asFHIRURIPrimitive()!)
         
         // Sending Application
         if let field = segment[3] {
@@ -171,7 +171,7 @@ public class HL72FHIRR4Converter: Converter, CustomStringConvertible {
         guard let patientClass = segment[2]?.description else { return nil }
         
         let coding = Coding.init(code: patientClass.asFHIRStringPrimitive(), system: "HL7")
-        let encounter = Encounter(class: coding, location: [], status: EncounterStatus.unknown.asPrimitive())
+        var encounter = Encounter(class: coding, location: [], status: EncounterStatus.unknown.asPrimitive())
         
         encounter.text = Narrative(div: "<div xmlns=\"http://www.w3.org/1999/xhtml\">Patient imported from HL7 with FHIRSwift:PV1</div>".asFHIRStringPrimitive(), status: NarrativeStatus.generated.asPrimitive())
         
@@ -181,7 +181,7 @@ public class HL72FHIRR4Converter: Converter, CustomStringConvertible {
                 let pl = PL(cell)
 
                 if let v = pl.pointOfCare {
-                    let encounterLocation = EncounterLocation(location: Reference())
+                    var encounterLocation = EncounterLocation(location: Reference())
                     
                     encounterLocation.physicalType = CodeableConcept(coding: [Coding.init(code: "Point Of Care", system: "HL7")], text: v.asFHIRStringPrimitive())
 
@@ -189,28 +189,28 @@ public class HL72FHIRR4Converter: Converter, CustomStringConvertible {
                 }
                 
                 if let v = pl.room {
-                    let encounterLocation = EncounterLocation(location: Reference())
+                    var encounterLocation = EncounterLocation(location: Reference())
                     encounterLocation.physicalType = CodeableConcept(coding: [Coding.init(code: "Room", system: "HL7")], text: v.asFHIRStringPrimitive())
 
                     encounter.location?.append(encounterLocation)
                 }
                 
                 if let v = pl.bed {
-                    let encounterLocation = EncounterLocation(location: Reference())
+                    var encounterLocation = EncounterLocation(location: Reference())
                     encounterLocation.physicalType = CodeableConcept(coding: [Coding.init(code: "Bed", system: "HL7")], text: v.asFHIRStringPrimitive())
 
                     encounter.location?.append(encounterLocation)
                 }
                 
                 if let v = pl.facility {
-                    let encounterLocation = EncounterLocation(location: Reference())
+                    var encounterLocation = EncounterLocation(location: Reference())
                     encounterLocation.physicalType = CodeableConcept(coding: [Coding.init(code: "Facility", system: "HL7")], text: v.asFHIRStringPrimitive())
 
                     encounter.location?.append(encounterLocation)
                 }
                 
                 if let v = pl.floor {
-                    let encounterLocation = EncounterLocation(location: Reference())
+                    var encounterLocation = EncounterLocation(location: Reference())
                     encounterLocation.physicalType = CodeableConcept(coding: [Coding.init(code: "Floor", system: "HL7")], text: v.asFHIRStringPrimitive())
 
                     encounter.location?.append(encounterLocation)
@@ -244,16 +244,16 @@ public class HL72FHIRR4Converter: Converter, CustomStringConvertible {
             throw HL72FHIRR4Error.unsupportedSegment(message: segment.code)
         }
         
-        let patient = Patient(address: [], identifier: [], name: [], telecom: [])
+        var patient = Patient(address: [], identifier: [], name: [], telecom: [])
         
         // Patient ID
         if let field = segment[3] {
             for cell in field.cells {
                 let cx = CX(cell)
-                let identifier = Identifier()
-                    
-                identifier.assigner = Reference(display: cx.assigningAuthority?.asFHIRStringPrimitive())
-                identifier.value = cx.id?.asFHIRStringPrimitive()
+                let identifier = Identifier(
+                    assigner: Reference(display: cx.assigningAuthority?.asFHIRStringPrimitive()),
+                    value: cx.id?.asFHIRStringPrimitive()
+                )
                     
                 patient.identifier?.append(identifier)
             }
@@ -264,7 +264,7 @@ public class HL72FHIRR4Converter: Converter, CustomStringConvertible {
         if let field = segment[5] {
             for cell in field.cells {
                 let xpn = XPN(cell)
-                let hn = HumanName(given: [], prefix: [], suffix: [])
+                var hn = HumanName(given: [], prefix: [], suffix: [])
                 
                 hn.family = xpn.familyName?.asFHIRStringPrimitive()
                 hn.use = xpn.nameUse?.asPrimitive()
@@ -318,7 +318,7 @@ public class HL72FHIRR4Converter: Converter, CustomStringConvertible {
         if let field = segment[11] {
             for cell in field.cells {
                 let cx = XAD(cell)
-                let addr = Address()
+                var addr = Address()
                 
                 addr.line = []
                 
@@ -346,7 +346,7 @@ public class HL72FHIRR4Converter: Converter, CustomStringConvertible {
                 let xtn = XTN(cell)
                 
                 if xtn.telephoneNumber != nil && !xtn.telephoneNumber!.isEmpty {
-                    let contact = ContactPoint()
+                    var contact = ContactPoint()
                     
                     contact.system = ContactPointSystem.phone.asPrimitive()
                     contact.value = xtn.telephoneNumber?.asFHIRStringPrimitive()
@@ -355,7 +355,7 @@ public class HL72FHIRR4Converter: Converter, CustomStringConvertible {
                     patient.telecom?.append(contact)
                 }
                 else if xtn.emailAddress != nil && !xtn.emailAddress!.isEmpty {
-                    let contact = ContactPoint()
+                    var contact = ContactPoint()
                     
                     contact.system = ContactPointSystem.email.asPrimitive()
                     contact.value = xtn.emailAddress?.asFHIRStringPrimitive()
@@ -370,7 +370,7 @@ public class HL72FHIRR4Converter: Converter, CustomStringConvertible {
             for cell in field.cells {
                 let xtn = XTN(cell)
                 if xtn.telephoneNumber != nil && xtn.telephoneNumber!.isEmpty {
-                    let contact = ContactPoint()
+                    var contact = ContactPoint()
                     
                     contact.system = ContactPointSystem.phone.asPrimitive()
                     contact.value = xtn.telephoneNumber?.asFHIRStringPrimitive()
@@ -379,7 +379,7 @@ public class HL72FHIRR4Converter: Converter, CustomStringConvertible {
                     patient.telecom?.append(contact)
                 }
                 else if xtn.emailAddress != nil && xtn.emailAddress!.isEmpty {
-                    let contact = ContactPoint()
+                    var contact = ContactPoint()
                     
                     contact.system = ContactPointSystem.email.asPrimitive()
                     contact.value = xtn.emailAddress?.asFHIRStringPrimitive()

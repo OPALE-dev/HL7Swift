@@ -64,6 +64,13 @@ public struct Message {
     
     public init(_ str: String, hl7: HL7, force forcedVersion:Version? = nil) throws {
         self.forcedVersion = forcedVersion
+
+        guard str.range(
+            of: #"(^|[\r\n])([A-Z]{2}[A-Z0-9])(?=\|)"#,
+            options: .regularExpression
+        ) != nil else {
+            throw HL7Error.unsupportedMessage(message: "Not HL7 message")
+        }
         
         // Get encoding of file
         var msh = ""
@@ -93,23 +100,18 @@ public struct Message {
             }
         }
         
-        if count != 17 {
+        if encoding == nil {
             encoding = default_encoding
         }
         
         //let content = try String(contentsOf: url, encoding: encoding!)
         // str.encode(to: encoding!)
 
-        let data = str.data(using: encoding!)
-
-        let encodedString = String(data: data!, encoding: encoding!)!
-        
-        
-        // sanitize check to exclude non-HL7 strings
-        /*guard (str.range(of: #"(^|\n)([A-Z]{2}[A-Z0-9]{1})(?=[\|])"#, options: .regularExpression) != nil) else {
+        guard let encoding,
+              let data = str.data(using: encoding),
+              let encodedString = String(data: data, encoding: encoding) else {
             throw HL7Error.unsupportedMessage(message: "Not HL7 message")
         }
-        */
         
         // The separator depends on the implementation, not on the standard
         if encodedString.split(separator: "\r").count > 1 {

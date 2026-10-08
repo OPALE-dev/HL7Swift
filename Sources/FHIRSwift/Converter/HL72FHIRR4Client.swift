@@ -32,7 +32,7 @@ public class HL72FHIRR4Client: HL72FHIRR4Converter {
                 message: "HL7 Message of type \(message.type.name) is not supported by \(description)")
         }
                 
-        let bundle = ModelsR4.Bundle(entry: [], type: BundleType.message.asPrimitive())
+        var bundle = ModelsR4.Bundle(entry: [], type: BundleType.message.asPrimitive())
                 
         // MSH
         if let msh = message[HL7.MSH] {

@@ -39,6 +39,7 @@ public class HL7CLient {
     var hl7: HL7!
     public var channel:Channel? // would be better private
     var promise: EventLoopPromise<Message>?
+    private var group: MultiThreadedEventLoopGroup?
 
     var tlsConfiguration:TLSConfiguration? = nil
     var sslContext:NIOSSLContext? = nil
@@ -47,6 +48,10 @@ public class HL7CLient {
     public init(_ config: ClientConfiguration) throws {
         self.config = config
         self.hl7    = config.hl7
+    }
+
+    deinit {
+        disconnect()
     }
 
     
@@ -61,6 +66,7 @@ public class HL7CLient {
         }
         
         let group = MultiThreadedEventLoopGroup(numberOfThreads: 1)
+        self.group = group
         let bootstrap = ClientBootstrap(group: group)
             .channelOption(ChannelOptions.socket(SocketOptionLevel(SOL_SOCKET), SO_REUSEADDR), value: 1)
             .channelOption(ChannelOptions.maxMessagesPerRead, value: 16)
@@ -101,9 +107,6 @@ public class HL7CLient {
             self.channel    = channel
             self.config.localPort  = self.channel?.localAddress?.port
             
-            // make promise to receive ACK/NAK
-            self.promise    = self.channel?.eventLoop.makePromise(of: Message.self)
-                
             return channel.eventLoop.makeSucceededVoidFuture()
         }
     }
@@ -111,12 +114,17 @@ public class HL7CLient {
     
     
     public func disconnect() {
-        self.channel?.closeFuture.whenComplete { _ in
+        if let channel {
+            try? channel.close().wait()
             Logger.info("Disconnected from \(self.config.host):\(self.config.port)")
         }
-        
+
         self.promise?.fail(HL7Error.initError(message: ""))
-        self.channel?.close(promise: nil)
+        self.promise = nil
+        self.channel = nil
+
+        try? group?.syncShutdownGracefully()
+        group = nil
     }
     
     
@@ -141,16 +149,28 @@ public class HL7CLient {
         guard let message = message else {
             return nil
         }
-                 
-        try channel?.writeAndFlush(message).wait()
+
+        guard let channel else {
+            throw HL7Error.initError(message: "Client is not connected")
+        }
+
+        let responsePromise = channel.eventLoop.makePromise(of: Message.self)
+        promise = responsePromise
+
+        try channel.writeAndFlush(message).wait()
         
         Logger.info("### Sent Message \(message.type.name) (\(message.version.rawValue))")
         Logger.debug("\n\n\(message)\n")
-        channel?.eventLoop.scheduleTask(in: .seconds(Int64(self.config.readTimeout))) {
-            self.promise?.fail(HL7Error.timeoutError(message: "Timeout while sending message"))
+        let timeout = channel.eventLoop.scheduleTask(in: .seconds(Int64(self.config.readTimeout))) {
+            responsePromise.fail(HL7Error.timeoutError(message: "Timeout while sending message"))
         }
-                
-        return try promise?.futureResult.wait()
+
+        defer {
+            timeout.cancel()
+            promise = nil
+        }
+
+        return try responsePromise.futureResult.wait()
     }
 
 }

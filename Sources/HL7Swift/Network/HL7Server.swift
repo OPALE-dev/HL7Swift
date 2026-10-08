@@ -141,13 +141,15 @@ public class HL7Server {
     
     public func stop() throws {
         if channel != nil {
-            channel.close(mode: .all, promise: nil)
+            try channel.close(mode: .all).wait()
             
             if let delegate = self.delegate {
                 delegate.server(serverStopped: self)
             }
             
             Logger.info("Server stopped.")
+
+            channel = nil
         }
     }
 }
@@ -310,4 +312,3 @@ extension HL7Server : ChannelInboundHandler, ChannelOutboundHandler {
         try? responder.replyNAK(withMessage: error.localizedDescription, inContext: context)
     }
 }
-

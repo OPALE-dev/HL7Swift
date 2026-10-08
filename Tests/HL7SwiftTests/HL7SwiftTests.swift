@@ -154,23 +154,19 @@ final class HL7SwiftTests: XCTestCase {
     
     func testParse() throws {
         let paths = Bundle.module.paths(forResourcesOfType: "txt", inDirectory: nil)
+        let knownRoundTripException = "ADT-A01 Admit Patient (example from V2.8.2 base standard).txt"
         
         for path in paths {
-            print(path)
-        
             let content = try String(contentsOf: URL(fileURLWithPath: path))
-                                
             let msg = try Message(content, hl7: hl7)
-            
-            print(content.trimmingCharacters(in: .newlines))
-            print("")
-            print(msg.description.trimmingCharacters(in: .newlines))
-            print("")
-            print("")
-            
+
             // TODO: fix it up! exception on this file because newline in PID segment
-            if path != "/Users/nark/Library/Developer/Xcode/DerivedData/hl7swift-cjxcccpiplnwuchbqtqqramhxfxz/Build/Products/Debug/HL7SwiftTests.xctest/Contents/Resources/HL7Swift_HL7SwiftTests.bundle/Contents/Resources/ADT-A01 Admit Patient (example from V2.8.2 base standard).txt" {
-                assert(msg.description.trimmingCharacters(in: .newlines) == content.trimmingCharacters(in: .newlines))
+            if URL(fileURLWithPath: path).lastPathComponent != knownRoundTripException {
+                XCTAssertEqual(
+                    msg.description.trimmingCharacters(in: .newlines),
+                    content.trimmingCharacters(in: .newlines),
+                    "Round-trip mismatch for \(URL(fileURLWithPath: path).lastPathComponent)"
+                )
             }
         }
     }

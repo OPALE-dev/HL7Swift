@@ -6,192 +6,113 @@
 //
 
 import Foundation
+import NIO
 import XCTest
 import HL7Swift
 @testable import HL7Swift
 
 
+private final class NetworkTestDelegate: HL7ServerDelegate {
+    var onStart: (() -> Void)?
+    var onStop: (() -> Void)?
+
+    func server(serverStarted server: HL7Server) {
+        onStart?()
+    }
+
+    func server(serverStopped server: HL7Server) {
+        onStop?()
+    }
+
+    func server(_ server: HL7Server, receive message: Message, from: String?, channel: Channel) {}
+    func server(_ server: HL7Server, send message: Message, to: String?, channel: Channel) {}
+    func server(_ server: HL7Server, ACKStatusFor message: Message, channel: Channel) -> AcknowledgeStatus { .AA }
+    func server(_ server: HL7Server, channelDidBecomeActive channel: Channel) {}
+    func server(_ server: HL7Server, channelDidBecomeInactive channel: Channel) {}
+}
+
+
 final class HL7SwiftNetworkTests: XCTestCase {
-    var hl7:HL7!
-    var config:ClientConfiguration!
+    private let testPort = 27_777
+    var hl7: HL7!
+    var config: ClientConfiguration!
     
     override func setUpWithError() throws {
         try super.setUpWithError()
 
+        Logger.setMaxLevel(.ERROR)
         self.hl7 = try HL7()
         
-        var config = ClientConfiguration(self.hl7)
-        
-        config.host = "127.0.0.1"
-        config.port = 7777
+        self.config = ClientConfiguration(self.hl7)
+        self.config.host = "127.0.0.1"
+        self.config.port = testPort
     }
-    
-    
+
+    private func makeServer(delegate: HL7ServerDelegate? = nil) throws -> HL7Server {
+        var serverConfig = ServerConfiguration(hl7)
+        serverConfig.host = "127.0.0.1"
+        serverConfig.port = testPort
+        return try HL7Server(serverConfig, delegate: delegate)
+    }
+
+    private func start(_ server: HL7Server, delegate: NetworkTestDelegate) {
+        let started = expectation(description: "Server started")
+        delegate.onStart = { started.fulfill() }
+
+        DispatchQueue.global().async {
+            do {
+                try server.start()
+            } catch {
+                XCTFail("Server failed: \(error)")
+            }
+        }
+
+        wait(for: [started], timeout: 10.0)
+    }
+
     func testServerListen() throws {
-        let queue = DispatchQueue(label: "hl7swift-test.serial.queue", attributes: .concurrent)
-        let expectation = XCTestExpectation(description: "Stop the server")
+        let delegate = NetworkTestDelegate()
+        let server = try makeServer(delegate: delegate)
 
-        var server:HL7Server? = nil
-        
-        server = try HL7Server(ServerConfiguration(hl7))
-        
-        queue.async {
-            do {
-                try server?.start()
-            } catch let e {
-                XCTAssertThrowsError(e)
-            }
-        }
-        
-        sleep(3)
-            
-        try server?.stop()
-        
-        expectation.fulfill()
-        
-        server = nil
-        
-        wait(for: [expectation], timeout: 10.0)
+        start(server, delegate: delegate)
+        try server.stop()
     }
-    
-    
+
     func testClientConnect() throws {
-        let serialQueue = DispatchQueue(label: "hl7swift-test.serial.queue")
-        let expectation = XCTestExpectation(description: "Connect to server")
-        
-        expectation.expectedFulfillmentCount = 3
-        
-        var server:HL7Server? = nil
-        var client:HL7CLient? = nil
+        let delegate = NetworkTestDelegate()
+        let server = try makeServer(delegate: delegate)
+        let client = try HL7CLient(config)
 
-        client = try HL7CLient(config)
-        server = try HL7Server(ServerConfiguration(hl7))
-        
-        serialQueue.async {
-            do {
-                print("start")
-                try server?.start()
-            } catch let e {
-                XCTAssertThrowsError(e)
-            }
+        start(server, delegate: delegate)
+        defer {
+            client.disconnect()
+            try? server.stop()
         }
-        
-        
-        
-        sleep(3)
-        
-        print("connect")
-        
-        try client?.connect().wait()
-        
-        expectation.fulfill()
-
-        
-        
-        sleep(3)
-    
-        print("disconnect")
-        
-        client?.disconnect()
-        
-        expectation.fulfill()
-
-        
-        
-        sleep(3)
-        
-        print("stop")
-
-        try server?.stop()
-            
-        expectation.fulfill()
-        
-        sleep(3)
-            
-        server = nil
-        client = nil
-            
-        wait(for: [expectation], timeout: 35.0)
+        try client.connect().wait()
     }
     
     
     func testSendAllTestMessages() throws {
         let paths = Bundle.module.paths(forResourcesOfType: "txt", inDirectory: nil)
 
-        let serialQueue = DispatchQueue(label: "hl7swift-test.serial.queue")
-        let expectation = XCTestExpectation(description: "Connect to server")
-        
-        expectation.expectedFulfillmentCount = 3 + paths.count
-        
-        var server:HL7Server? = nil
-        var client:HL7CLient? = nil
-        
-        client = try HL7CLient(config)
-        server = try HL7Server(ServerConfiguration(hl7))
-        
-        serialQueue.async {
-            do {
-                print("start")
-                try server?.start()
-            } catch let e {
-                XCTAssertThrowsError(e)
-            }
+        let delegate = NetworkTestDelegate()
+        let server = try makeServer(delegate: delegate)
+        let client = try HL7CLient(config)
+
+        start(server, delegate: delegate)
+        defer {
+            client.disconnect()
+            try? server.stop()
         }
-        
-        
-        
-        sleep(3)
-        
-        print("connect")
-        
-        try client?.connect().wait()
-        
-        expectation.fulfill()
-        
-        
-                
+        try client.connect().wait()
+
         for path in paths {
-            sleep(3)
-            
-            let content = try String(contentsOf: URL(fileURLWithPath: path))
+            let content = try String(contentsOf: URL(fileURLWithPath: path), encoding: .utf8)
             let message = try Message(content, hl7: hl7)
-            
-            print("Send: " + NSString(string: path).lastPathComponent)
-            
-            if let response = try client?.send(message) {
-                expectation.fulfill()
-            } else {
-                print("NO RESPONSE RECEIVED !!!")
-            }
+
+            let response = try XCTUnwrap(client.send(message), "No response for \(path)")
+            XCTAssertTrue(response.type.name.hasPrefix("ACK"), "Unexpected response for \(path)")
         }
-        
-        
-        
-        
-        sleep(3)
-    
-        print("disconnect")
-        
-        client?.disconnect()
-        
-        expectation.fulfill()
 
-        
-        
-        sleep(3)
-        
-        print("stop")
-
-        try server?.stop()
-            
-        expectation.fulfill()
-        
-        sleep(3)
-            
-        server = nil
-        client = nil
-            
-        wait(for: [expectation], timeout: 35.0 + (3.0 * Double(paths.count)))
-        
     }
 }

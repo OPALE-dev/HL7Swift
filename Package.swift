@@ -1,4 +1,4 @@
-// swift-tools-version:5.3
+// swift-tools-version:6.1
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -6,8 +6,8 @@ import PackageDescription
 let package = Package(
     name: "HL7Swift",
     platforms: [
-        .macOS(.v10_13),
-        .iOS(.v12)
+        .macOS(.v13),
+        .iOS(.v16)
     ],
     products: [
         // Products define the executables and libraries a package produces, and make them visible to other packages.
@@ -23,13 +23,13 @@ let package = Package(
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
-        .package(url: "https://github.com/apple/swift-nio.git", from: "2.37.0"),
-        .package(url: "https://github.com/apple/swift-nio-ssl.git", from: "2.17.2"),
-        .package(url: "https://github.com/swift-server/async-http-client.git", from: "1.9.0"),
-        .package(url: "https://github.com/apple/swift-argument-parser", from: "0.4.0"),
-        .package(url: "https://github.com/apple/FHIRModels.git", .upToNextMajor(from: "0.2.0")),
-        .package(url: "https://github.com/swiftcsv/SwiftCSV.git", from: "0.6.1"),
-        .package(url: "https://github.com/jpsim/Yams.git", from: "5.0.0")
+        .package(url: "https://github.com/apple/swift-nio.git", from: "2.104.0"),
+        .package(url: "https://github.com/apple/swift-nio-ssl.git", from: "2.37.5"),
+        .package(url: "https://github.com/swift-server/async-http-client.git", from: "1.36.2"),
+        .package(url: "https://github.com/apple/swift-argument-parser", from: "1.8.2"),
+        .package(url: "https://github.com/apple/FHIRModels.git", .upToNextMajor(from: "0.9.3")),
+        .package(url: "https://github.com/swiftcsv/SwiftCSV.git", from: "0.10.0"),
+        .package(url: "https://github.com/jpsim/Yams.git", from: "5.4.0")
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
@@ -45,7 +45,17 @@ let package = Package(
                 .product(name: "AsyncHTTPClient", package: "async-http-client")
             ],
             resources: [
-                .process("Spec/Resources"),
+                .copy("Spec/Resources/v2.3"),
+                .copy("Spec/Resources/v2.3.1"),
+                .copy("Spec/Resources/v2.4"),
+                .copy("Spec/Resources/v2.5"),
+                .copy("Spec/Resources/v2.5.1"),
+                .copy("Spec/Resources/v2.6"),
+                .copy("Spec/Resources/v2.7"),
+                .copy("Spec/Resources/v2.7.1"),
+                .copy("Spec/Resources/v2.8"),
+                .copy("Spec/Resources/v2.8.1"),
+                .copy("Spec/Resources/v2.8.2"),
             ]),
         .target(
             name: "FHIRSwift",
@@ -63,26 +73,26 @@ let package = Package(
         .target(
             name: "SwiftGenerator"
         ),
-        .target(
+        .executableTarget(
             name: "HL7CodeGen",
             dependencies: [
                 "HL7Swift",
                 "SwiftGenerator",
                 .product(name: "ArgumentParser", package: "swift-argument-parser")
             ]),
-        .target(
+        .executableTarget(
             name: "HL7Client",
             dependencies: [
                 "HL7Swift",
                 .product(name: "ArgumentParser", package: "swift-argument-parser")
             ]),
-        .target(
+        .executableTarget(
             name: "HL7Server",
             dependencies: [
                 "HL7Swift",
                 .product(name: "ArgumentParser", package: "swift-argument-parser")
             ]),
-        .target(
+        .executableTarget(
             name: "HL7Router",
             dependencies: [
                 "HL7Swift",
@@ -106,5 +116,6 @@ let package = Package(
                 .process("Resources"),
             ]
         )
-    ]
+    ],
+    swiftLanguageModes: [.v5]
 )
