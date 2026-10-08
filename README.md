@@ -54,7 +54,7 @@ These capabilities currently have different maturity levels. Passing the test su
 
 ## Roadmap
 
-The roadmap prioritizes library quality and developer usability, HL7 v2 qualification, versioned FHIR support and validation, CDA R2, then explicit mappings. It deliberately excludes RIS/PACS business logic and DICOM services.
+The roadmap prioritizes library quality and developer usability, HL7 v2 qualification, versioned FHIR support and validation, CDA R2, then explicit mappings. Application-specific business logic and unrelated protocols remain outside the library.
 
 ## Getting Started
 

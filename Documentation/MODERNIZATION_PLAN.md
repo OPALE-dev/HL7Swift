@@ -8,14 +8,14 @@ Dernière révision : 8 octobre 2026
 
 HL7Swift doit devenir une suite de bibliothèques Swift indépendantes, faciles à intégrer et consacrées à l'interopérabilité de santé. Elle doit permettre à une application cliente de lire, produire, transporter, valider et transformer des données issues de l'écosystème HL7 sans imposer son architecture métier, son stockage ou son mode de déploiement.
 
-Un futur RIS/PACS pourra utiliser HL7Swift, mais il ne doit pas orienter ses API vers un produit particulier. HL7Swift doit rester utile à une application mobile, un outil en ligne de commande, une passerelle, un serveur Vapor ou tout autre logiciel Swift.
+HL7Swift doit rester utile à une application mobile, un outil en ligne de commande, une passerelle, un serveur Vapor ou tout autre logiciel Swift, sans orienter ses API vers un produit particulier.
 
 Les principes directeurs sont les suivants :
 
 - des produits Swift Package Manager importables séparément ;
 - une API publique claire, documentée et compatible avec le versionnage sémantique ;
 - le minimum de dépendances transitives pour chaque produit ;
-- aucun modèle métier RIS, PACS ou établissement de santé dans la bibliothèque ;
+- aucun modèle métier propre à une application ou un établissement dans la bibliothèque ;
 - une couverture annoncée uniquement lorsqu'elle est vérifiée et traçable ;
 - des diagnostics exploitables plutôt qu'un simple résultat booléen ;
 - macOS, iOS et Linux comme environnements de première classe lorsque les dépendances le permettent.
@@ -34,8 +34,8 @@ Les principes directeurs sont les suivants :
 
 Les éléments suivants appartiennent à d'autres bibliothèques ou aux applications qui consomment HL7Swift :
 
-- le modèle métier interne d'un RIS, d'un PACS ou d'un dossier patient ;
-- DICOM, DIMSE, DICOMweb et le stockage d'images, qui relèvent notamment de DcmSwift ;
+- les modèles métier internes aux applications consommatrices ;
+- les protocoles et formats qui n'appartiennent pas à l'écosystème HL7 ;
 - la persistance applicative, les files de tâches, l'interface utilisateur et l'hébergement ;
 - un serveur FHIR complet et déployable ; une telle solution pourrait devenir un package séparé utilisant HL7Swift ;
 - l'orchestration complète des acteurs et transactions IHE ;
@@ -44,21 +44,18 @@ Les éléments suivants appartiennent à d'autres bibliothèques ou aux applicat
 
 HL7Swift peut fournir les primitives nécessaires à ces usages sans les implémenter lui-même.
 
-## 3. Place dans une architecture future
+## 3. Indépendance vis-à-vis des applications consommatrices
 
-FHIR est une représentation d'échange, pas le modèle métier interne imposé aux applications clientes. Le futur système devra conserver son propre cœur clinique et projeter ses données vers les formats d'interopérabilité.
+FHIR est une représentation d'échange, pas un modèle métier interne imposé aux applications clientes. Chaque application doit pouvoir conserver son propre domaine et projeter ses données vers les formats d'interopérabilité.
 
 ```text
-                   application consommatrice
-                 (RIS/PACS ou autre logiciel)
-                              |
-                    adaptateurs applicatifs
-                              |
-                        HL7Mapping
-                     /       |       \
-                  HL7V2     FHIR      CDA
-
-       DcmSwift et les services DICOM restent indépendants.
+                application consommatrice
+                           |
+                 adaptateurs applicatifs
+                           |
+                     HL7Mapping
+                  /       |       \
+               HL7V2     FHIR      CDA
 ```
 
 Cette frontière évite de coupler les évolutions d'un produit à celles des standards et permet à d'autres développeurs d'utiliser chaque module isolément.
@@ -256,7 +253,7 @@ Ce rapport doit pouvoir être rendu en texte, JSON et structures Swift sans impo
 
 ### 8.6 Portabilité et livraison
 
-- CI macOS et Linux sur les versions Swift prises en charge ;
+- CI macOS, iOS et Linux sur les versions Swift prises en charge ;
 - tests iOS au minimum au niveau compilation, complétés par des tests ciblés ;
 - builds debug et release ;
 - produits SPM vérifiés individuellement dans un projet consommateur minimal ;
@@ -280,7 +277,7 @@ Sortie attendue : état actuel reproductible, documenté et sans régression con
 ### M1 — Qualité de bibliothèque et contrat public
 
 - établir la politique de compatibilité et les niveaux de maturité ;
-- mettre en place CI macOS/Linux, builds release et exemples consommateurs ;
+- maintenir la CI macOS/iOS/Linux, les builds release et ajouter des exemples consommateurs ;
 - introduire les diagnostics communs ;
 - activer Swift 6 strict target par target ;
 - publier une première documentation DocC modulaire ;
@@ -337,7 +334,7 @@ Critère de sortie : chaque profil annoncé dispose d'une provenance, d'un corpu
 ### M6 — Mappings explicites
 
 - définir un `MappingResult` commun : résultat, diagnostics, provenance et pertes ;
-- prioriser les flux utiles à l'imagerie et aux soins sans introduire de logique RIS : ADT, ORM/OML, ORU, SIU et MDM ;
+- prioriser les flux cliniques courants : ADT, ORM/OML, ORU, SIU et MDM ;
 - établir des mappings HL7 v2 vers FHIR par cas d'usage et version, jamais par simple équivalence de types ;
 - ajouter CDA vers FHIR au niveau document et données structurées lorsque la sémantique le permet ;
 - tester les invariants métier conservés, plutôt que supposer des round-trips sans perte ;
@@ -376,7 +373,7 @@ Une réussite du build ou des tests unitaires ne suffit pas pour qualifier une v
 
 Les prochaines modifications recommandées, sous forme de commits séparés, sont :
 
-1. ajouter CI macOS/Linux et des projets consommateurs minimaux pour chaque produit ;
+1. ajouter des projets consommateurs minimaux pour chaque produit à la CI existante ;
 2. introduire le modèle de diagnostics partagé sans modifier encore les résultats métier ;
 3. auditer et documenter la provenance des ressources HL7 v2 existantes ;
 4. établir la matrice de couverture réelle HL7 v2 et les corpus manquants ;
