@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import HL7Swift
+import HL7V2
 import ModelsR4
 
 
@@ -40,5 +40,4 @@ public extension XAD {
         return nil
     }
 }
-
 

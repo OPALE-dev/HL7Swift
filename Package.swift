@@ -15,6 +15,18 @@ let package = Package(
             name: "HL7Swift",
             targets: ["HL7Swift"]),
         .library(
+            name: "HL7V2",
+            targets: ["HL7V2"]),
+        .library(
+            name: "FHIR",
+            targets: ["FHIR"]),
+        .library(
+            name: "CDA",
+            targets: ["CDA"]),
+        .library(
+            name: "HL7Mapping",
+            targets: ["HL7Mapping"]),
+        .library(
             name: "FHIRSwift",
             targets: ["FHIRSwift"]),
         .library(
@@ -58,18 +70,38 @@ let package = Package(
                 .copy("Spec/Resources/v2.8.2"),
             ]),
         .target(
-            name: "FHIRSwift",
+            name: "HL7V2",
+            dependencies: ["HL7Swift"]),
+        .target(
+            name: "FHIR",
             dependencies: [
-                "HL7Swift",
                 .product(name: "ModelsR4", package: "FHIRModels"),
                 .product(name: "NIO", package: "swift-nio"),
-                .product(name: "NIOTLS", package: "swift-nio"),
-                .product(name: "NIOSSL", package: "swift-nio-ssl"),
                 .product(name: "AsyncHTTPClient", package: "async-http-client")
             ],
+            path: "Sources/FHIRSwift",
+            exclude: ["Converter", "HL7", "Resources"],
+            sources: ["FHIRSwift.swift", "Network"]),
+        .target(
+            name: "CDA"),
+        .target(
+            name: "HL7Mapping",
+            dependencies: [
+                "HL7V2",
+                "FHIR",
+                "SwiftCSV",
+                .product(name: "ModelsR4", package: "FHIRModels")
+            ],
+            path: "Sources/FHIRSwift",
+            exclude: ["FHIRSwift.swift", "Network"],
+            sources: ["Converter", "HL7"],
             resources: [
                 .process("Resources"),
             ]),
+        .target(
+            name: "FHIRSwift",
+            dependencies: ["FHIR", "HL7Mapping"],
+            path: "Sources/FHIRSwiftCompatibility"),
         .target(
             name: "SwiftGenerator"
         ),
@@ -111,10 +143,19 @@ let package = Package(
         ),
         .testTarget(
             name: "FHIRSwiftTests",
-            dependencies: ["FHIRSwift", "HL7Swift"],
+            dependencies: [
+                "FHIRSwift",
+                "HL7Swift",
+                .product(name: "ModelsR4", package: "FHIRModels"),
+                .product(name: "AsyncHTTPClient", package: "async-http-client")
+            ],
             resources: [
                 .process("Resources"),
             ]
+        ),
+        .testTarget(
+            name: "ArchitectureTests",
+            dependencies: ["HL7V2", "FHIR", "CDA", "HL7Mapping"]
         )
     ],
     swiftLanguageModes: [.v5]

@@ -53,13 +53,13 @@ public enum FHIRClientError: LocalizedError, Equatable {
  A minimal FHIR Restful client with basic CRUD operations, based on SwiftNIO/AsyncHTTPClient
  */
 public class FHIRClient {
-    var baseURL:URL!
+    public private(set) var baseURL: URL
     var encoder = JSONEncoder()
     var decoder = JSONDecoder()
     var httpClient:HTTPClient!
     
     
-    init(_ baseURL:URL) {
+    public init(_ baseURL: URL) {
         self.httpClient = HTTPClient(eventLoopGroupProvider: .singleton)
         self.baseURL = baseURL
     }
@@ -70,7 +70,7 @@ public class FHIRClient {
     }
     
     
-    func create(_ resource: any Resource, _ completion: @escaping (FHIRCreateResult) -> ()) throws {
+    public func create(_ resource: any Resource, _ completion: @escaping (FHIRCreateResult) -> ()) throws {
         let data = try encoder.encode(resource)
         let url = baseURL.appendingPathComponent("\(type(of: resource))")
                 
@@ -115,7 +115,7 @@ public class FHIRClient {
     }
     
     
-    func update(_ resource: any Resource, id:String) throws -> EventLoopFuture<HTTPClient.Response> {
+    public func update(_ resource: any Resource, id:String) throws -> EventLoopFuture<HTTPClient.Response> {
         let data = try encoder.encode(resource)
         let url = baseURL
             .appendingPathComponent("\(type(of: resource))")
@@ -135,7 +135,7 @@ public class FHIRClient {
     /**
      Search sync
      */
-    func read(_ resourceName:String, params:[String:String]) throws -> FHIRReadResult {
+    public func read(_ resourceName:String, params:[String:String]) throws -> FHIRReadResult {
         let url = baseURL.appendingPathComponent(resourceName)
         
         var components = URLComponents(url: url, resolvingAgainstBaseURL: true)!
@@ -188,7 +188,7 @@ public class FHIRClient {
     /**
      Read sync
      */
-    func read(_ resourceName:String, id:String) throws -> FHIRReadResult {
+    public func read(_ resourceName:String, id:String) throws -> FHIRReadResult {
         let url = baseURL
             .appendingPathComponent(resourceName)
             .appendingPathComponent(id)
@@ -218,7 +218,7 @@ public class FHIRClient {
     /**
      Read async
      */
-    func read(_ resourceName:String, id:String, _ completion: @escaping (FHIRReadResult) -> ()) throws {
+    public func read(_ resourceName:String, id:String, _ completion: @escaping (FHIRReadResult) -> ()) throws {
         let url = baseURL
             .appendingPathComponent("\(type(of: resourceName))")
             .appendingPathComponent(id)
@@ -264,7 +264,7 @@ public class FHIRClient {
     }
 
     
-    func delete(_ resourceName:String, id:String) throws -> EventLoopFuture<HTTPClient.Response> {
+    public func delete(_ resourceName:String, id:String) throws -> EventLoopFuture<HTTPClient.Response> {
         let url = baseURL
             .appendingPathComponent(resourceName)
             .appendingPathComponent(id)

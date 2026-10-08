@@ -7,7 +7,7 @@
 
 import Foundation
 import ModelsR4
-import HL7Swift
+import HL7V2
 
 
 /**
