@@ -8,6 +8,8 @@ The project is being modernized incrementally. See the [modernization plan](Docu
 
 The shared diagnostic model is described in [Diagnostics](Documentation/DIAGNOSTICS.md).
 
+The bundled HL7 v2 XSD inventory and its provenance and licensing limits are documented in [HL7 v2 resources](Documentation/HL7V2_RESOURCE_PROVENANCE.md). In particular, the bundled v2.8.2 message schemas are not qualified as v2.8.2 data.
+
 ## Disclaimer
 
 HL7Swift is *not* a production ready library and is not intented to be used as such. It focuses on the computing aspects of the HL7 standard, and provides a powerful set of tools to deal with HL7 specification. The authors of this source code cannot be held responsible for its misuses or malfunctions, as it is defined in the license below.

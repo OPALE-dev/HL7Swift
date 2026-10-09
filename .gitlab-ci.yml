@@ -24,6 +24,7 @@ linux-package:
     - deploy
   script:
     - swift --version
+    - bash Documentation/verify-v2-resources.sh
     - swift build -c release
     # SwiftPM emits its XCTest xUnit report when tests run in parallel.
     - swift test --parallel --xunit-output .reports/linux-tests.xml
@@ -38,6 +39,7 @@ macos-package:
   script:
     - xcodebuild -version
     - swift --version
+    - bash Documentation/verify-v2-resources.sh
     - swift build -c release
     - swift test --parallel --xunit-output .reports/macos-tests.xml
 
