@@ -69,9 +69,9 @@ Le package utilise Swift tools 6.1 tout en conservant temporairement le mode de 
 | --- | --- | --- |
 | `HL7Core` | modèle commun de diagnostics et d'étapes de validation | Socle partagé sans dépendance externe |
 | `HL7V2` | API HL7 v2, réexportant encore l'implémentation historique | Produit public principal pour HL7 v2 |
-| `FHIR` | client et modèles FHIR R4 | Produit FHIR autonome et versionné |
-| `CDA` | lecture initiale de l'enveloppe CDA R2 | Modèle et validation CDA complets |
-| `HL7Mapping` | conversions entre HL7 v2 et FHIR | Transformations explicites entre modules |
+| `FHIR` | client, modèles R4 et premier contrôle JSON/modèle à portée limitée | Produit FHIR autonome et versionné |
+| `CDA` | lecture initiale de l'enveloppe CDA R2 et diagnostics de parsing | Modèle et validation CDA complets |
+| `HL7Mapping` | conversion HL7 v2 vers FHIR R4 avec pertes de segments connues | Transformations explicites entre modules |
 | `HL7Swift` | implémentation historique HL7 v2 | Façade de compatibilité à déprécier progressivement |
 | `FHIRSwift` | ancienne surface FHIR et conversion | Façade de compatibilité à déprécier progressivement |
 
@@ -206,6 +206,8 @@ La séparation physique en davantage de targets ne doit intervenir que lorsqu'el
 
 ## 8. Chantiers transversaux
 
+Cette section fixe les exigences communes ; leurs travaux vérifiables et leur état sont suivis par les cases de la section 9 pour éviter deux listes d'avancement divergentes.
+
 ### 8.1 API pour développeurs tiers
 
 - tutoriels courts par produit et exemples compilés dans la CI ;
@@ -235,7 +237,7 @@ Le modèle commun `HL7Core` contient :
 - étape de validation et état de complétude ;
 - cause sous-jacente sans fuite de données sensibles.
 
-Le rapport est disponible comme structure Swift, en JSON et sous forme de texte, sans imposer une interface utilisateur. Le validateur historique HL7 v2 dispose d'un adaptateur `validateReport` dans `HL7V2`, avec des étapes explicitement incomplètes pour les contrôles non exhaustifs. `FHIR` expose un premier contrôle JSON/modèle R4, sans validation de profils, d'invariants ou de terminologie. L'adaptation CDA et l'extension des validations restent à réaliser.
+Le rapport est disponible comme structure Swift, en JSON et sous forme de texte, sans imposer une interface utilisateur. Le validateur historique HL7 v2 dispose d'un adaptateur `validateReport` dans `HL7V2`, avec des étapes explicitement incomplètes pour les contrôles non exhaustifs. `FHIR` expose un premier contrôle JSON/modèle R4, sans validation de profils, d'invariants ou de terminologie. `CDA` expose `parseWithReport`, dont l'analyse d'enveloppe reste partielle. L'extension et la qualification de ces validations restent à réaliser.
 
 ### 8.4 Artefacts et génération
 
@@ -264,94 +266,107 @@ Le rapport est disponible comme structure Swift, en JSON et sous forme de texte,
 
 ## 9. Feuille de route
 
-Les jalons sont ordonnés par dépendance technique. Ils ne constituent pas des dates de livraison.
+Les jalons sont ordonnés par dépendance technique, sans date de livraison implicite. Les cases ci-dessous sont la source de vérité pour l'avancement : `[x]` signifie qu'une sous-étape concrète est implémentée et vérifiée au niveau indiqué ; `[ ]` signifie qu'elle reste à faire ou à qualifier. Une case cochée ne qualifie jamais à elle seule une version normative ni toutes les plateformes. Chaque sous-étape porte un identifiant stable pour les commits et les discussions.
 
 ### M0 — Socle modulaire initial
 
-État : réalisé, à consolider.
-
-- mise à jour du manifeste et des dépendances ;
-- séparation publique `HL7V2`, `FHIR`, `CDA` et `HL7Mapping` ;
-- façades de compatibilité `HL7Swift` et `FHIRSwift` ;
-- premiers tests d'indépendance des modules et stabilisation réseau.
+- [x] M0.1 — Mettre à jour le manifeste SPM et ajuster les contraintes de dépendances compatibles avec Swift tools 6.1.
+- [x] M0.2 — Exposer `HL7Core`, `HL7V2`, `FHIR`, `CDA` et `HL7Mapping` comme targets et produits d'un seul package.
+- [x] M0.3 — Conserver les façades de compatibilité `HL7Swift` et `FHIRSwift`.
+- [x] M0.4 — Ajouter des tests d'import public et de frontières de modules.
+- [ ] M0.5 — Qualifier et stabiliser entièrement les chemins réseau existants.
 
 Sortie attendue : état actuel reproductible, documenté et sans régression connue.
 
 ### M1 — Qualité de bibliothèque et contrat public
 
-- établir la politique de compatibilité et les niveaux de maturité ;
-- maintenir la CI macOS/iOS/Linux, les builds release et les tests d'usage public par target ;
-- adapter progressivement les validateurs au modèle commun de diagnostics ;
-- activer Swift 6 strict target par target ;
-- publier une première documentation DocC modulaire ;
-- inventorier API publiques, dépendances et artefacts embarqués.
+- [x] M1.1 — Publier les types de diagnostics, les étapes et les états `valid`/`invalid`/`indeterminate` dans `HL7Core`.
+- [x] M1.2 — Adapter le validateur HL7 v2 historique sans casser `validate(_:level:)`.
+- [x] M1.3 — Ajouter un premier contrôle FHIR R4 JSON/modèle avec étapes normatives `notRun`.
+- [x] M1.4 — Ajouter des diagnostics à l'analyse de l'enveloppe CDA sans casser `parse(_:)`.
+- [x] M1.5 — Exposer les pertes de segments connues dans le mapping HL7 v2 vers FHIR R4.
+- [x] M1.6 — Configurer les jobs GitLab CI macOS, iOS et Linux et les tests des produits publics.
+- [ ] M1.7 — Vérifier une pipeline GitLab complète et verte sur les trois plateformes, puis la maintenir.
+- [ ] M1.8 — Établir la politique de compatibilité, de dépréciation et les niveaux de maturité par API.
+- [ ] M1.9 — Activer et corriger la vérification stricte Swift 6 target par target.
+- [ ] M1.10 — Publier une documentation DocC modulaire et des exemples compilés.
+- [ ] M1.11 — Inventorier les API publiques, dépendances transitives et artefacts embarqués.
 
 Critère de sortie : chaque produit du package se compile et se teste via son import public, avec une API documentée et une liste de limites connue.
 
 ### M2 — Qualification HL7 v2
 
-- auditer la couverture réelle de v2.3 à v2.8.2 ;
-- ajouter v2.9 et v2.9.1 après vérification des droits et artefacts ;
-- fiabiliser séparateurs, échappements, répétitions, sous-composants, null explicite, jeux de caractères et fins de lignes ;
-- couvrir messages, groupes, Z-segments, batch, ACK original et amélioré ;
-- stabiliser MLLP, TLS, délais, reconnexion, limites et back-pressure ;
-- comparer parsing et sérialisation à des corpus indépendants ;
-- publier une matrice version × fonctionnalité × niveau de maturité.
+- [ ] M2.1 — Inventorier les ressources v2.3 à v2.8.2 avec provenance, licence et empreinte.
+- [ ] M2.2 — Mesurer la couverture réelle par version, message, segment et datatype.
+- [ ] M2.3 — Tester séparateurs, échappements, répétitions, sous-composants, null explicite, jeux de caractères et fins de lignes.
+- [ ] M2.4 — Couvrir groupes, Z-segments, batch et modes ACK original/amélioré.
+- [ ] M2.5 — Qualifier MLLP/TLS : fragmentation, délais, reconnexion, limites et back-pressure.
+- [ ] M2.6 — Comparer parsing et sérialisation à des corpus indépendants avec round-trips sémantiques.
+- [ ] M2.7 — Publier la matrice version × fonctionnalité × maturité et les limites connues.
+- [ ] M2.8 — Évaluer puis importer v2.9 et v2.9.1 après vérification des artefacts et droits.
 
 Critère de sortie : aucun message valide du corpus qualifié n'est perdu au round-trip et toute limite de version est déclarée.
 
 ### M3 — FHIR versionné et client REST
 
-- définir une façade commune qui n'efface pas les différences entre R4, R4B et R5 ;
-- rendre les modèles de version explicitement sélectionnables ;
-- prendre en charge JSON puis XML avec `Resource`, `Bundle` et `OperationOutcome` ;
-- fournir un client `async/await` fondé sur AsyncHTTPClient/SwiftNIO, avec recherche, pagination, CRUD, historique, opérations, batch et transaction ;
-- gérer négociation de contenu, en-têtes FHIR, erreurs HTTP, annulation et politiques de retry sûres ;
-- tester contre des serveurs simulés puis plusieurs implémentations externes.
+- [x] M3.1 — Conserver les modèles R4 et le client REST existant dans la target `FHIR`, sans dépendance à HL7 v2.
+- [ ] M3.2 — Définir la façade de version et permettre le choix explicite R4/R4B/R5 sans masquer leurs différences.
+- [ ] M3.3 — Qualifier le décodage/encodage JSON de `Resource`, `Bundle` et `OperationOutcome`.
+- [ ] M3.4 — Ajouter le support XML FHIR et ses tests de sécurité.
+- [ ] M3.5 — Exposer un client `async/await` sur AsyncHTTPClient/SwiftNIO.
+- [ ] M3.6 — Compléter recherche, pagination, CRUD, historique, opérations, batch et transaction.
+- [ ] M3.7 — Gérer négociation de contenu, en-têtes FHIR, erreurs HTTP, annulation et retry sûr.
+- [ ] M3.8 — Tester avec serveurs simulés puis plusieurs implémentations indépendantes.
 
 Critère de sortie : un projet consommateur peut choisir sa version sans importer HL7 v2 ni les mappings.
 
 ### M4 — FHIRPath et validation FHIR
 
-- implémenter l'analyseur et l'évaluateur FHIRPath avec une suite de conformité ;
-- charger de manière déterministe packages, dépendances et `StructureDefinition` ;
-- valider cardinalités, types, valeurs fixes, bindings, invariants, profils et slicing ;
-- définir une interface de terminologie locale ou distante sans imposer un fournisseur ;
-- produire un rapport de validation complet et explicitement `indeterminate` lorsqu'une dépendance manque ;
-- comparer les résultats à un validateur de référence sur un corpus versionné.
+- [x] M4.1 — Distinguer décodage R4 réussi et conformité FHIR avec un rapport `indeterminate`.
+- [ ] M4.2 — Implémenter analyseur et évaluateur FHIRPath avec une suite de conformité.
+- [ ] M4.3 — Charger de façon déterministe packages, dépendances et `StructureDefinition`.
+- [ ] M4.4 — Contrôler cardinalités, types, valeurs fixes, bindings, profils et slicing.
+- [ ] M4.5 — Évaluer les invariants FHIRPath et déclarer les dépendances manquantes.
+- [ ] M4.6 — Définir une interface de terminologie locale ou distante injectable.
+- [ ] M4.7 — Comparer les diagnostics à un validateur indépendant sur un corpus versionné.
+- [ ] M4.8 — Publier une couverture règle par règle et les limites de chaque version/profil.
 
 Critère de sortie : les capacités et lacunes du validateur sont mesurées règle par règle, sans promesse de conformité globale implicite.
 
 ### M5 — CDA R2 qualifié
 
-- compléter modèle d'en-tête, participants, sections, entrées et références internes ;
-- préserver et sécuriser la narration XHTML ;
-- introduire le sous-ensemble nécessaire des types de données HL7 v3 ;
-- fournir parsing et sérialisation XML déterministes ;
-- appliquer schémas, contraintes, templates et extensions SDTC par étapes distinctes ;
-- préserver les signatures sans prétendre pouvoir réécrire un document signé sans les invalider ;
-- qualifier des profils CDA nommés avec leurs jeux d'essai.
+- [x] M5.1 — Extraire les métadonnées de base de l'enveloppe CDA R2.
+- [x] M5.2 — Exposer `CDAParseResult` et les diagnostics XML/nom racine avec les contrôles non effectués explicités.
+- [ ] M5.3 — Vérifier espace de noms et structure XML CDA sans accès externe implicite.
+- [ ] M5.4 — Compléter en-tête, participants, sections, entrées et références internes.
+- [ ] M5.5 — Préserver et sécuriser la narration XHTML.
+- [ ] M5.6 — Ajouter les types de données HL7 v3 strictement nécessaires.
+- [ ] M5.7 — Fournir parsing et sérialisation déterministes avec tests de round-trip.
+- [ ] M5.8 — Appliquer schémas, templates, contraintes et extensions SDTC en étapes distinctes.
+- [ ] M5.9 — Définir le traitement des signatures et qualifier des profils CDA nommés avec corpus positifs/négatifs.
 
 Critère de sortie : chaque profil annoncé dispose d'une provenance, d'un corpus positif/négatif et de limites documentées.
 
 ### M6 — Mappings explicites
 
-- définir un `MappingResult` commun : résultat, diagnostics, provenance et pertes ;
-- prioriser les flux cliniques courants : ADT, ORM/OML, ORU, SIU et MDM ;
-- établir des mappings HL7 v2 vers FHIR par cas d'usage et version, jamais par simple équivalence de types ;
-- ajouter CDA vers FHIR au niveau document et données structurées lorsque la sémantique le permet ;
-- tester les invariants métier conservés, plutôt que supposer des round-trips sans perte ;
-- rendre les politiques locales injectables et distinctes du socle standard.
+- [x] M6.1 — Exposer un `HL7MappingResult` contenant sortie, diagnostics, provenance et pertes connues.
+- [x] M6.2 — Identifier les segments omis et répétitions ignorées du convertisseur `ORU_R01` existant.
+- [ ] M6.3 — Mesurer les pertes champ par champ et les approximations sémantiques de `ORU_R01`.
+- [ ] M6.4 — Ajouter les mappings priorisés ADT, ORM/OML, SIU et MDM par cas d'usage/version.
+- [ ] M6.5 — Ajouter CDA vers FHIR lorsque la sémantique documentaire ou structurée le permet.
+- [ ] M6.6 — Tester les invariants cliniques conservés avec références indépendantes.
+- [ ] M6.7 — Rendre les politiques locales injectables et distinctes des règles standard.
+- [ ] M6.8 — Garantir un inventaire des données produites, ignorées, approximées ou impossibles pour chaque mapping annoncé.
 
 Critère de sortie : toute transformation indique ce qui a été produit, ignoré, transformé avec approximation ou rendu impossible.
 
 ### M7 — Extensions optionnelles
 
-- primitives SMART App Launch côté client ;
-- client Bulk Data Access ;
-- étude CQL après stabilisation de FHIRPath ;
-- fixtures facilitant certains profils IHE, profil par profil ;
-- étude des besoins d'une application serveur FHIR générique utilisant les targets de HL7Swift.
+- [ ] M7.1 — Ajouter des primitives client SMART App Launch sans système d'identité embarqué.
+- [ ] M7.2 — Étudier puis ajouter un client Bulk Data Access séparé.
+- [ ] M7.3 — Étudier CQL après stabilisation de FHIRPath et de la validation.
+- [ ] M7.4 — Ajouter des fixtures IHE ciblées et qualifiées profil par profil.
+- [ ] M7.5 — Étudier les besoins d'une application serveur FHIR générique sans l'intégrer à la bibliothèque.
 
 Ces extensions ne doivent pas retarder la qualification des fondations.
 
@@ -374,15 +389,7 @@ Une réussite du build ou des tests unitaires ne suffit pas pour qualifier une v
 
 ## 11. Prochain lot de travail
 
-Les prochaines modifications recommandées, sous forme de commits séparés, sont :
-
-1. étendre progressivement la validation FHIR et adapter CDA au modèle `HL7Core` ; le mapping HL7 v2 vers FHIR R4 expose déjà un résultat avec pertes connues, mais sa couverture reste partielle ;
-2. auditer et documenter la provenance des ressources HL7 v2 existantes ;
-3. établir la matrice de couverture réelle HL7 v2 et les corpus manquants ;
-4. exposer une API publique FHIR `async/await` au-dessus d'AsyncHTTPClient/SwiftNIO ;
-5. proposer la stratégie de modèles R4/R4B/R5 et mesurer son impact binaire et source ;
-6. durcir le parseur CDA XML et étendre progressivement son modèle ;
-7. créer un manifeste de couverture lisible par machine, générant les tableaux de documentation.
+Ordre recommandé pour les prochains commits : M5.3 (espace de noms et sécurité XML CDA), M2.1 puis M2.2 (provenance et couverture HL7 v2), M3.5 (API FHIR `async/await` sur AsyncHTTPClient/SwiftNIO), M3.2 (stratégie R4/R4B/R5), M5.4 (modèle CDA étendu) et M2.7 (matrice de couverture générable). Les cases correspondantes sont suivies uniquement en section 9.
 
 ## 12. Risques et décisions à suivre
 

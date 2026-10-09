@@ -64,3 +64,17 @@ print(report.outcome) // indeterminate
 ```
 
 Une entrée malformée, non objet, sans `resourceType` ou non décodable comme modèle R4 produit un diagnostic `error`. Un type de ressource inconnu des modèles embarqués produit un avertissement et reste `indeterminate` : il peut relever d'une autre version. Les diagnostics n'incorporent ni le JSON brut ni la description des exceptions de décodage.
+
+## Analyse CDA R2
+
+`CDAParser.parseWithReport(_:)` renvoie un `CDAParseResult` contenant l'enveloppe extraite, si disponible, et un rapport `HL7Core`. L'ancienne méthode levante `parse(_:)` reste inchangée.
+
+```swift
+import CDA
+
+let result = CDAParser().parseWithReport(xml)
+print(result.document?.title as Any)
+print(result.report.outcome) // indeterminate pour une enveloppe extraite
+```
+
+Les étapes `cda.xml` et `cda.root-name` deviennent `complete` après parsing et reconnaissance du nom racine. `cda.envelope` reste `incomplete` : le modèle ne couvre qu'une partie de l'en-tête et ne vérifie pas encore l'espace de noms. Les étapes `cda.schema`, `cda.templates` et `cda.narrative` restent `notRun`. Un XML malformé ou un nom racine différent produit un diagnostic `error` sans recopier le contenu ni le message d'erreur brut du parseur. Le rapport ne constitue pas une qualification CDA R2.

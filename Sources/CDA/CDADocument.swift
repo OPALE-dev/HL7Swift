@@ -55,10 +55,88 @@ public enum CDAError: Error, Equatable, Sendable {
     case missingClinicalDocument
 }
 
+/// The parsed envelope, if available, and the scope of the checks performed.
+public struct CDAParseResult: Equatable, Sendable {
+    public let document: CDADocument?
+    public let report: HL7DiagnosticReport
+
+    public init(document: CDADocument?, report: HL7DiagnosticReport) {
+        self.document = document
+        self.report = report
+    }
+}
+
 /// Parses the CDA R2 document envelope while preserving a small, explicit
 /// qualification boundary. It does not claim schema or template validation.
 public struct CDAParser: Sendable {
     public init() {}
+
+    /// Parses the current envelope model and reports its explicit limits.
+    /// The XML and root-name stages do not imply CDA R2 schema conformance.
+    public func parseWithReport(_ data: Data) -> CDAParseResult {
+        let unrunStages: [HL7ValidationStage] = [
+            .init(identifier: "cda.schema", status: .notRun),
+            .init(identifier: "cda.templates", status: .notRun),
+            .init(identifier: "cda.narrative", status: .notRun),
+        ]
+
+        do {
+            let document = try parse(data)
+            return CDAParseResult(
+                document: document,
+                report: HL7DiagnosticReport(stages: [
+                    .init(identifier: "cda.xml", status: .complete),
+                    .init(identifier: "cda.root-name", status: .complete),
+                    .init(identifier: "cda.envelope", status: .incomplete),
+                ] + unrunStages)
+            )
+        } catch {
+            let code: String
+            let message: String
+            let stage: String
+            let causeCode: String
+            let xmlStatus: HL7ValidationStageStatus
+            let rootStatus: HL7ValidationStageStatus
+
+            if case CDAError.missingClinicalDocument = error {
+                code = "CDA-ROOT-NAME-MISSING"
+                message = "The document root is not ClinicalDocument."
+                stage = "cda.root-name"
+                causeCode = "ROOT_NAME_MISMATCH"
+                xmlStatus = .complete
+                rootStatus = .incomplete
+            } else {
+                code = "CDA-XML-PARSE-FAILED"
+                message = "The XML document could not be parsed."
+                stage = "cda.xml"
+                causeCode = "XML_PARSE_FAILED"
+                xmlStatus = .incomplete
+                rootStatus = .notRun
+            }
+
+            return CDAParseResult(
+                document: nil,
+                report: HL7DiagnosticReport(stages: [
+                    .init(identifier: "cda.xml", status: xmlStatus),
+                    .init(identifier: "cda.root-name", status: rootStatus),
+                    .init(identifier: "cda.envelope", status: .notRun),
+                ] + unrunStages, diagnostics: [HL7Diagnostic(
+                    code: code,
+                    severity: .error,
+                    message: message,
+                    standard: .cda,
+                    stage: stage,
+                    version: "R2",
+                    location: .init(path: "/ClinicalDocument"),
+                    causeCode: causeCode
+                )])
+            )
+        }
+    }
+
+    public func parseWithReport(_ xml: String) -> CDAParseResult {
+        parseWithReport(Data(xml.utf8))
+    }
 
     public func parse(_ data: Data) throws -> CDADocument {
         let delegate = CDAXMLDelegate()

@@ -4,7 +4,7 @@ HL7Swift is a single Swift package for healthcare interoperability. Its library 
 
 All library targets belong to this single Swift package; applications can depend on only the products they use.
 
-The project is being modernized incrementally. See the [modernization plan](Documentation/MODERNIZATION_PLAN.md) for its scope, architecture principles, standards roadmap and qualification criteria.
+The project is being modernized incrementally. See the [modernization plan](Documentation/MODERNIZATION_PLAN.md) for its scope, architecture principles, checkable progress by milestone and qualification criteria.
 
 The shared diagnostic model is described in [Diagnostics](Documentation/DIAGNOSTICS.md).
 
