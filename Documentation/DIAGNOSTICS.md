@@ -51,3 +51,16 @@ print(result.losses.map(\.sourcePath))
 ```
 
 L'étape `v2-to-fhir-r4` reste `incomplete`, même si aucune perte de segment n'est détectée : la couverture des champs et les invariants cliniques ne sont pas encore qualifiés. Un type de message non pris en charge renvoie `output == nil`, une perte explicite et un résultat `indeterminate`. Une exception du convertisseur produit un diagnostic d'erreur sans recopier l'exception potentiellement sensible. Ce rapport décrit la transformation, pas la validité normative du message source ni celle du bundle FHIR.
+
+## Première validation FHIR R4
+
+`FHIRR4Validator.validateJSON(_:)`, dans la target `FHIR`, contrôle que l'entrée est un objet JSON, possède un `resourceType` et peut être décodée par les modèles R4 embarqués. Les étapes `fhir.r4.json` et `fhir.r4.model` indiquent ces contrôles. Les étapes `fhir.r4.profiles`, `fhir.r4.invariants` et `fhir.r4.terminology` restent `notRun` ; une ressource décodée donne donc `indeterminate`, jamais une preuve de conformité FHIR complète.
+
+```swift
+import FHIR
+
+let report = FHIRR4Validator().validateJSON(Data(#"{"resourceType":"Patient"}"#.utf8))
+print(report.outcome) // indeterminate
+```
+
+Une entrée malformée, non objet, sans `resourceType` ou non décodable comme modèle R4 produit un diagnostic `error`. Un type de ressource inconnu des modèles embarqués produit un avertissement et reste `indeterminate` : il peut relever d'une autre version. Les diagnostics n'incorporent ni le JSON brut ni la description des exceptions de décodage.

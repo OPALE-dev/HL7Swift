@@ -89,7 +89,7 @@ let package = Package(
             ],
             path: "Sources/FHIRSwift",
             exclude: ["Converter", "HL7", "Resources"],
-            sources: ["FHIRSwift.swift", "Network"]),
+            sources: ["FHIRSwift.swift", "Network", "Validation"]),
         .target(
             name: "CDA",
             dependencies: ["HL7Core"]),
@@ -103,7 +103,7 @@ let package = Package(
                 .product(name: "ModelsR4", package: "FHIRModels")
             ],
             path: "Sources/FHIRSwift",
-            exclude: ["FHIRSwift.swift", "Network"],
+            exclude: ["FHIRSwift.swift", "Network", "Validation"],
             sources: ["Converter", "HL7"],
             resources: [
                 .process("Resources"),
