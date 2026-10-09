@@ -297,7 +297,9 @@ Critère de sortie : chaque produit du package se compile et se teste via son im
 ### M2 — Qualification HL7 v2
 
 - [x] M2.1a — Inventorier les XSD embarqués, leurs empreintes et les indices locaux de provenance/licence.
-- [ ] M2.1b — Retrouver les archives officielles exactes, comparer les versions et confirmer les droits de redistribution.
+- [x] M2.1b — Comparer le lot v2.8.2 fourni aux ressources embarquées et relever ses limites techniques.
+- [ ] M2.1c — Retrouver les archives officielles exactes et confirmer les droits de redistribution.
+- [ ] M2.1d — Qualifier les anomalies XSD, synchroniser les modèles générés et remplacer les ressources vérifiées.
 - [ ] M2.2 — Mesurer la couverture réelle par version, message, segment et datatype.
 - [ ] M2.3 — Tester séparateurs, échappements, répétitions, sous-composants, null explicite, jeux de caractères et fins de lignes.
 - [ ] M2.4 — Couvrir groupes, Z-segments, batch et modes ACK original/amélioré.
@@ -390,7 +392,7 @@ Une réussite du build ou des tests unitaires ne suffit pas pour qualifier une v
 
 ## 11. Prochain lot de travail
 
-Ordre recommandé pour les prochains commits : M2.1b puis M2.2 (source officielle, droits et couverture HL7 v2), M3.5 (API FHIR `async/await` sur AsyncHTTPClient/SwiftNIO), M3.2 (stratégie R4/R4B/R5), M5.4 (modèle CDA étendu) et M2.7 (matrice de couverture générable). Les cases correspondantes sont suivies uniquement en section 9. Voir l'[inventaire des ressources HL7 v2](HL7V2_RESOURCE_PROVENANCE.md), notamment le blocage de qualification des schémas v2.8.2.
+Ordre recommandé pour les prochains commits : M2.1c puis M2.1d et M2.2 (source officielle, droits, correction et couverture HL7 v2), M3.5 (API FHIR `async/await` sur AsyncHTTPClient/SwiftNIO), M3.2 (stratégie R4/R4B/R5), M5.4 (modèle CDA étendu) et M2.7 (matrice de couverture générable). Les cases correspondantes sont suivies uniquement en section 9. Voir l'[inventaire des ressources HL7 v2](HL7V2_RESOURCE_PROVENANCE.md), notamment le blocage de qualification des schémas v2.8.2.
 
 ## 12. Risques et décisions à suivre
 

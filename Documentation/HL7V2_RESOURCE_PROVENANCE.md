@@ -63,12 +63,47 @@ applicables ou une autorisation écrite doivent être vérifiés avant de décla
 la question résolue. Ce point est une incertitude à instruire, pas une
 affirmation d'illégalité.
 
+## Lot v2.8.2 fourni pour comparaison
+
+Un dossier local nommé `HL7-xml v2.8.2` a été fourni le 9 octobre 2026. Il
+contient 212 XSD à plat et un index `MessageStructureID.html`. Tous les XSD
+portent un en-tête « Version 2.8.2 », un copyright HL7 1999–2022 et une
+génération datée du 27 mai 2022 depuis `hl7_97.mdb`. L'empreinte SHA-256 de
+l'arbre des 212 XSD, calculée comme dans le fichier `.lock` avec les noms de
+fichiers à la racine, est
+`2da4d8a9747b6a1dd577f3f321df212937efcbae1f28eccdd1971b5b431e5597`.
+Il ne s'agit pas de l'empreinte de l'archive d'origine.
+
+Comparé aux 193 XSD actuellement embarqués sous v2.8.2 : 150 noms sont
+communs, sans fichier identique octet pour octet ; 62 noms n'existent que dans
+le lot fourni et 43 seulement dans le dépôt. Le lot contient 208 définitions
+de messages et quatre XSD communs (`messages`, `segments`, `fields`,
+`datatypes`). Les 212 documents sont XML bien formés et leurs références
+`schemaLocation` visent des fichiers présents dans le dossier. Ces contrôles
+ne prouvent pas la validité XSD ni la conformité HL7.
+
+Deux écarts techniques interdisent un remplacement aveugle :
+
+- le code généré `V282.swift` référence `OMQ_O42`, `ORX_O43` et `OSU_O41`, là
+  où le lot fourni contient `OMQ_O57`, `ORX_O58` et `OSU_O51` ;
+- `datatypes.xsd` contient 13 extensions avec `base="-"`. `xmllint` signale
+  cette valeur comme un QName invalide et ne peut pas compiler
+  `messages.xsd` en schéma XSD.
+
+La [fiche HL7 v2.8.2](https://dev3.hl7.org/implement/standards/product_brief.cfm?product_id=444)
+annonce une archive et des errata, mais son téléchargement exige une
+authentification ; nous n'avons donc pas établi l'égalité du dossier fourni
+avec une archive officielle précise. Le dossier ne contient pas de licence
+autorisant explicitement sa redistribution. Aucun de ses XSD n'a été copié
+dans le package à ce stade.
+
 ## Suite de M2.1
 
 1. Obtenir les archives officielles exactes et leurs conditions d'utilisation
    pour chaque version, en conservant URL, date et empreinte.
 2. Comparer fichier par fichier les copies embarquées aux archives, y compris
-   les errata de 2019 et le répertoire v2.8.2 incohérent.
+   les errata de 2019 et le répertoire v2.8.2 incohérent ; qualifier les
+   anomalies XSD et synchroniser le code généré avant remplacement.
 3. Confirmer le droit de publier ces XSD dans le package ; à défaut, définir
    une distribution ou une génération compatible avec les droits obtenus.
 
