@@ -235,7 +235,7 @@ Le modèle commun `HL7Core` contient :
 - étape de validation et état de complétude ;
 - cause sous-jacente sans fuite de données sensibles.
 
-Le rapport est disponible comme structure Swift, en JSON et sous forme de texte, sans imposer une interface utilisateur. Les validateurs historiques ne produisent pas encore ce rapport ; leur adaptation est un chantier distinct.
+Le rapport est disponible comme structure Swift, en JSON et sous forme de texte, sans imposer une interface utilisateur. Le validateur historique HL7 v2 dispose d'un adaptateur `validateReport` dans `HL7V2`, avec des étapes explicitement incomplètes pour les contrôles non exhaustifs. L'adaptation des autres validateurs et mappings reste à réaliser.
 
 ### 8.4 Artefacts et génération
 
@@ -376,7 +376,7 @@ Une réussite du build ou des tests unitaires ne suffit pas pour qualifier une v
 
 Les prochaines modifications recommandées, sous forme de commits séparés, sont :
 
-1. adapter les validateurs et mappings existants au modèle `HL7Core`, étape par étape ;
+1. adapter les mappings existants puis FHIR et CDA au modèle `HL7Core`, étape par étape ;
 2. auditer et documenter la provenance des ressources HL7 v2 existantes ;
 3. établir la matrice de couverture réelle HL7 v2 et les corpus manquants ;
 4. exposer une API publique FHIR `async/await` au-dessus d'AsyncHTTPClient/SwiftNIO ;
