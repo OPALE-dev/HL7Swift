@@ -53,6 +53,8 @@ public struct CDADocument: Equatable, Sendable {
 public enum CDAError: Error, Equatable, Sendable {
     case invalidXML(String)
     case missingClinicalDocument
+    case invalidNamespace
+    case prohibitedDeclaration
 }
 
 /// The parsed envelope, if available, and the scope of the checks performed.
@@ -87,6 +89,8 @@ public struct CDAParser: Sendable {
                 report: HL7DiagnosticReport(stages: [
                     .init(identifier: "cda.xml", status: .complete),
                     .init(identifier: "cda.root-name", status: .complete),
+                    .init(identifier: "cda.namespace", status: .complete),
+                    .init(identifier: "cda.xml-security", status: .complete),
                     .init(identifier: "cda.envelope", status: .incomplete),
                 ] + unrunStages)
             )
@@ -97,6 +101,8 @@ public struct CDAParser: Sendable {
             let causeCode: String
             let xmlStatus: HL7ValidationStageStatus
             let rootStatus: HL7ValidationStageStatus
+            let namespaceStatus: HL7ValidationStageStatus
+            let securityStatus: HL7ValidationStageStatus
 
             if case CDAError.missingClinicalDocument = error {
                 code = "CDA-ROOT-NAME-MISSING"
@@ -105,6 +111,26 @@ public struct CDAParser: Sendable {
                 causeCode = "ROOT_NAME_MISMATCH"
                 xmlStatus = .complete
                 rootStatus = .incomplete
+                namespaceStatus = .notRun
+                securityStatus = .complete
+            } else if case CDAError.invalidNamespace = error {
+                code = "CDA-NAMESPACE-MISMATCH"
+                message = "The ClinicalDocument root is not in the CDA namespace."
+                stage = "cda.namespace"
+                causeCode = "NAMESPACE_MISMATCH"
+                xmlStatus = .complete
+                rootStatus = .complete
+                namespaceStatus = .incomplete
+                securityStatus = .complete
+            } else if case CDAError.prohibitedDeclaration = error {
+                code = "CDA-XML-DECLARATION-FORBIDDEN"
+                message = "DTD and entity declarations are not accepted."
+                stage = "cda.xml-security"
+                causeCode = "XML_DECLARATION_FORBIDDEN"
+                xmlStatus = .incomplete
+                rootStatus = .notRun
+                namespaceStatus = .notRun
+                securityStatus = .incomplete
             } else {
                 code = "CDA-XML-PARSE-FAILED"
                 message = "The XML document could not be parsed."
@@ -112,6 +138,8 @@ public struct CDAParser: Sendable {
                 causeCode = "XML_PARSE_FAILED"
                 xmlStatus = .incomplete
                 rootStatus = .notRun
+                namespaceStatus = .notRun
+                securityStatus = .incomplete
             }
 
             return CDAParseResult(
@@ -119,6 +147,8 @@ public struct CDAParser: Sendable {
                 report: HL7DiagnosticReport(stages: [
                     .init(identifier: "cda.xml", status: xmlStatus),
                     .init(identifier: "cda.root-name", status: rootStatus),
+                    .init(identifier: "cda.namespace", status: namespaceStatus),
+                    .init(identifier: "cda.xml-security", status: securityStatus),
                     .init(identifier: "cda.envelope", status: .notRun),
                 ] + unrunStages, diagnostics: [HL7Diagnostic(
                     code: code,
@@ -139,15 +169,28 @@ public struct CDAParser: Sendable {
     }
 
     public func parse(_ data: Data) throws -> CDADocument {
+        if Self.containsDoctype(data) {
+            throw CDAError.prohibitedDeclaration
+        }
         let delegate = CDAXMLDelegate()
         let parser = XMLParser(data: data)
+        parser.shouldProcessNamespaces = true
+        parser.shouldResolveExternalEntities = false
+        parser.externalEntityResolvingPolicy = .never
+        parser.allowedExternalEntityURLs = []
         parser.delegate = delegate
 
         guard parser.parse() else {
+            if delegate.sawProhibitedEntityDeclaration {
+                throw CDAError.prohibitedDeclaration
+            }
             throw CDAError.invalidXML(parser.parserError?.localizedDescription ?? "Unknown XML parser error")
         }
-        guard delegate.didFindClinicalDocument else {
+        guard delegate.didFindRootName else {
             throw CDAError.missingClinicalDocument
+        }
+        guard delegate.didFindCDANamespace else {
+            throw CDAError.invalidNamespace
         }
         return delegate.document
     }
@@ -155,14 +198,55 @@ public struct CDAParser: Sendable {
     public func parse(_ xml: String) throws -> CDADocument {
         try parse(Data(xml.utf8))
     }
+
+    /// Fail closed for DTDs before XMLParser processes them. External entity
+    /// callbacks are not guaranteed when entity resolution is disabled.
+    /// These byte patterns cover UTF-8/ASCII-compatible, UTF-16 and UTF-32 XML.
+    private static func containsDoctype(_ data: Data) -> Bool {
+        let marker = Array("<!DOCTYPE".utf8)
+        let bytePatterns: [[UInt8]] = [
+            marker,
+            marker.flatMap { [0, $0] },
+            marker.flatMap { [$0, 0] },
+            marker.flatMap { [0, 0, 0, $0] },
+            marker.flatMap { [$0, 0, 0, 0] },
+        ]
+        return bytePatterns.contains { data.range(of: Data($0)) != nil }
+    }
 }
 
 private final class CDAXMLDelegate: NSObject, XMLParserDelegate {
+    private static let cdaNamespace = "urn:hl7-org:v3"
+
     var document = CDADocument()
-    var didFindClinicalDocument = false
+    var didFindRootName = false
+    var didFindCDANamespace = false
+    var sawProhibitedEntityDeclaration = false
     private var depth = 0
     private var titleDepth: Int?
     private var title = ""
+
+    func parser(
+        _ parser: XMLParser,
+        foundInternalEntityDeclarationWithName name: String,
+        value: String?
+    ) {
+        rejectEntityDeclaration(parser)
+    }
+
+    func parser(
+        _ parser: XMLParser,
+        foundExternalEntityDeclarationWithName name: String,
+        publicID: String?,
+        systemID: String?
+    ) {
+        rejectEntityDeclaration(parser)
+    }
+
+    private func rejectEntityDeclaration(_ parser: XMLParser) {
+        sawProhibitedEntityDeclaration = true
+        parser.abortParsing()
+    }
 
     func parser(
         _ parser: XMLParser,
@@ -174,12 +258,14 @@ private final class CDAXMLDelegate: NSObject, XMLParserDelegate {
         defer { depth += 1 }
 
         if depth == 0 {
-            didFindClinicalDocument = elementName == "ClinicalDocument" || elementName.hasSuffix(":ClinicalDocument")
+            didFindRootName = elementName == "ClinicalDocument"
+            didFindCDANamespace = namespaceURI == Self.cdaNamespace
             return
         }
-        guard didFindClinicalDocument, depth == 1 else { return }
+        guard didFindRootName, didFindCDANamespace,
+              depth == 1, namespaceURI == Self.cdaNamespace else { return }
 
-        switch elementName.split(separator: ":").last.map(String.init) ?? elementName {
+        switch elementName {
         case "templateId":
             if let identifier = identifier(from: attributeDict) {
                 document.templateIdentifiers.append(identifier)
@@ -217,7 +303,7 @@ private final class CDAXMLDelegate: NSObject, XMLParserDelegate {
     ) {
         depth -= 1
         if titleDepth == depth,
-           (elementName == "title" || elementName.hasSuffix(":title")) {
+           elementName == "title", namespaceURI == Self.cdaNamespace {
             document.title = title.trimmingCharacters(in: .whitespacesAndNewlines)
             titleDepth = nil
         }

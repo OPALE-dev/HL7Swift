@@ -337,7 +337,7 @@ Critère de sortie : les capacités et lacunes du validateur sont mesurées règ
 
 - [x] M5.1 — Extraire les métadonnées de base de l'enveloppe CDA R2.
 - [x] M5.2 — Exposer `CDAParseResult` et les diagnostics XML/nom racine avec les contrôles non effectués explicités.
-- [ ] M5.3 — Vérifier espace de noms et structure XML CDA sans accès externe implicite.
+- [x] M5.3 — Vérifier l'espace de noms de la racine et des métadonnées extraites, sans accès XML externe implicite.
 - [ ] M5.4 — Compléter en-tête, participants, sections, entrées et références internes.
 - [ ] M5.5 — Préserver et sécuriser la narration XHTML.
 - [ ] M5.6 — Ajouter les types de données HL7 v3 strictement nécessaires.
@@ -389,7 +389,7 @@ Une réussite du build ou des tests unitaires ne suffit pas pour qualifier une v
 
 ## 11. Prochain lot de travail
 
-Ordre recommandé pour les prochains commits : M5.3 (espace de noms et sécurité XML CDA), M2.1 puis M2.2 (provenance et couverture HL7 v2), M3.5 (API FHIR `async/await` sur AsyncHTTPClient/SwiftNIO), M3.2 (stratégie R4/R4B/R5), M5.4 (modèle CDA étendu) et M2.7 (matrice de couverture générable). Les cases correspondantes sont suivies uniquement en section 9.
+Ordre recommandé pour les prochains commits : M2.1 puis M2.2 (provenance et couverture HL7 v2), M3.5 (API FHIR `async/await` sur AsyncHTTPClient/SwiftNIO), M3.2 (stratégie R4/R4B/R5), M5.4 (modèle CDA étendu) et M2.7 (matrice de couverture générable). Les cases correspondantes sont suivies uniquement en section 9.
 
 ## 12. Risques et décisions à suivre
 
