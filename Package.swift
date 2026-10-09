@@ -39,7 +39,9 @@ let package = Package(
         .package(url: "https://github.com/apple/swift-nio-ssl.git", from: "2.37.5"),
         .package(url: "https://github.com/swift-server/async-http-client.git", from: "1.36.2"),
         .package(url: "https://github.com/apple/swift-argument-parser", from: "1.8.2"),
-        .package(url: "https://github.com/apple/FHIRModels.git", .upToNextMajor(from: "0.9.3")),
+        // FHIRModels 0.9.x requires Swift tools 6.2. Keep the last release
+        // compatible with this package's declared Swift tools 6.1 baseline.
+        .package(url: "https://github.com/apple/FHIRModels.git", exact: "0.8.0"),
         .package(url: "https://github.com/swiftcsv/SwiftCSV.git", from: "0.10.0"),
         .package(url: "https://github.com/jpsim/Yams.git", from: "5.4.0")
     ],

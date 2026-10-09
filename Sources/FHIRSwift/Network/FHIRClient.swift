@@ -19,7 +19,7 @@ public enum FHIRCreateResult {
 
 public enum FHIRReadResult {
     case error(_ error:Error)
-    case success(_ resource: any Resource, _ url:URL)
+    case success(_ resource: Resource, _ url:URL)
 }
 
 
@@ -70,7 +70,7 @@ public class FHIRClient {
     }
     
     
-    public func create(_ resource: any Resource, _ completion: @escaping (FHIRCreateResult) -> ()) throws {
+    public func create(_ resource: Resource, _ completion: @escaping (FHIRCreateResult) -> ()) throws {
         let data = try encoder.encode(resource)
         let url = baseURL.appendingPathComponent("\(type(of: resource))")
                 
@@ -115,7 +115,7 @@ public class FHIRClient {
     }
     
     
-    public func update(_ resource: any Resource, id:String) throws -> EventLoopFuture<HTTPClient.Response> {
+    public func update(_ resource: Resource, id:String) throws -> EventLoopFuture<HTTPClient.Response> {
         let data = try encoder.encode(resource)
         let url = baseURL
             .appendingPathComponent("\(type(of: resource))")
