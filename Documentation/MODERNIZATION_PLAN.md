@@ -376,7 +376,7 @@ Une réussite du build ou des tests unitaires ne suffit pas pour qualifier une v
 
 Les prochaines modifications recommandées, sous forme de commits séparés, sont :
 
-1. adapter les mappings existants puis FHIR et CDA au modèle `HL7Core`, étape par étape ;
+1. adapter les validateurs FHIR et CDA au modèle `HL7Core`, étape par étape ; le mapping HL7 v2 vers FHIR R4 expose déjà un résultat avec pertes connues, mais sa couverture reste partielle ;
 2. auditer et documenter la provenance des ressources HL7 v2 existantes ;
 3. établir la matrice de couverture réelle HL7 v2 et les corpus manquants ;
 4. exposer une API publique FHIR `async/await` au-dessus d'AsyncHTTPClient/SwiftNIO ;

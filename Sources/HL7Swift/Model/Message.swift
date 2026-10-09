@@ -46,6 +46,10 @@ public struct Message {
     
     var segments: [Segment] = []
     var internalType:Typable?
+
+    /// Segments in wire order, including repetitions and segments not recognized
+    /// by the embedded specification. The returned array is a snapshot.
+    public var allSegments: [Segment] { segments }
     
     public init(withFileAt url: URL, hl7: HL7) throws {
         do {

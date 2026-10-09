@@ -37,3 +37,17 @@ print(report.outcome) // indeterminate si aucun constat bloquant
 ```
 
 Les messages textuels hérités sont conservés ; certains peuvent inclure une valeur du message HL7 d'origine. Traitez donc le rapport comme une donnée potentiellement sensible avant journalisation ou export. Les autres validateurs et mappings seront adaptés progressivement.
+
+## Mapping HL7 v2 vers FHIR R4
+
+`HL72FHIRR4Converter.mapWithReport(_:)`, dans `HL7Mapping`, renvoie un `HL7MappingResult<ModelsR4.Bundle>` avec le bundle éventuel, un `HL7DiagnosticReport`, la provenance du convertisseur et les pertes connues. La méthode historique `convert(_:)` garde son comportement. Le mapping actuel accepte `ORU_R01` et produit seulement les ressources issues de MSH, PID et PV1 ; les autres segments présents sont signalés sans copier leurs valeurs dans les diagnostics. Les répétitions de segments que le convertisseur ne traite pas sont également signalées.
+
+```swift
+import HL7Mapping
+
+let result = try HL72FHIRR4Converter().mapWithReport(message)
+print(result.provenance.targetVersion) // R4
+print(result.losses.map(\.sourcePath))
+```
+
+L'étape `v2-to-fhir-r4` reste `incomplete`, même si aucune perte de segment n'est détectée : la couverture des champs et les invariants cliniques ne sont pas encore qualifiés. Un type de message non pris en charge renvoie `output == nil`, une perte explicite et un résultat `indeterminate`. Une exception du convertisseur produit un diagnostic d'erreur sans recopier l'exception potentiellement sensible. Ce rapport décrit la transformation, pas la validité normative du message source ni celle du bundle FHIR.

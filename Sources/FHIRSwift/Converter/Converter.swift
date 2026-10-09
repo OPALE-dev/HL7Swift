@@ -7,9 +7,9 @@
 
 import Foundation
 @_exported import HL7Core
+@_exported import HL7V2
 
 internal protocol Converter {
 
 }
-
 
