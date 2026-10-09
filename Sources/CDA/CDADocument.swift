@@ -1,4 +1,5 @@
 import Foundation
+@_exported import HL7Core
 #if canImport(FoundationXML)
 import FoundationXML
 #endif

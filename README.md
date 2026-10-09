@@ -1,8 +1,12 @@
 # HL7Swift
 
-HL7Swift is an independent suite of Swift libraries for healthcare interoperability. Its modular products cover HL7 v2, FHIR, CDA and mappings between standards without imposing an application architecture or business model on their users.
+HL7Swift is a single Swift package for healthcare interoperability. Its library targets cover HL7 v2, FHIR, CDA and mappings between standards without imposing an application architecture or business model on their users.
+
+All library targets belong to this single Swift package; applications can depend on only the products they use.
 
 The project is being modernized incrementally. See the [modernization plan](Documentation/MODERNIZATION_PLAN.md) for its scope, architecture principles, standards roadmap and qualification criteria.
+
+The shared diagnostic model is described in [Diagnostics](Documentation/DIAGNOSTICS.md).
 
 ## Disclaimer
 
@@ -16,6 +20,7 @@ Import only the product your application needs:
 
 | Product | Purpose |
 | --- | --- |
+| `HL7Core` | Share structured diagnostics and validation outcomes |
 | `HL7V2` | Parse, build, inspect and transport HL7 v2 messages |
 | `FHIR` | Work with FHIR resources and REST services |
 | `CDA` | Read and model CDA R2 documents |

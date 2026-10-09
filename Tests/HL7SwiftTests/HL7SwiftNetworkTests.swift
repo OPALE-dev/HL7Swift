@@ -33,7 +33,6 @@ private final class NetworkTestDelegate: HL7ServerDelegate {
 
 
 final class HL7SwiftNetworkTests: XCTestCase {
-    private let testPort = 27_777
     var hl7: HL7!
     var config: ClientConfiguration!
     
@@ -45,13 +44,12 @@ final class HL7SwiftNetworkTests: XCTestCase {
         
         self.config = ClientConfiguration(self.hl7)
         self.config.host = "127.0.0.1"
-        self.config.port = testPort
     }
 
     private func makeServer(delegate: HL7ServerDelegate? = nil) throws -> HL7Server {
         var serverConfig = ServerConfiguration(hl7)
         serverConfig.host = "127.0.0.1"
-        serverConfig.port = testPort
+        serverConfig.port = 0 // The OS assigns a unique port for each parallel test process.
         return try HL7Server(serverConfig, delegate: delegate)
     }
 
@@ -81,12 +79,13 @@ final class HL7SwiftNetworkTests: XCTestCase {
     func testClientConnect() throws {
         let delegate = NetworkTestDelegate()
         let server = try makeServer(delegate: delegate)
-        let client = try HL7CLient(config)
 
         start(server, delegate: delegate)
+        defer { try? server.stop() }
+        config.port = try XCTUnwrap(server.channel?.localAddress?.port)
+        let client = try HL7CLient(config)
         defer {
             client.disconnect()
-            try? server.stop()
         }
         try client.connect().wait()
     }
@@ -97,12 +96,13 @@ final class HL7SwiftNetworkTests: XCTestCase {
 
         let delegate = NetworkTestDelegate()
         let server = try makeServer(delegate: delegate)
-        let client = try HL7CLient(config)
 
         start(server, delegate: delegate)
+        defer { try? server.stop() }
+        config.port = try XCTUnwrap(server.channel?.localAddress?.port)
+        let client = try HL7CLient(config)
         defer {
             client.disconnect()
-            try? server.stop()
         }
         try client.connect().wait()
 

@@ -12,6 +12,9 @@ let package = Package(
     products: [
         // Products define the executables and libraries a package produces, and make them visible to other packages.
         .library(
+            name: "HL7Core",
+            targets: ["HL7Core"]),
+        .library(
             name: "HL7Swift",
             targets: ["HL7Swift"]),
         .library(
@@ -49,6 +52,8 @@ let package = Package(
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
         // Targets can depend on other targets in this package, and on products in packages this package depends on.
         .target(
+            name: "HL7Core"),
+        .target(
             name: "HL7Swift",
             dependencies: [
                 "SwiftGenerator",
@@ -73,10 +78,11 @@ let package = Package(
             ]),
         .target(
             name: "HL7V2",
-            dependencies: ["HL7Swift"]),
+            dependencies: ["HL7Swift", "HL7Core"]),
         .target(
             name: "FHIR",
             dependencies: [
+                "HL7Core",
                 .product(name: "ModelsR4", package: "FHIRModels"),
                 .product(name: "NIO", package: "swift-nio"),
                 .product(name: "AsyncHTTPClient", package: "async-http-client")
@@ -85,10 +91,12 @@ let package = Package(
             exclude: ["Converter", "HL7", "Resources"],
             sources: ["FHIRSwift.swift", "Network"]),
         .target(
-            name: "CDA"),
+            name: "CDA",
+            dependencies: ["HL7Core"]),
         .target(
             name: "HL7Mapping",
             dependencies: [
+                "HL7Core",
                 "HL7V2",
                 "FHIR",
                 "SwiftCSV",
@@ -158,6 +166,26 @@ let package = Package(
         .testTarget(
             name: "ArchitectureTests",
             dependencies: ["HL7V2", "FHIR", "CDA", "HL7Mapping"]
+        ),
+        .testTarget(
+            name: "HL7CoreTests",
+            dependencies: ["HL7Core"]
+        ),
+        .testTarget(
+            name: "HL7V2PublicAPITests",
+            dependencies: ["HL7V2"]
+        ),
+        .testTarget(
+            name: "FHIRPublicAPITests",
+            dependencies: ["FHIR"]
+        ),
+        .testTarget(
+            name: "CDAPublicAPITests",
+            dependencies: ["CDA"]
+        ),
+        .testTarget(
+            name: "HL7MappingPublicAPITests",
+            dependencies: ["HL7Mapping"]
         )
     ],
     swiftLanguageModes: [.v5]

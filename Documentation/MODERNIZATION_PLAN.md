@@ -2,23 +2,24 @@
 
 Statut : document directeur vivant
 
-Dernière révision : 8 octobre 2026
+Dernière révision : 9 octobre 2026
 
 ## 1. Vision
 
-HL7Swift doit devenir une suite de bibliothèques Swift indépendantes, faciles à intégrer et consacrées à l'interopérabilité de santé. Elle doit permettre à une application cliente de lire, produire, transporter, valider et transformer des données issues de l'écosystème HL7 sans imposer son architecture métier, son stockage ou son mode de déploiement.
+HL7Swift doit rester un seul package Swift, composé de targets spécialisées et faciles à utiliser, consacré à l'interopérabilité de santé. Il doit permettre à une application cliente de lire, produire, transporter, valider et transformer des données issues de l'écosystème HL7 sans imposer son architecture métier, son stockage ou son mode de déploiement.
 
 HL7Swift doit rester utile à une application mobile, un outil en ligne de commande, une passerelle, un serveur Vapor ou tout autre logiciel Swift, sans orienter ses API vers un produit particulier.
 
 Les principes directeurs sont les suivants :
 
-- des produits Swift Package Manager importables séparément ;
+- un seul dépôt et un seul package Swift Package Manager, avec des targets et produits bibliothèque distincts ;
 - une API publique claire, documentée et compatible avec le versionnage sémantique ;
 - le minimum de dépendances transitives pour chaque produit ;
 - aucun modèle métier propre à une application ou un établissement dans la bibliothèque ;
 - une couverture annoncée uniquement lorsqu'elle est vérifiée et traçable ;
 - des diagnostics exploitables plutôt qu'un simple résultat booléen ;
-- macOS, iOS et Linux comme environnements de première classe lorsque les dépendances le permettent.
+- macOS, iOS et Linux comme environnements de première classe lorsque les dépendances le permettent ;
+- SwiftNIO comme socle réseau commun, cohérent avec les autres composants Swift de l'écosystème.
 
 ## 2. Périmètre
 
@@ -37,7 +38,7 @@ Les éléments suivants appartiennent à d'autres bibliothèques ou aux applicat
 - les modèles métier internes aux applications consommatrices ;
 - les protocoles et formats qui n'appartiennent pas à l'écosystème HL7 ;
 - la persistance applicative, les files de tâches, l'interface utilisateur et l'hébergement ;
-- un serveur FHIR complet et déployable ; une telle solution pourrait devenir un package séparé utilisant HL7Swift ;
+- un serveur FHIR complet et déployable, qui relève d'une application utilisant HL7Swift ;
 - l'orchestration complète des acteurs et transactions IHE ;
 - la facturation, la réglementation nationale et les règles métier propres à un établissement ;
 - la distribution de terminologies ou de contenus normatifs dont la licence ne l'autorise pas.
@@ -62,10 +63,11 @@ Cette frontière évite de coupler les évolutions d'un produit à celles des st
 
 ## 4. Point de départ en octobre 2026
 
-Le package utilise Swift tools 6.1 tout en conservant temporairement le mode de langage Swift 5. Il expose actuellement :
+Le package utilise Swift tools 6.1 tout en conservant temporairement le mode de langage Swift 5. Il expose actuellement les produits bibliothèque suivants, chacun adossé à une target du même package :
 
 | Produit | Rôle actuel | Direction |
 | --- | --- | --- |
+| `HL7Core` | modèle commun de diagnostics et d'étapes de validation | Socle partagé sans dépendance externe |
 | `HL7V2` | API HL7 v2, réexportant encore l'implémentation historique | Produit public principal pour HL7 v2 |
 | `FHIR` | client et modèles FHIR R4 | Produit FHIR autonome et versionné |
 | `CDA` | lecture initiale de l'enveloppe CDA R2 | Modèle et validation CDA complets |
@@ -157,7 +159,7 @@ Références de suivi officielles :
 
 ## 7. Architecture cible des modules
 
-La structure suivante décrit une direction, pas une obligation de tout fractionner immédiatement :
+La structure suivante décrit des targets possibles dans le même package, pas une obligation de tout fractionner immédiatement :
 
 ```text
 HL7Core
@@ -166,14 +168,14 @@ HL7Core
 HL7V2
   modèle, spécifications et API publique
 HL7V2Transport
-  MLLP, TLS et comportements réseau
+  MLLP, TLS et comportements réseau sur SwiftNIO
 
 FHIR
   API commune et primitives indépendantes de version
 FHIRR4 / FHIRR4B / FHIRR5
   modèles générés ou adaptés par version
 FHIRClient
-  REST, recherche, opérations et pagination
+  REST, recherche, opérations et pagination sur AsyncHTTPClient/SwiftNIO
 FHIRValidation
   profils, packages, terminologie et contraintes
 FHIRPath
@@ -196,6 +198,7 @@ Règles de dépendance :
 - FHIR, CDA et HL7V2 restent utilisables seuls ;
 - un mapping dépend uniquement de ses formats source et cible ;
 - le code réseau asynchrone n'envahit pas les modèles ;
+- SwiftNIO et AsyncHTTPClient restent les implémentations réseau de référence ;
 - les exécutables de démonstration ne définissent pas l'API des bibliothèques ;
 - toute dépendance tierce importante doit être justifiée, maintenue et masquée derrière une API HL7Swift lorsque cela protège les consommateurs.
 
@@ -207,7 +210,7 @@ La séparation physique en davantage de targets ne doit intervenir que lorsqu'el
 
 - tutoriels courts par produit et exemples compilés dans la CI ;
 - documentation DocC des symboles publics et guides conceptuels ;
-- API `async/await` et types d'erreur structurés ;
+- API `async/await` au-dessus de SwiftNIO et types d'erreur structurés ;
 - valeurs par défaut sûres, configuration explicite pour les comportements sensibles ;
 - politique de dépréciation et guide de migration à chaque rupture ;
 - aucune initialisation globale obligatoire pour utiliser les fonctionnalités courantes ;
@@ -223,7 +226,7 @@ La séparation physique en davantage de targets ne doit intervenir que lorsqu'el
 
 ### 8.3 Diagnostics communs
 
-Créer un modèle commun contenant :
+Le modèle commun `HL7Core` contient :
 
 - sévérité, code stable et message lisible ;
 - format, version et profil concernés ;
@@ -232,7 +235,7 @@ Créer un modèle commun contenant :
 - étape de validation et état de complétude ;
 - cause sous-jacente sans fuite de données sensibles.
 
-Ce rapport doit pouvoir être rendu en texte, JSON et structures Swift sans imposer une interface utilisateur.
+Le rapport est disponible comme structure Swift, en JSON et sous forme de texte, sans imposer une interface utilisateur. Les validateurs historiques ne produisent pas encore ce rapport ; leur adaptation est un chantier distinct.
 
 ### 8.4 Artefacts et génération
 
@@ -256,7 +259,7 @@ Ce rapport doit pouvoir être rendu en texte, JSON et structures Swift sans impo
 - CI macOS, iOS et Linux sur les versions Swift prises en charge ;
 - tests iOS au minimum au niveau compilation, complétés par des tests ciblés ;
 - builds debug et release ;
-- produits SPM vérifiés individuellement dans un projet consommateur minimal ;
+- produits SPM vérifiés individuellement par des tests qui n'importent que leur module public ;
 - changelog, documentation de compatibilité et matrice de qualification par version publiée.
 
 ## 9. Feuille de route
@@ -277,13 +280,13 @@ Sortie attendue : état actuel reproductible, documenté et sans régression con
 ### M1 — Qualité de bibliothèque et contrat public
 
 - établir la politique de compatibilité et les niveaux de maturité ;
-- maintenir la CI macOS/iOS/Linux, les builds release et ajouter des exemples consommateurs ;
-- introduire les diagnostics communs ;
+- maintenir la CI macOS/iOS/Linux, les builds release et les tests d'usage public par target ;
+- adapter progressivement les validateurs au modèle commun de diagnostics ;
 - activer Swift 6 strict target par target ;
 - publier une première documentation DocC modulaire ;
 - inventorier API publiques, dépendances et artefacts embarqués.
 
-Critère de sortie : chaque produit se compile et se teste isolément, avec une API documentée et une liste de limites connue.
+Critère de sortie : chaque produit du package se compile et se teste via son import public, avec une API documentée et une liste de limites connue.
 
 ### M2 — Qualification HL7 v2
 
@@ -302,7 +305,7 @@ Critère de sortie : aucun message valide du corpus qualifié n'est perdu au rou
 - définir une façade commune qui n'efface pas les différences entre R4, R4B et R5 ;
 - rendre les modèles de version explicitement sélectionnables ;
 - prendre en charge JSON puis XML avec `Resource`, `Bundle` et `OperationOutcome` ;
-- fournir un client `async/await` avec recherche, pagination, CRUD, historique, opérations, batch et transaction ;
+- fournir un client `async/await` fondé sur AsyncHTTPClient/SwiftNIO, avec recherche, pagination, CRUD, historique, opérations, batch et transaction ;
 - gérer négociation de contenu, en-têtes FHIR, erreurs HTTP, annulation et politiques de retry sûres ;
 - tester contre des serveurs simulés puis plusieurs implémentations externes.
 
@@ -348,7 +351,7 @@ Critère de sortie : toute transformation indique ce qui a été produit, ignor�
 - client Bulk Data Access ;
 - étude CQL après stabilisation de FHIRPath ;
 - fixtures facilitant certains profils IHE, profil par profil ;
-- étude d'un package serveur FHIR séparé si un besoin générique apparaît.
+- étude des besoins d'une application serveur FHIR générique utilisant les targets de HL7Swift.
 
 Ces extensions ne doivent pas retarder la qualification des fondations.
 
@@ -373,14 +376,13 @@ Une réussite du build ou des tests unitaires ne suffit pas pour qualifier une v
 
 Les prochaines modifications recommandées, sous forme de commits séparés, sont :
 
-1. ajouter des projets consommateurs minimaux pour chaque produit à la CI existante ;
-2. introduire le modèle de diagnostics partagé sans modifier encore les résultats métier ;
-3. auditer et documenter la provenance des ressources HL7 v2 existantes ;
-4. établir la matrice de couverture réelle HL7 v2 et les corpus manquants ;
-5. migrer le client FHIR vers une API publique `async/await` indépendante de NIO ;
-6. proposer la stratégie de modèles R4/R4B/R5 et mesurer son impact binaire et source ;
-7. durcir le parseur CDA XML et étendre progressivement son modèle ;
-8. créer un manifeste de couverture lisible par machine, générant les tableaux de documentation.
+1. adapter les validateurs et mappings existants au modèle `HL7Core`, étape par étape ;
+2. auditer et documenter la provenance des ressources HL7 v2 existantes ;
+3. établir la matrice de couverture réelle HL7 v2 et les corpus manquants ;
+4. exposer une API publique FHIR `async/await` au-dessus d'AsyncHTTPClient/SwiftNIO ;
+5. proposer la stratégie de modèles R4/R4B/R5 et mesurer son impact binaire et source ;
+6. durcir le parseur CDA XML et étendre progressivement son modèle ;
+7. créer un manifeste de couverture lisible par machine, générant les tableaux de documentation.
 
 ## 12. Risques et décisions à suivre
 
@@ -400,7 +402,7 @@ Les prochaines modifications recommandées, sous forme de commits séparés, son
 Une capacité n'est terminée que si :
 
 - son périmètre et sa version normative sont explicites ;
-- l'API publique est documentée et testée depuis un package consommateur ;
+- l'API publique est documentée et testée par ses imports publics dans une target de test distincte ;
 - les cas positifs, négatifs et limites sont couverts ;
 - les plateformes annoncées passent en CI ;
 - les diagnostics sont exploitables sans analyser une chaîne de texte ;
