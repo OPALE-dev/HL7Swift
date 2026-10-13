@@ -2,6 +2,12 @@
 
 ## Unreleased — 2026-10-13
 
+- Added framework-independent `FHIRR4ReadServer`: configured CapabilityStatement,
+  JSON read/GET and POST search, bounded parameters, cursor searchsets,
+  canonical links, conditional reads and safe OperationOutcome responses.
+  Application callbacks own identity, search semantics and authorization.
+- Added explicit ImagingStudy/series/instance and WADO-RS Endpoint projections,
+  with UID/identity/duplicate checks and unknown versus empty collection handling.
 - No HL7 v2 XSDs or imported mapping CSVs are distributed in library resources.
   `HL7()` is resource-free and installs handwritten native working models.
   No application-supplied specification directory is accepted or needed.

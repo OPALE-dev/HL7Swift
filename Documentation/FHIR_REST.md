@@ -5,6 +5,9 @@ Le transport est injectable. L'application possède le cycle de vie du client
 HTTP et sa politique TLS/authentification ; aucun compte ou serveur FHIR externe
 n'est requis par la bibliothèque.
 
+Ce client ne monte pas d'endpoints HTTP. Pour le rôle serveur en lecture,
+voir [les primitives serveur R4](FHIR_SERVER.md).
+
 ```swift
 import FHIR
 import ModelsR4

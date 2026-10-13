@@ -89,6 +89,12 @@ ELENA retains ownership of persistence, identity reconciliation and retries.
 See [PACS progress and qualification](Documentation/ELENA_PROGRESS.md) for tested
 platforms and the remaining clinical/profile work.
 
+For a read-only FHIR API, [`FHIRR4ReadServer`](Documentation/FHIR_SERVER.md)
+provides metadata, read/search HTTP semantics, search Bundles, safe errors and
+conditional reads through application-owned callbacks, with no Vapor or storage
+dependency. `FHIRR4ImagingProjection` supplies explicit ImagingStudy/WADO-RS
+Endpoint projections. Authorization and actual database searches remain in the PACS.
+
 ### Installation
 
 To use the `HL7Swift` library in a Swift Package Manager (SPM) project, add it to the dependencies for your package and your command-line executable target:

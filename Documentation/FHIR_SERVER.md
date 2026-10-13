@@ -89,6 +89,44 @@ Les valeurs vides des paramètres supportés sont ignorées. Le backend interpr�
 les dates, tokens, références, échappements et AND/OR ; éviter toute concaténation SQL.
 Pour déclarer un modifier/chaînage réellement implémenté, utiliser `acceptedNames`.
 
+Les expressions sont limitées à 100 paramètres, 16 Kio de query/form et 4 Kio
+par valeur. Les réponses normales sont bornées à 16 Mio après encodage
+(`maximumResponseBytes` configurable) ; une erreur de contrat produit un
+OperationOutcome fixe. Cette borne ne remplace pas une projection backend
+bornée avant allocation/encodage, notamment pour les instances d'une étude.
+
+## Projection d'imagerie
+
+`FHIRR4ImagingProjection.imagingStudy` construit une représentation d'échange
+à partir d'un snapshot fourni par l'application : id FHIR, Study Instance UID,
+id patient FHIR, statut explicite, références Endpoint, séries et instances.
+Le Study UID utilise l'identifiant `urn:dicom:uid`/`urn:oid:` ; les UID des séries
+et instances restent bruts et la classe SOP utilise `urn:ietf:rfc:3986`.
+
+```swift
+let study = try FHIRR4ImagingProjection.imagingStudy(
+    id: studyFHIRID, studyUID: studyInstanceUID, patientID: patientFHIRID,
+    status: .available, endpointIDs: ["wado"],
+    series: [.init(uid: seriesInstanceUID, modality: "CT", instances: [
+        .init(uid: sopInstanceUID, sopClassUID: sopClassUID)
+    ])]
+)
+let endpoint = try FHIRR4ImagingProjection.wadoRSEndpoint(
+    id: "wado", address: dicomwebBaseURL, status: .active
+)
+```
+
+Ces noms d'identifiants/URL sont des entrées du domaine applicatif. Le helper
+ne choisit pas le patient, la disponibilité ou les droits. Les tableaux fournis
+décrivent le sous-ensemble complet représenté ; les compteurs portent sur ce
+sous-ensemble autorisé, pas sur le nombre de frames ni un total caché.
+`series: nil` ou `instances: nil` signifie inconnu/non chargé, et n'est pas
+transformé en zéro. Le helper ne génère pas de liens signés ni d'en-têtes secrets.
+Il vérifie la forme des UID et les doublons, pas leur autorité d'enregistrement
+ni toutes les contraintes/profils DICOM/FHIR. Les modalités ne sont pas validées
+contre une terminologie. Patient se construit directement avec les modèles R4,
+selon les identités/autorités conservées dans ELENA.
+
 ## Limites et qualification
 
 Pas d'écriture, vread/history, batch/transaction serveur, XML, recherche système,
@@ -98,7 +136,11 @@ d'imagerie doivent être choisis et qualifiés par cas d'usage, pas déduits du 
 
 Les tests couvrent les modèles JSON des réponses, la négociation, les paramètres,
 le contrat backend, la pagination, les conditions HTTP et les erreurs sûres.
+Un test connecte le client public au serveur via un transport en mémoire ; un
+autre effectue réellement metadata/read/search/404 sur HTTP loopback avec NIO.
 L'intégration Vapor/PostgreSQL d'ELENA et un client FHIR indépendant restent à qualifier.
 
 Références : [REST FHIR R4](https://hl7.org/fhir/R4/http.html),
 [recherche R4](https://hl7.org/fhir/R4/search.html).
+Projection : [ImagingStudy R4](https://hl7.org/fhir/R4/imagingstudy.html) et
+[Endpoint WADO-RS](https://hl7.org/fhir/R4/endpoint-example-wadors.json.html).

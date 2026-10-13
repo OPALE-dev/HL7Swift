@@ -1,6 +1,57 @@
 import XCTest
 import FHIR
 import ModelsR4
+import NIO
+import NIOHTTP1
+import AsyncHTTPClient
+
+private actor ReadServerTransport: FHIRHTTPTransport {
+    let api: FHIRR4ReadServer
+    init(_ api: FHIRR4ReadServer) { self.api = api }
+    func send(_ request: FHIRHTTPRequest) async throws -> FHIRHTTPResponse {
+        await api.respond(to: request, read: { type, id in
+            guard type == "Patient", id == "p1" else { return nil }
+            let patient = Patient(); patient.id = "p1"; return .patient(patient)
+        }, search: { query in
+            let patient = Patient(); patient.id = .init(FHIRString(query.pageToken == nil ? "p1" : "p2"))
+            return .init(resources: [.patient(patient)], total: 2,
+                         nextPageToken: query.pageToken == nil ? "next" : nil)
+        })
+    }
+}
+
+/// Test-only adapter: translates real HTTP to the same public server API.
+/// Handler state is accessed only on its channel's event loop.
+private final class ReadServerHTTPHandler: ChannelInboundHandler, @unchecked Sendable {
+    typealias InboundIn = HTTPServerRequestPart
+    private let transport: ReadServerTransport
+    private var head: HTTPRequestHead?
+    init(_ transport: ReadServerTransport) { self.transport = transport }
+    func channelRead(context: ChannelHandlerContext, data: NIOAny) {
+        switch unwrapInboundIn(data) {
+        case .head(let head): self.head = head
+        case .body: break // The loopback qualification below exercises GET only.
+        case .end:
+            guard let head, let url = URL(string: "http://loopback.invalid" + head.uri) else { return }
+            self.head = nil
+            let request = FHIRHTTPRequest(url: url, method: head.method.rawValue,
+                headers: Dictionary(head.headers.map { ($0.name, $0.value) }, uniquingKeysWith: { _, last in last }))
+            let promise = context.eventLoop.makePromise(of: FHIRHTTPResponse.self)
+            let channel = context.channel; let transport = self.transport
+            promise.futureResult.whenSuccess { response in
+                var headers = HTTPHeaders(response.headers.map { ($0.key, $0.value) })
+                headers.add(name: "Content-Length", value: String(response.body.count))
+                channel.write(HTTPServerResponsePart.head(.init(version: .http1_1, status: .init(statusCode: response.status), headers: headers)), promise: nil)
+                if !response.body.isEmpty { channel.write(HTTPServerResponsePart.body(.byteBuffer(ByteBuffer(bytes: response.body))), promise: nil) }
+                channel.writeAndFlush(HTTPServerResponsePart.end(nil), promise: nil)
+            }
+            _Concurrency.Task {
+                do { promise.succeed(try await transport.send(request)) }
+                catch { promise.succeed(.init(status: 500)) }
+            }
+        }
+    }
+}
 
 final class FHIRReadServerTests: XCTestCase {
     private func server() throws -> FHIRR4ReadServer {
@@ -145,5 +196,58 @@ final class FHIRReadServerTests: XCTestCase {
         XCTAssertThrowsError(try FHIRR4ReadServer(baseURL: URL(string: "https://pacs.example/fhir?token=secret")!, capabilities: [], publicationDate: Date()))
         XCTAssertThrowsError(try FHIRR4ReadServer(baseURL: api.baseURL, capabilities: [.init(resourceType: "NotAResource")], publicationDate: Date()))
         XCTAssertThrowsError(try FHIRR4ReadServer(baseURL: api.baseURL, capabilities: [.init(resourceType: "Patient"), .init(resourceType: "Patient")], publicationDate: Date()))
+    }
+
+    func testPublicClientConsumesServerReadCapabilitiesAndNextPage() async throws {
+        let api = try server()
+        let client = try FHIRR4RESTClient(baseURL: api.baseURL, transport: ReadServerTransport(api))
+        let metadata = try await client.capabilities()
+        XCTAssertNotNil(metadata.resource?.get(if: CapabilityStatement.self))
+        let read = try await client.read("Patient", id: "p1")
+        XCTAssertEqual(read.resource?.get(if: Patient.self)?.id?.value?.string, "p1")
+        let first = try await client.search("Patient", parameters: [.init(name: "_count", value: "1")])
+        let firstBundle = try XCTUnwrap(first.resource?.get(if: ModelsR4.Bundle.self))
+        let next = try await client.nextPage(firstBundle)
+        let secondBundle = try XCTUnwrap(next?.resource?.get(if: ModelsR4.Bundle.self))
+        XCTAssertEqual(secondBundle.entry?.first?.resource?.get(if: Patient.self)?.id?.value?.string, "p2")
+        XCTAssertNil(secondBundle.link?.first { $0.relation.value?.string == "next" })
+    }
+
+    func testResponseLimitDoesNotReturnOversizedResource() async throws {
+        let api = try FHIRR4ReadServer(baseURL: URL(string: "https://pacs.example/fhir/R4")!,
+            capabilities: [.init(resourceType: "Patient")], publicationDate: Date(), maximumResponseBytes: 30)
+        let patient = try patient()
+        let response = await api.respond(to: request("Patient/p1"), read: { _, _ in patient }, search: noSearch)
+        XCTAssertEqual(response.status, 500)
+        XCTAssertNotNil(try JSONDecoder().decode(OperationOutcome.self, from: response.body))
+    }
+
+    func testServerOverRealLoopbackHTTP() async throws {
+        let transport = ReadServerTransport(try server())
+        let listener = try await ServerBootstrap(group: MultiThreadedEventLoopGroup.singleton)
+            .childChannelInitializer { channel in
+                channel.pipeline.configureHTTPServerPipeline().flatMap {
+                    channel.eventLoop.makeCompletedFuture {
+                        try channel.pipeline.syncOperations.addHandler(ReadServerHTTPHandler(transport))
+                    }
+                }
+            }.bind(host: "127.0.0.1", port: 0).get()
+        let http = HTTPClient(eventLoopGroupProvider: .singleton)
+        do {
+            let port = try XCTUnwrap(listener.localAddress?.port)
+            let client = try FHIRR4RESTClient(baseURL: URL(string: "http://127.0.0.1:\(port)/fhir/R4")!,
+                                               transport: AsyncFHIRHTTPTransport(client: http))
+            let metadata = try await client.capabilities()
+            XCTAssertNotNil(metadata.resource?.get(if: CapabilityStatement.self))
+            let result = try await client.read("Patient", id: "p1")
+            XCTAssertEqual(result.resource?.get(if: Patient.self)?.id?.value?.string, "p1")
+            let search = try await client.search("Patient", parameters: [.init(name: "_count", value: "1")])
+            XCTAssertEqual(search.resource?.get(if: ModelsR4.Bundle.self)?.total?.value?.integer, 2)
+            do { _ = try await client.read("Patient", id: "missing"); XCTFail("Missing resource succeeded") }
+            catch FHIRRESTError.http(let status, let outcome) { XCTAssertEqual(status, 404); XCTAssertNotNil(outcome) }
+            try await http.shutdown(); try await listener.close().get()
+        } catch {
+            try? await http.shutdown(); try? await listener.close().get(); throw error
+        }
     }
 }
