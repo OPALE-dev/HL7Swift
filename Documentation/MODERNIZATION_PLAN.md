@@ -338,12 +338,13 @@ ImagingStudy et Endpoint, puis DiagnosticReport et ServiceRequest. Elle n'ajoute
 ni listener HTTP, ni dépendance Vapor, ni base FHIR parallèle au domaine métier.
 Le consommateur fournit des callbacks autorisés pour chaque requête.
 
-- [ ] M3S.1 — CapabilityStatement construit à partir des interactions et recherches réellement configurées.
-- [ ] M3S.2 — Réponses JSON, OperationOutcome sûrs, negotiation, erreurs HTTP et lecture conditionnelle.
-- [ ] M3S.3 — Recherches GET/POST bornées, paramètres répétés, contrôles des paramètres supportés et pagination à curseur applicatif.
-- [ ] M3S.4 — Bundles searchset, fullUrl canoniques, self/next et tests du contrat backend.
-- [ ] M3S.5 — Projections d'imagerie explicites et réutilisables, sans dépendance aux modèles ELENA/DcmSwift.
+- [x] M3S.1 — CapabilityStatement construit à partir des interactions et recherches réellement configurées.
+- [x] M3S.2 — Réponses JSON, OperationOutcome sûrs, negotiation, erreurs HTTP et lecture conditionnelle (sous-ensemble JSON/read documenté).
+- [x] M3S.3 — Recherches GET/POST bornées, paramètres répétés, contrôles des paramètres supportés et pagination à curseur applicatif ; interprétation des prédicats par le backend.
+- [x] M3S.4 — Bundles searchset, fullUrl canoniques, self/next et tests du contrat backend.
+- [x] M3S.5 — Projections ImagingStudy/séries/instances et Endpoint WADO-RS explicites, sans dépendance aux modèles ELENA/DcmSwift.
 - [ ] M3S.6 — Tests interop client/serveur, macOS/Linux et exemple d'adaptation Vapor.
+- [x] M3S.6a — Tests macOS du client public et du serveur sur HTTP loopback, documentation du contrat d'adaptation. Suite Linux complète du lot non qualifiée ; voir les résultats d'avancement.
 - [ ] M3S.7 — Qualification sur ELENA et client FHIR indépendant ; profils IHE choisis selon les acteurs/usages, jamais annoncés implicitement.
 
 Critère de sortie du premier lot : une application peut exposer ses propres

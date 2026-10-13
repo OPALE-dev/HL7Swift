@@ -63,6 +63,33 @@ certificat et nom d'hôte contrôlés, délais, annulation et corrélation ACK.
 Cette preuve n'est pas une qualification d'un serveur partenaire ou d'un réseau
 hospitalier. La compilation iOS ne constitue pas une preuve d'exécution sur appareil.
 
+## Lot primitives serveur FHIR — 13 octobre 2026
+
+- `FHIRR4ReadServer` : metadata/read/search GET et POST, négociation JSON,
+  OperationOutcome sûrs, ETag/Last-Modified et lectures conditionnelles.
+- CapabilityStatement limité aux capacités configurées ; aucun historique,
+  écriture, transaction ou profil IHE annoncé implicitement.
+- Bundles searchset, liens canoniques self/next, limites de recherche/réponse,
+  paramètres répétés conservés et curseurs détenus par le backend.
+- Projection ImagingStudy/séries/instances et Endpoint WADO-RS : identités et
+  statuts explicites, références relatives, UID contrôlés, distinction inconnu/vide.
+- Pas de dépendance Vapor, persistance ou session d'autorisation. Les callbacks
+  sont fournis par requête, après les contrôles applicatifs.
+
+Qualification du code `8bf03c3` : macOS Swift 6.2.4, 96 tests, 2 ignorés,
+aucun échec ; compilation iOS générique sans signature réussie. Le test HTTP
+réel effectue metadata/read/search/404 ; un autre teste la pagination via le
+client public. Ce n'est pas une qualification d'ELENA ou d'un client indépendant.
+
+Le build release Linux Swift 6.1.3 a réussi, y compris pour le code `8bf03c3`.
+La suite complète Linux n'est **pas qualifiée** : des exécutions parallèles et
+sérielles sont restées bloquées, tandis que des tests isolés réussissent. LLDB
+localise l'attente dans le teardown asynchrone XCTest/CFRunLoop, sans frame
+HL7Swift bloquée. Cause non établie ; la modification temporaire vers des tests
+en série a été retirée puisqu'elle ne résout pas le problème.
+L'intégration authentification/Vapor/PostgreSQL et les profils restent applicatifs.
+Voir [le guide serveur](FHIR_SERVER.md) et [la note CI](CONTINUOUS_INTEGRATION.md).
+
 ## Tranches suivantes
 
 - Profils de connecteurs ELENA et corpus partenaires : écarts de versions,

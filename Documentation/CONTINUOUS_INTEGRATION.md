@@ -22,14 +22,15 @@ Aucun certificat ni profil de provisioning n'est requis : la compilation iOS dé
 
 ## Résultats conservés
 
-Les tests macOS publient un rapport JUnit visible dans l'onglet de tests GitLab.
-Linux conserve le journal complet sous `.reports/linux-tests.log` et exécute
-XCTest en série : des processus enfants sont restés bloqués de façon intermittente
-avec le runner parallèle Swift 6.1 lors des vérifications locales, y compris avec
-deux workers, alors que le test concerné réussit isolément. La cause reste à
-diagnostiquer ; ce changement n'est pas une preuve que le problème vient de SwiftPM.
-SwiftPM n'émet pas le rapport xUnit XCTest dans le mode série testé.
-Le job iOS conserve son bundle `xcresult` pendant 30 jours, y compris en cas
-d'échec, afin de permettre l'analyse détaillée dans Xcode.
+Les tests Linux et macOS publient un rapport JUnit visible dans l'onglet de tests GitLab. Le job iOS conserve son bundle `xcresult` pendant 30 jours, y compris en cas d'échec, afin de permettre l'analyse détaillée dans Xcode.
+
+Lors du lot serveur FHIR du 13 octobre, des exécutions locales Linux Swift 6.1.3
+sont restées bloquées, aussi bien en parallèle qu'en série. Une trace LLDB montre
+`XCTestCase.performTearDownSequence` attendant `awaitUsingExpectation` dans
+XCTWaiter/CFRunLoop, sans frame de code HL7Swift sur la pile bloquée. Des tests
+concernés réussissent isolément, dont le serveur HTTP réel. Cela localise
+l'attente mais ne prouve pas sa cause. Le passage en série n'ayant pas résolu
+le problème, la configuration CI parallèle bornée est conservée. Ne pas
+assimiler un build Linux réussi ou ces tests isolés à une suite Linux complète verte.
 
 La pipeline ne remplace pas une matrice de conformité aux standards HL7. Elle établit que le commit compile en release et que les tests automatisés passent sur les plateformes annoncées.
