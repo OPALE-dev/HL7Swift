@@ -31,7 +31,7 @@ Les principes directeurs sont les suivants :
 ### 2.1 Dans HL7Swift
 
 - **HL7 v2.x** : modèles de spécification, encodage ER7, parsing, sérialisation, construction, validation structurelle, acquittements et transport MLLP.
-- **FHIR** : ressources versionnées, JSON et XML, client REST, recherche, opérations, validation, FHIRPath, packages et guides d'implémentation.
+- **FHIR** : ressources versionnées, JSON et XML, client REST, primitives REST côté serveur indépendantes du framework, recherche, opérations, validation, FHIRPath, packages et guides d'implémentation.
 - **CDA** : documents CDA R2, en-tête, corps structuré ou non structuré, texte narratif, types de données HL7 v3 nécessaires à CDA, validation et profils de documents.
 - **HL7Mapping** : transformations explicites entre HL7 v2, FHIR et CDA, avec diagnostics, provenance et pertes d'information déclarées.
 - **Outillage de conformité** : chargement d'artefacts officiels, génération reproductible, jeux d'essai, rapports de couverture et qualification par version ou profil.
@@ -330,6 +330,27 @@ Critère de sortie : aucun message valide du corpus qualifié n'est perdu au rou
 - [ ] M3.8 — Tester avec serveurs simulés puis plusieurs implémentations indépendantes.
 
 Critère de sortie : un projet consommateur peut choisir sa version sans importer HL7 v2 ni les mappings.
+
+### M3S — Primitives FHIR serveur pour une API métier
+
+Cette tranche est prioritaire pour ELENA : API R4 en lecture Patient,
+ImagingStudy et Endpoint, puis DiagnosticReport et ServiceRequest. Elle n'ajoute
+ni listener HTTP, ni dépendance Vapor, ni base FHIR parallèle au domaine métier.
+Le consommateur fournit des callbacks autorisés pour chaque requête.
+
+- [ ] M3S.1 — CapabilityStatement construit à partir des interactions et recherches réellement configurées.
+- [ ] M3S.2 — Réponses JSON, OperationOutcome sûrs, negotiation, erreurs HTTP et lecture conditionnelle.
+- [ ] M3S.3 — Recherches GET/POST bornées, paramètres répétés, contrôles des paramètres supportés et pagination à curseur applicatif.
+- [ ] M3S.4 — Bundles searchset, fullUrl canoniques, self/next et tests du contrat backend.
+- [ ] M3S.5 — Projections d'imagerie explicites et réutilisables, sans dépendance aux modèles ELENA/DcmSwift.
+- [ ] M3S.6 — Tests interop client/serveur, macOS/Linux et exemple d'adaptation Vapor.
+- [ ] M3S.7 — Qualification sur ELENA et client FHIR indépendant ; profils IHE choisis selon les acteurs/usages, jamais annoncés implicitement.
+
+Critère de sortie du premier lot : une application peut exposer ses propres
+ressources en lecture et annoncer exactement le sous-ensemble testé. Une
+capacité non implémentée (écriture, historique, transaction, XML, profils) ne
+doit pas être déclarée. Authentification, autorisations, audit, persistance et
+sémantique des recherches métier restent applicatifs.
 
 ### M4 — FHIRPath et validation FHIR
 
