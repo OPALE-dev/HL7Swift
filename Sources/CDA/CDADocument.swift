@@ -28,6 +28,8 @@ public struct CDADocument: Equatable, Sendable {
     public var effectiveTime: String?
     public var confidentialityCode: String?
     public var languageCode: String?
+    public var recordTargets: [CDARecordTarget] = []
+    public var sections: [CDASection] = []
 
     public init(
         identifier: Identifier? = nil,
@@ -55,6 +57,7 @@ public enum CDAError: Error, Equatable, Sendable {
     case missingClinicalDocument
     case invalidNamespace
     case prohibitedDeclaration
+    case resourceLimit
 }
 
 /// The parsed envelope, if available, and the scope of the checks performed.
@@ -71,7 +74,12 @@ public struct CDAParseResult: Equatable, Sendable {
 /// Parses the CDA R2 document envelope while preserving a small, explicit
 /// qualification boundary. It does not claim schema or template validation.
 public struct CDAParser: Sendable {
-    public init() {}
+    public let maximumBytes: Int
+    public let maximumDepth: Int
+    public init(maximumBytes: Int = 16 * 1024 * 1024, maximumDepth: Int = 128) {
+        precondition(maximumBytes > 0 && maximumDepth > 0)
+        self.maximumBytes = maximumBytes; self.maximumDepth = maximumDepth
+    }
 
     /// Parses the current envelope model and reports its explicit limits.
     /// The XML and root-name stages do not imply CDA R2 schema conformance.
@@ -169,10 +177,11 @@ public struct CDAParser: Sendable {
     }
 
     public func parse(_ data: Data) throws -> CDADocument {
+        guard data.count <= maximumBytes else { throw CDAError.resourceLimit }
         if Self.containsDoctype(data) {
             throw CDAError.prohibitedDeclaration
         }
-        let delegate = CDAXMLDelegate()
+        let delegate = CDAXMLDelegate(maximumDepth: maximumDepth)
         let parser = XMLParser(data: data)
         parser.shouldProcessNamespaces = true
         parser.shouldResolveExternalEntities = false
@@ -181,6 +190,7 @@ public struct CDAParser: Sendable {
         parser.delegate = delegate
 
         guard parser.parse() else {
+            if delegate.sawLimitExceeded { throw CDAError.resourceLimit }
             if delegate.sawProhibitedEntityDeclaration {
                 throw CDAError.prohibitedDeclaration
             }
@@ -222,9 +232,18 @@ private final class CDAXMLDelegate: NSObject, XMLParserDelegate {
     var didFindRootName = false
     var didFindCDANamespace = false
     var sawProhibitedEntityDeclaration = false
+    var sawLimitExceeded = false
+    let maximumDepth: Int
+    init(maximumDepth: Int) { self.maximumDepth = maximumDepth }
     private var depth = 0
     private var titleDepth: Int?
     private var title = ""
+    private var path: [String] = []
+    private var namespaces: [String?] = []
+    private var recordTargetIndex: Int?
+    private var sectionStack: [(index: Int, depth: Int)] = []
+    private var capture: (kind: String, depth: Int, text: String)?
+    private var narrativeDepth: Int?
 
     func parser(
         _ parser: XMLParser,
@@ -255,7 +274,15 @@ private final class CDAXMLDelegate: NSObject, XMLParserDelegate {
         qualifiedName qName: String?,
         attributes attributeDict: [String: String] = [:]
     ) {
+        guard depth < maximumDepth else {
+            sawLimitExceeded = true
+            parser.abortParsing()
+            return
+        }
+        path.append(elementName)
+        namespaces.append(namespaceURI)
         defer { depth += 1 }
+        readClinicalStart(elementName, namespaceURI: namespaceURI, attributes: attributeDict)
 
         if depth == 0 {
             didFindRootName = elementName == "ClinicalDocument"
@@ -290,9 +317,18 @@ private final class CDAXMLDelegate: NSObject, XMLParserDelegate {
     }
 
     func parser(_ parser: XMLParser, foundCharacters string: String) {
+        guard namespaces.allSatisfy({ $0 == Self.cdaNamespace }) else { return }
         if titleDepth != nil {
             title += string
         }
+        if capture != nil { capture?.text += string }
+        if narrativeDepth != nil, let current = sectionStack.last {
+            document.sections[current.index].narrativeText += string
+        }
+    }
+
+    func parser(_ parser: XMLParser, foundCDATA CDATABlock: Data) {
+        if let text = String(data: CDATABlock, encoding: .utf8) { self.parser(parser, foundCharacters: text) }
     }
 
     func parser(
@@ -301,12 +337,86 @@ private final class CDAXMLDelegate: NSObject, XMLParserDelegate {
         namespaceURI: String?,
         qualifiedName qName: String?
     ) {
+        guard !sawLimitExceeded, !path.isEmpty else { return }
         depth -= 1
+        defer { path.removeLast(); namespaces.removeLast() }
+        readClinicalEnd(elementName, namespaceURI: namespaceURI)
         if titleDepth == depth,
            elementName == "title", namespaceURI == Self.cdaNamespace {
             document.title = title.trimmingCharacters(in: .whitespacesAndNewlines)
             titleDepth = nil
         }
+    }
+
+    private func readClinicalStart(_ name: String, namespaceURI: String?, attributes: [String: String]) {
+        guard namespaces.allSatisfy({ $0 == Self.cdaNamespace }) else { return }
+        if path == ["ClinicalDocument", "recordTarget", "patientRole"] {
+            document.recordTargets.append(.init())
+            recordTargetIndex = document.recordTargets.count - 1
+        }
+        if let index = recordTargetIndex {
+            let base = ["ClinicalDocument", "recordTarget", "patientRole"]
+            if path == base + ["id"], let id = identifier(from: attributes) {
+                document.recordTargets[index].identifiers.append(id)
+            } else if path == base + ["patient", "name"] {
+                document.recordTargets[index].names.append(.init())
+            } else if path == base + ["patient", "birthTime"] {
+                document.recordTargets[index].birthTime = attributes["value"]
+            } else if path == base + ["patient", "administrativeGenderCode"] {
+                document.recordTargets[index].administrativeGenderCode = attributes["code"]
+            } else if ["given", "family", "prefix", "suffix"].contains(name), path == base + ["patient", "name", name] {
+                capture = (name, depth, "")
+            }
+        }
+        if name == "section", path.prefix(4) == ["ClinicalDocument", "component", "structuredBody", "component"],
+           path.dropLast().last == "component", depth == 4 || depth == (sectionStack.last?.depth ?? -100) + 2 {
+            let index = document.sections.count
+            document.sections.append(.init(parentIndex: sectionStack.last?.index))
+            sectionStack.append((index, depth))
+        }
+        if let current = sectionStack.last, depth == current.depth + 1 {
+            switch name {
+            case "id": document.sections[current.index].identifier = identifier(from: attributes)
+            case "templateId":
+                if let id = identifier(from: attributes) { document.sections[current.index].templateIdentifiers.append(id) }
+            case "code":
+                document.sections[current.index].code = attributes["code"]
+                document.sections[current.index].codeSystem = attributes["codeSystem"]
+            case "title": capture = ("sectionTitle", depth, "")
+            case "text": narrativeDepth = depth
+            case "entry": document.sections[current.index].entryCount += 1
+            default: break
+            }
+        }
+        if narrativeDepth != nil, let current = sectionStack.last, ["br", "paragraph", "item", "tr"].contains(name) {
+            document.sections[current.index].narrativeText += "\n"
+        }
+    }
+
+    private func readClinicalEnd(_ name: String, namespaceURI: String?) {
+        if let captured = capture, captured.depth == depth {
+            let text = captured.text.trimmingCharacters(in: .whitespacesAndNewlines)
+            if captured.kind == "sectionTitle", let current = sectionStack.last {
+                document.sections[current.index].title = text
+            } else if let index = recordTargetIndex, let last = document.recordTargets[index].names.indices.last {
+                switch captured.kind {
+                case "given": document.recordTargets[index].names[last].given.append(text)
+                case "family": document.recordTargets[index].names[last].family.append(text)
+                case "prefix": document.recordTargets[index].names[last].prefix.append(text)
+                case "suffix": document.recordTargets[index].names[last].suffix.append(text)
+                default: break
+                }
+            }
+            capture = nil
+        }
+        if narrativeDepth == depth {
+            if let current = sectionStack.last {
+                document.sections[current.index].narrativeText = document.sections[current.index].narrativeText.trimmingCharacters(in: .whitespacesAndNewlines)
+            }
+            narrativeDepth = nil
+        }
+        if sectionStack.last?.depth == depth { sectionStack.removeLast() }
+        if path == ["ClinicalDocument", "recordTarget", "patientRole"] { recordTargetIndex = nil }
     }
 
     private func identifier(from attributes: [String: String]) -> CDADocument.Identifier? {

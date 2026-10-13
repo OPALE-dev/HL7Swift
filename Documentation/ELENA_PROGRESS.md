@@ -21,6 +21,10 @@ champs, transactions PostgreSQL, Worklist et MPPS DICOM.
 - Client REST R4 async injectable : CRUD, recherche complète, pagination,
   CapabilityStatement, historique, lecture versionnée, batch/transaction,
   ETag/Location et erreurs OperationOutcome ; transport HTTP borné.
+- Projections patient/ordre/résultat v2 : autorités CX/EI, visites, MRG
+  explicite, frontières multi-patient et ORC/OBR/OBX préservées.
+- CDA : patients de l'en-tête, sections imbriquées, narration texte,
+  namespaces contrôlés, CDATA et limites de taille/profondeur.
 
 Les tests de structure historiques nécessitent `HL7_TEST_SPEC_DIRECTORY` et
 sont explicitement ignorés sans lot local. Les tests de parsing autonome et
@@ -34,8 +38,6 @@ Vérification locale de cette première tranche : `swift test --parallel`,
 explicitement sans lot externe. Aucune preuve Linux/iOS ni pipeline distante
 n'est revendiquée pour cette tranche.
 
-- Extraction des identités et ordres ADT/ORM/OMI/ORU pour les adaptateurs.
-- CDA : patient, sections et narration consultable.
 - Qualification TLS en réseau, Linux Swift 6.1, iOS et corpus partenaires.
 
 ## Frontière ELENA

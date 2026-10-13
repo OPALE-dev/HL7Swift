@@ -74,6 +74,10 @@ full search Bundles, version metadata and OperationOutcome errors. The
 [Swift-FHIR assessment](Documentation/SWIFT_FHIR_EVALUATION.md) explains the
 decision to retain Apple FHIRModels and AsyncHTTPClient.
 
+The [clinical reading projections](Documentation/CLINICAL_PROJECTIONS.md)
+provide v2 patient/order/result contexts and CDA patients, nested sections and
+plain-text narratives for application adapters.
+
 ### Installation
 
 To use the `HL7Swift` library in a Swift Package Manager (SPM) project, add it to the dependencies for your package and your command-line executable target:
