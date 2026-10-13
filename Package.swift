@@ -70,6 +70,7 @@ let package = Package(
                 "HL7Core",
                 .product(name: "ModelsR4", package: "FHIRModels"),
                 .product(name: "NIO", package: "swift-nio"),
+                .product(name: "NIOFoundationCompat", package: "swift-nio"),
                 .product(name: "AsyncHTTPClient", package: "async-http-client")
             ],
             path: "Sources/FHIRSwift",

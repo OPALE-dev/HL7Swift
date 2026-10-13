@@ -25,7 +25,7 @@ import Foundation
  */
 public class Segment: Node {
     public var name: String = ""
-    public var parent: Node?
+    public weak var parent: Node?
     
     public var code: String = ""
     public var fields: [Int:Field] = [:]
@@ -43,7 +43,7 @@ public class Segment: Node {
     public var minOccurs:Int = 0
     public var maxOccurs:Int = -1
     
-    var specMessage:SpecMessage? = nil
+    weak var specMessage:SpecMessage? = nil
     
     public var isHeader:Bool {
         code == "MSH" || code == "FHS" || code == "BHS"
@@ -63,7 +63,7 @@ public class Segment: Node {
         
         // separator can be dynamic
         if let separator = str.prefix(4).last {
-            var strCloneSplit = str.split(separator: separator, maxSplits: 50, omittingEmptySubsequences: false)
+            var strCloneSplit = str.split(separator: separator, omittingEmptySubsequences: false)
         
             code = String(strCloneSplit.remove(at: 0))
             name = code
@@ -113,6 +113,9 @@ public class Segment: Node {
     /// Subscript that get/set segment fields by their specification long names as defined in the HL7 specification.
     public subscript(name: String) -> String? {
         get {
+            if let index = NativeV2Models.fieldNames[code]?.first(where: { $0.value == name })?.key {
+                return fields[index]?.description
+            }
             if let specMessage = specMessage {
                 // we loop over all known segments in the spec (specMessage.rootGroup)
                 for segment in specMessage.rootGroup.segments {
@@ -135,6 +138,12 @@ public class Segment: Node {
             return nil
         }
         set(newValue) {
+            if let index = NativeV2Models.fieldNames[code]?.first(where: { $0.value == name })?.key,
+               let value = newValue, let field = fields[index] {
+                field.cells = Field(value).cells
+                field.cells.forEach { $0.parent = field }
+                return
+            }
             // same as getter
             if let specMessage = specMessage {
                 // we loop over all known segments in the spec (specMessage.rootGroup)
@@ -183,6 +192,21 @@ public class Segment: Node {
         } else {
             return "\(code)"
         }
+    }
+}
+
+extension Segment {
+    func nativeCopy() -> Segment {
+        let copy = Segment(description, specMessage: specMessage)
+        copy.minOccurs = minOccurs; copy.maxOccurs = maxOccurs
+        for (index, source) in fields {
+            guard let field = copy.fields[index] else { continue }
+            field.longName = source.longName; field.type = source.type
+            field.minLength = source.minLength; field.maxLength = source.maxLength
+            field.minOccurs = source.minOccurs; field.maxOccurs = source.maxOccurs
+            field.item = source.item
+        }
+        return copy
     }
 }
 

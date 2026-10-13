@@ -6,8 +6,8 @@ Dernière révision : 13 octobre 2026
 
 Priorité active : [livraison pour les intégrateurs PACS](ELENA_PROGRESS.md).
 La décision de distribution est arrêtée : aucune spécification HL7 v2 n'est
-embarquée. Les anciens points M2.1c/d ne bloquent plus le parsing ni les
-transports ; seuls les usages optionnels de lots externes en dépendent.
+embarquée ou chargée à l'exécution. Les anciens points M2.1c/d ne bloquent plus
+le travail : les fonctions utiles sont implémentées nativement dans le code.
 
 ## 1. Vision
 
@@ -307,8 +307,10 @@ Critère de sortie : chaque produit du package se compile et se teste via son im
 - [ ] M2.1d — Qualifier les anomalies XSD, synchroniser les modèles générés et remplacer les ressources vérifiées.
 - [ ] M2.2 — Mesurer la couverture réelle par version, message, segment et datatype.
 - [ ] M2.3 — Tester séparateurs, échappements, répétitions, sous-composants, null explicite, jeux de caractères et fins de lignes.
+- [x] M2.3a — Livrer ER7 autonome à séparateurs MSH, échappements, répétitions, null et version déclarée préservée, avec tests synthétiques.
 - [ ] M2.4 — Couvrir groupes, Z-segments, batch et modes ACK original/amélioré.
 - [ ] M2.5 — Qualifier MLLP/TLS : fragmentation, délais, reconnexion, limites et back-pressure.
+- [x] M2.5a — Framing borné, fragmentation UTF-8/FS-CR, concaténation, EOF, client async corrélé, timeout et TLS vérifié en loopback.
 - [ ] M2.6 — Comparer parsing et sérialisation à des corpus indépendants avec round-trips sémantiques.
 - [ ] M2.7 — Publier la matrice version × fonctionnalité × maturité et les limites connues.
 - [ ] M2.8 — Évaluer puis importer v2.9 et v2.9.1 après vérification des artefacts et droits.
@@ -321,8 +323,9 @@ Critère de sortie : aucun message valide du corpus qualifié n'est perdu au rou
 - [ ] M3.2 — Définir la façade de version et permettre le choix explicite R4/R4B/R5 sans masquer leurs différences.
 - [ ] M3.3 — Qualifier le décodage/encodage JSON de `Resource`, `Bundle` et `OperationOutcome`.
 - [ ] M3.4 — Ajouter le support XML FHIR et ses tests de sécurité.
-- [ ] M3.5 — Exposer un client `async/await` sur AsyncHTTPClient/SwiftNIO.
+- [x] M3.5 — Exposer un client `async/await` sur AsyncHTTPClient/SwiftNIO.
 - [ ] M3.6 — Compléter recherche, pagination, CRUD, historique, opérations, batch et transaction.
+- [x] M3.6a — CRUD, Bundle de recherche complet, pagination bornée à l'origine, historique, vread, batch/transaction, ETag et OperationOutcome.
 - [ ] M3.7 — Gérer négociation de contenu, en-têtes FHIR, erreurs HTTP, annulation et retry sûr.
 - [ ] M3.8 — Tester avec serveurs simulés puis plusieurs implémentations indépendantes.
 
@@ -347,6 +350,7 @@ Critère de sortie : les capacités et lacunes du validateur sont mesurées règ
 - [x] M5.2 — Exposer `CDAParseResult` et les diagnostics XML/nom racine avec les contrôles non effectués explicités.
 - [x] M5.3 — Vérifier l'espace de noms de la racine et des métadonnées extraites, sans accès XML externe implicite.
 - [ ] M5.4 — Compléter en-tête, participants, sections, entrées et références internes.
+- [x] M5.4a — Patients recordTarget, sections imbriquées, narration texte, nombre d'entrées et namespaces, sans revendication de couverture CDA complète.
 - [ ] M5.5 — Préserver et sécuriser la narration XHTML.
 - [ ] M5.6 — Ajouter les types de données HL7 v3 strictement nécessaires.
 - [ ] M5.7 — Fournir parsing et sérialisation déterministes avec tests de round-trip.
@@ -397,7 +401,12 @@ Une réussite du build ou des tests unitaires ne suffit pas pour qualifier une v
 
 ## 11. Prochain lot de travail
 
-Ordre recommandé pour les prochains commits : M2.1c puis M2.1d et M2.2 (source officielle, droits, correction et couverture HL7 v2), M3.5 (API FHIR `async/await` sur AsyncHTTPClient/SwiftNIO), M3.2 (stratégie R4/R4B/R5), M5.4 (modèle CDA étendu) et M2.7 (matrice de couverture générable). Les cases correspondantes sont suivies uniquement en section 9. Voir l'[inventaire des ressources HL7 v2](HL7V2_RESOURCE_PROVENANCE.md), notamment le blocage de qualification des schémas v2.8.2.
+Les lots du 13 octobre sont décrits dans [l'avancement ELENA](ELENA_PROGRESS.md).
+Ordre actif : qualifier les nouvelles API sur Linux/iOS, fournir des exemples
+de listeners à ACK après inbox durable, compléter les contrats de profils
+ADT/ORM/OMI/ORU, puis ajouter opérations FHIR, mappings explicitement versionnés
+et structures CDA utiles aux documents radiologiques. L'implémentation est
+autonome ; aucun lot XSD externe n'est demandé au déployeur.
 
 ## 12. Risques et décisions à suivre
 

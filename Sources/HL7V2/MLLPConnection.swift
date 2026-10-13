@@ -83,6 +83,7 @@ public actor MLLPConnection {
         } catch {
             try? await channel.close().get()
             self.channel = nil
+            if _Concurrency.Task.isCancelled { throw CancellationError() }
             throw error
         }
     }

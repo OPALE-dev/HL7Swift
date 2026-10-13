@@ -20,11 +20,9 @@ extension Generator {
          Each `Versioned` subclass provides a `type(forName:)` method that returns the desired `Typable` class for a given string.
          Everything is declared as extension of the `HL7` (sort of) namespace.
          */
-        public func generateHL7Spec(at path:String, specificationSource: HL7V2SpecificationSource) throws {
-            HL7.generator = true
-            defer { HL7.generator = false }
+        public func generateHL7Spec(at path:String) throws {
             
-            let hl7 = try HL7(specificationSource: specificationSource)
+            let hl7 = try HL7()
             
             let versions = [
                 Version.v21 ,

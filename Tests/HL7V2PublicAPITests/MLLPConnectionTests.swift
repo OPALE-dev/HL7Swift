@@ -119,4 +119,21 @@ final class MLLPConnectionTests: XCTestCase {
             }
         }
     }
+
+    func testCancellationClosesSocketAndReportsCancellation() async throws {
+        try await withServer(status: nil) { port in
+            let client = MLLPConnection(responseTimeout: .seconds(5))
+            try await client.connect(host: "127.0.0.1", port: port)
+            let input = try message()
+            let operation = _Concurrency.Task { try await client.send(input) }
+            // Give the actor a scheduling opportunity; cancellation is tested
+            // both before/after entering send by the cancellation check.
+            await _Concurrency.Task.yield()
+            operation.cancel()
+            do { _ = try await operation.value; XCTFail("Cancellation ignored") }
+            catch is CancellationError { }
+            do { _ = try await client.send(input); XCTFail("Cancelled socket reused") }
+            catch MLLPConnectionError.notConnected { }
+        }
+    }
 }

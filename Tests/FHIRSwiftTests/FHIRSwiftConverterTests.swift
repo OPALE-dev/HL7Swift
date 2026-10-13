@@ -35,9 +35,8 @@ final class FHIRSwiftConverterTests: XCTestCase {
             let message   = try Message(withFileAt: url, hl7: hl7)
             let converter = try HL72FHIRR4Converter()
             
-            if let string = try converter.convert(message: message, formatting: .prettyPrinted) {
-                print(string)
-            }
+            let string = try XCTUnwrap(converter.convert(message: message, formatting: .prettyPrinted))
+            XCTAssertTrue(string.contains("\"resourceType\""))
         }
     }
     
@@ -46,6 +45,10 @@ final class FHIRSwiftConverterTests: XCTestCase {
      This test converts a HL7 ORU_R01 message to a FHIR bundle then send it to local HAPI FHIR server
      */
     func testHL72FHIRR4ConvertORUToBundleAndSend() throws {
+        guard let testBase = ProcessInfo.processInfo.environment["HL7_TEST_FHIR_BASE_URL"],
+              let testURL = URL(string: testBase) else {
+            throw XCTSkip("External FHIR write tests require explicitly supplied HL7_TEST_FHIR_BASE_URL for a disposable server.")
+        }
         if let url = Bundle.module.url(forResource: "ORU_R01 - 3", withExtension: "txt") {
             let expectation = XCTestExpectation(description: "Connect to server")
             
@@ -55,8 +58,8 @@ final class FHIRSwiftConverterTests: XCTestCase {
             let converter = try HL72FHIRR4Converter()
             
             if let bundle = try converter.convert(message) {
-                if let url = URL(string: "http://localhost:8080/fhir/") {
-                    fhirClient = FHIRClient(url)
+                do {
+                    fhirClient = FHIRClient(testURL)
                     
                     try fhirClient.create(bundle) { result in
                         switch result {
@@ -79,6 +82,10 @@ final class FHIRSwiftConverterTests: XCTestCase {
     
     
     func testHL72FHIRR4Client() throws {
+        guard let testBase = ProcessInfo.processInfo.environment["HL7_TEST_FHIR_BASE_URL"],
+              let testURL = URL(string: testBase) else {
+            throw XCTSkip("External FHIR integration tests require explicitly supplied HL7_TEST_FHIR_BASE_URL for a disposable server.")
+        }
         if let url = Bundle.module.url(forResource: "ORU_R01 - 3", withExtension: "txt") {
             let expectation = XCTestExpectation(description: "Connect to server")
             
@@ -86,8 +93,8 @@ final class FHIRSwiftConverterTests: XCTestCase {
             
             let message = try Message(withFileAt: url, hl7: hl7)
             
-            if let url = URL(string: "http://localhost:8080/fhir/") {
-                fhirClient = FHIRClient(url)
+            do {
+                fhirClient = FHIRClient(testURL)
                 
                 let converter = try HL72FHIRR4Client(fhirClient)
                 

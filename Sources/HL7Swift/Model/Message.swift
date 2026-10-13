@@ -157,35 +157,15 @@ public struct Message {
         let type = try getType()
                 
         // try to load versioned spec
-        guard let spec = hl7.spec(ofVersion: version) else {
+        guard let spec = hl7.spec(ofVersion: self.version) else {
             throw HL7Error.unsupportedVersion(message: version.rawValue)
         }
         
         // try to load matching message type in the versioned spec
         self.specMessage = spec.messages[type]
         
-        // try to auto fallback on other spec versions
-        // if no spec is found for the version given in the message
-        // only if no already forced version given
-        if specMessage == nil && forcedVersion == nil {
-            for v in Version.allCases {
-                if let spec = hl7.spec(ofVersion: v) {
-                    self.specMessage = spec.messages[type]
-                    
-                    if self.specMessage != nil {
-                        self.version = v // not sure ? :-/
-                        break
-                    }
-                }
-            }
-        } else {
-            // else try load forced spec
-            if forcedVersion != nil {
-                if let spec = hl7.spec(ofVersion: forcedVersion!) {
-                    self.specMessage = spec.messages[type]
-                }
-            }
-        }
+        // Interpretation changes only when explicitly requested by the caller.
+        // A working model is not evidence of release-specific conformance.
 
         if self.specMessage != nil {
             populateRootGroup()
@@ -217,7 +197,7 @@ public struct Message {
             for s in self.specMessage!.rootGroup.segments {
                 for ps in preloadSegments {
                     if s.code == ps {
-                        segments.append(s)
+                        segments.append(s.nativeCopy())
                     } 
                 }
             }
@@ -240,7 +220,7 @@ public struct Message {
         // populate segments ?
         if preloadSegmentsFromSpec && self.specMessage != nil {
             for s in self.specMessage!.rootGroup.segments {
-                segments.append(s)
+                segments.append(s.nativeCopy())
             }
             
             populateRootGroup()

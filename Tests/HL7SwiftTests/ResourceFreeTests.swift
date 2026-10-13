@@ -10,7 +10,7 @@ final class ResourceFreeTests: XCTestCase {
         XCTAssertEqual(message["OBX", 2]?[5]?.description, "second")
         XCTAssertNil(message["OBX", 3])
         XCTAssertNil(message["OBX", 0])
-        XCTAssertNil(message.specMessage)
+        XCTAssertNotNil(message.specMessage)
     }
 
     func testAcknowledgmentUsesNumericFieldsAndOriginalControlID() throws {

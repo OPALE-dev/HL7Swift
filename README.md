@@ -8,7 +8,7 @@ The project is being modernized incrementally. See the [modernization plan](Docu
 
 The shared diagnostic model is described in [Diagnostics](Documentation/DIAGNOSTICS.md).
 
-HL7Swift does **not** distribute HL7 v2 specifications or schemas. ER7 parsing, serialization, MLLP and acknowledgement handling work without them. Applications entitled to use their own artefacts can opt into specification-backed features explicitly; see [HL7 v2 specifications](Documentation/HL7V2_SPECIFICATIONS.md).
+HL7Swift does **not** distribute or load HL7 v2 specifications or schemas. Parsing, construction, native checks, serialization, MLLP and acknowledgements require no specification directory or download; see [the autonomous implementation](Documentation/HL7V2_SPECIFICATIONS.md).
 
 ## Disclaimer
 
@@ -80,6 +80,10 @@ plain-text narratives for application adapters.
 Use [`MLLPConnection`](Documentation/MLLP.md) for async, correlated MLLP
 exchanges with optional verified TLS and application-owned retry policies.
 
+[`V2MessageBuilder` and `V2NativeValidator`](Documentation/NATIVE_V2.md) provide
+native patient/order/result construction and explicit connector checks, without
+loading any specification files.
+
 ### Installation
 
 To use the `HL7Swift` library in a Swift Package Manager (SPM) project, add it to the dependencies for your package and your command-line executable target:
@@ -112,7 +116,7 @@ You can retreive a version specific implementation as follow:
 
     let spec251 = hl7.spec(ofVersion: version)
     
-`Versionable` implementations expose generated message-type symbols. They only contain detailed structural metadata when you explicitly provide locally licensed XSD artefacts.
+`Versionable` implementations expose message-type symbols and native working models for the prioritized clinical families. Detailed imported XSD group trees are no longer part of the runtime API.
 
 ### Parse messages
 
@@ -182,7 +186,10 @@ Set a field:
 
 ### Spec Message
 
-The `SpecMessage` class provides a set of tools to help categorize parsed messages regarding to the HL7 specification. It supplies a `Group` instance (`specMessage.rootGroup`) that represents the [HL7 model](https://build.fhir.org/ig/FHIR/fluentpath/v2-class-model.png) as define by the specification.
+`SpecMessage` is the historical name for the native working-model metadata. Its
+flat segment model supports common named-field access and construction. Use
+`V2ClinicalProjection` for patient/order/result boundaries rather than relying
+on former imported XSD group paths.
 
 ### Terser
 

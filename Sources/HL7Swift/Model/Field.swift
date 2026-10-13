@@ -20,7 +20,7 @@ import Foundation
  ```
  */
 public class Field:Node {
-    public var parent: Node?
+    public weak var parent: Node?
     
     public var cells: [Cell] = []
     
@@ -52,7 +52,7 @@ public class Field:Node {
         if str.contains("~") {
             // 20 is a random number, could be anything; we want to take empty subsequences but we oughta specify a maximum number
             // of splits too, that's where the 20 is coming from
-            for cell in str.split(separator: "~", maxSplits: 20, omittingEmptySubsequences: false) {
+            for cell in str.split(separator: "~", omittingEmptySubsequences: false) {
                 cells.append(Cell(String(cell), parent: self))
             }
         } else {

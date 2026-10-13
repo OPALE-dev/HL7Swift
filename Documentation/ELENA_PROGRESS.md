@@ -7,7 +7,7 @@ champs, transactions PostgreSQL, Worklist et MPPS DICOM.
 ## Livré
 
 - Retrait des 1 816 XSD du dépôt courant et de toutes les ressources SwiftPM.
-- `HL7()` autonome, source XSD locale explicitement optionnelle.
+- `HL7()` autonome avec modèles de travail natifs ; aucun chargement XSD.
 - Parsing Unicode et correction de l'accès aux segments répétés intercalés.
 - ACK original construit sans XSD, MSA-2 lié au contrôle entrant et MSH-10
   propre à la réponse. Le statut reste décidé par l'application.
@@ -27,22 +27,20 @@ champs, transactions PostgreSQL, Worklist et MPPS DICOM.
   namespaces contrôlés, CDATA et limites de taille/profondeur.
 - `MLLPConnection` async : socket à un échange en vol, corrélation MSA-2,
   timeout/annulation, fermeture sur ACK invalide et TLS vérifié en loopback.
-- Chargement optionnel de lots XSD à plat, tests synthétiques, DTD refusées.
+- Constructeur et contrôles cliniques natifs (`V2MessageBuilder`, `V2NativeValidator`).
+- Suppression de l'API de répertoire externe après clarification du besoin.
 - Retrait des 164 CSV de mapping importés inutilisés et de SwiftCSV.
 - Corrections de portabilité FoundationXML, CoreFoundation et taille de fichiers
   détectées par la compilation Linux Swift 6.1.
 
-Les tests de structure historiques nécessitent `HL7_TEST_SPEC_DIRECTORY` et
-sont explicitement ignorés sans lot local. Les tests de parsing autonome et
-MLLP synthétiques s'exécutent toujours. La validation normative demeure
-`indeterminate` en l'absence d'artefacts et de contrôles qualifiés.
+Les tests de compatibilité s'exécutent sans artefacts et couvrent le corpus
+historique, les champs nommés courants, le Terser plat, la construction native
+et la libération des arbres. La validation normative demeure `indeterminate`
+pour les contraintes de standard/profil qui ne sont pas encore implémentées.
 
 ## Tranches suivantes
 
-Vérification locale de cette première tranche : `swift test --parallel`,
-61 tests découverts, sans échec ; 19 tests historiques de structure ignorés
-explicitement sans lot externe. Aucune preuve Linux/iOS ni pipeline distante
-n'est revendiquée pour cette tranche.
+Les résultats de qualification sont mis à jour à la clôture de chaque lot.
 
 - Qualification TLS en réseau, Linux Swift 6.1, iOS et corpus partenaires.
 

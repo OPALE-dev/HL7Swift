@@ -10,16 +10,13 @@ public extension DefaultValidator {
     /// and is not represented as a validation stage here.
     func validateReport(_ message: Message, level: ValidationLevel = .version) -> HL7DiagnosticReport {
         let results = validate(message, level: level)
-        let hasMatchingSpecification = message.specMessage != nil
-            && message.version == message.messageVersion
-            && (message.forcedVersion == nil || message.forcedVersion == message.messageVersion)
 
         let levels: [ValidationLevel] = [.version, .segments, .fields, .datatypes]
         let requestedLevels = levels.filter { $0.rawValue <= level.rawValue }
         let stages = requestedLevels.map { checkedLevel in
             HL7ValidationStage(
                 identifier: checkedLevel.diagnosticStage,
-                status: checkedLevel == .version && hasMatchingSpecification ? .complete : .incomplete
+                status: .incomplete
             )
         }
 

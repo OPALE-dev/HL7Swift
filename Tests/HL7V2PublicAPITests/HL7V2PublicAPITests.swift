@@ -21,10 +21,10 @@ final class HL7V2PublicAPITests: XCTestCase {
         let legacyResults = validator.validate(message, level: .version)
         let report = validator.validateReport(message, level: .version)
 
-        XCTAssertEqual(legacyResults.count, 1)
+        XCTAssertEqual(legacyResults.count, 0)
         XCTAssertEqual(report.outcome, .indeterminate)
         XCTAssertEqual(report.stages, [.init(identifier: "v2.version", status: .incomplete)])
-        XCTAssertEqual(report.diagnostics.first?.severity, .information)
+        XCTAssertTrue(report.diagnostics.isEmpty)
     }
 
     func testDeeperLegacyChecksStayIncomplete() throws {
@@ -52,10 +52,10 @@ final class HL7V2PublicAPITests: XCTestCase {
 
         let report = DefaultValidator().validateReport(message, level: .segments)
 
-        XCTAssertEqual(report.outcome, .indeterminate)
+        XCTAssertEqual(report.outcome, .invalid)
         XCTAssertEqual(report.stages.map(\.status), [.incomplete, .incomplete])
-        XCTAssertEqual(report.diagnostics.first?.code, "HL7V2-LEGACY-VERSION-NOTICE")
-        XCTAssertEqual(report.diagnostics.first?.severity, .information)
+        XCTAssertEqual(report.diagnostics.first?.code, "HL7V2-LEGACY-VERSION-ERROR")
+        XCTAssertEqual(report.diagnostics.first?.severity, .error)
         XCTAssertEqual(report.diagnostics.first?.stage, "v2.version")
     }
 }

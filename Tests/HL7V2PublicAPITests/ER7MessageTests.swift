@@ -45,4 +45,18 @@ final class ER7MessageTests: XCTestCase {
         }
         XCTAssertThrowsError(try ER7Message("MSH|^~\\&|||||||ACK|id|P|2.5.1", policy: .init(maximumBytes: 4)))
     }
+
+    func testAcknowledgmentPreservesCustomDelimitersAndUnknownVersion() throws {
+        let message = try ER7Message("MSH*$%!?*RIS*HOSP*PACS*HOSP***ADT$A08*incoming*P*99.vendor\rPID***123\r")
+        for code in ER7AcknowledgmentCode.allCases {
+            let ack = try message.acknowledgment(code: code, sendingApplication: "PACS", sendingFacility: "HOSP", controlID: "reply")
+            XCTAssertEqual(ack.delimiters, message.delimiters)
+            XCTAssertEqual(ack.segment("MSA")?[1], code.rawValue)
+            XCTAssertEqual(ack.segment("MSA")?[2], "incoming")
+            XCTAssertEqual(ack.segment("MSH")?[5], "RIS")
+            XCTAssertEqual(ack.segment("MSH")?[10], "reply")
+            XCTAssertEqual(ack.rawValue(segment: "MSH", field: 9, component: 2), "A08")
+            XCTAssertEqual(ack.declaredVersion, "99.vendor")
+        }
+    }
 }

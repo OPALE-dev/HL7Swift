@@ -29,6 +29,12 @@ les listeners NIO/Vapor. Le charset et la version déclarée sont interprétés
 après le framing par `ER7Message`. Les limites, FS/CR fragmentés, frames
 concaténées et EOF tronqués utilisent le même framer que l'adaptateur historique.
 
+Un listener peut produire `message.acknowledgment(code:sendingApplication:
+sendingFacility:)`. Les six codes AA/AE/AR et CA/CE/CR sont disponibles ; la
+réponse conserve séparateurs, version et événement, et utilise son propre
+MSH-10. L'application choisit la phase selon son contrat MSH-15/16 et sa
+persistance ; aucune émission automatique des deux phases n'est présumée.
+
 Les essais locaux couvrent framing, deux échanges, version inconnue conservée,
 AE, timeout, corrélation et TLS accepté/refusé (confiance et hostname). Les clés
 PEM sous `Tests` sont des fixtures publiques générées pour localhost, utilisables

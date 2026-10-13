@@ -44,3 +44,13 @@ ne démontrent pas une intégration avec un serveur partenaire ni une conformit�
 à un profil. L'authentification OAuth/SMART, les opérations personnalisées, le
 PATCH et la validation de profils restent à compléter. L'ancien `FHIRClient`
 reste une API historique ; privilégier cette API pour le code serveur nouveau.
+
+`FHIRR4ReferenceResolver(bundle:)` résout sans réseau les références contained,
+les URN/fullUrl et les références relatives déjà présentes dans un Bundle.
+Une ambiguïté d'identifiant entre serveurs est refusée ; fournir le fullUrl
+de la ressource contenant la référence pour sélectionner la base appropriée.
+Les références versionnées ne sont pas encore résolues par cet index.
+
+Les tests HTTP par défaut créent leur propre serveur loopback sur port aléatoire.
+Les anciens essais d'écriture vers un service FHIR sont ignorés tant que
+`HL7_TEST_FHIR_BASE_URL` ne désigne pas explicitement un serveur jetable.

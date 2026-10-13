@@ -72,7 +72,7 @@ public struct V2ClinicalProjection: Equatable, Sendable {
         func identifier(_ raw: String?, cx: Bool) -> V2Identifier? {
             guard let raw = value(raw) else { return nil }
             let parts = raw.split(separator: delimiters.component, omittingEmptySubsequences: false).map(String.init)
-            guard let first = parts.first, !first.isEmpty else { return nil }
+            guard let firstRaw = parts.first, let first = value(firstRaw) else { return nil }
             func part(_ index: Int) -> String? { index < parts.count ? value(parts[index]) : nil }
             let authority = cx ? (part(3) ?? "").split(separator: delimiters.subcomponent, omittingEmptySubsequences: false).map(String.init) : []
             func hd(_ index: Int) -> String? { index < authority.count ? value(authority[index]) : nil }

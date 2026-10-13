@@ -30,3 +30,7 @@ Swift-FHIR reste utile comme référence de conception pour un futur résolveur
 de références contained/Bundle et une API de recherche ergonomique. Aucun
 code n'est copié et aucune dépendance n'est ajoutée. Un contrôle de modèles
 JSON ne remplace pas la validation des profils, invariants et terminologies.
+
+La tranche livrée comprend désormais un premier `FHIRR4ReferenceResolver`
+local pour contained, Bundle/fullUrl et références relatives, avec refus des
+ambiguïtés. Son API est écrite pour `ModelsR4` et n'effectue pas d'accès réseau.

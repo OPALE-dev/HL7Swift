@@ -114,7 +114,7 @@ private extension DefaultValidator {
         if message.specMessage == nil,
            message.spec?.spec(ofVersion: message.version)?.messages.isEmpty ?? true {
             return [ValidationResult(message: message, type: .notice, level: .version,
-                text: "No external specification was supplied; structural conformance was not checked.")]
+                text: "No native working model is available; structural conformance was not checked.")]
         }
         
         if message.forcedVersion == nil {

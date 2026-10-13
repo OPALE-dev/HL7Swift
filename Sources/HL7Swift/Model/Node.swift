@@ -7,7 +7,7 @@
 
 import Foundation
 
-public protocol Node: CustomStringConvertible {
+public protocol Node: AnyObject, CustomStringConvertible {
     var name:String { get set }
     var parent:Node? { get set }
     func path() -> String

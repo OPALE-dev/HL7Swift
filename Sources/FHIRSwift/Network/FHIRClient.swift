@@ -7,6 +7,7 @@
 
 import Foundation
 import NIO
+import NIOFoundationCompat
 import AsyncHTTPClient
 import ModelsR4
 

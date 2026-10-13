@@ -20,7 +20,7 @@ import Foundation
  ```
  */
 public class Group:Node {
-    public var parent: Node?
+    public weak var parent: Node?
     
     public var name: String = ""
     public var items: [Item] = []

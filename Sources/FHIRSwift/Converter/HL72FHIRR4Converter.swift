@@ -392,4 +392,3 @@ public class HL72FHIRR4Converter: Converter, CustomStringConvertible {
     }
 }
 
-

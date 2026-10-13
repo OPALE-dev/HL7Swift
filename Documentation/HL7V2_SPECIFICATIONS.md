@@ -1,41 +1,40 @@
-# Artefacts HL7 v2 externes
+# Implémentation HL7 v2 autonome
 
-HL7Swift ne distribue aucune spécification HL7 v2, aucun XSD et aucun jeu de
-valeurs sous licence HL7. Le package reste autonome pour les usages nécessaires
-à une passerelle clinique : lecture et écriture ER7, séparateurs, segments non
-standard, MLLP/TLS et acquittements.
+La bibliothèque ne charge et ne redistribue aucune spécification HL7 v2.
+Aucun répertoire, XSD ou téléchargement n'est nécessaire pour parser, écrire,
+construire, contrôler ou transporter les messages pris en charge.
 
-Les fonctions qui dépendent réellement de la structure normative (construction
-préremplie, groupes, noms de champs et validation structurelle approfondie)
-peuvent recevoir un lot local, obtenu et licencié par le déployeur :
+Les documents fournis localement servent de référence au développement.
+L'implémentation native est écrite en Swift ; elle n'est pas une conversion
+des XSD en tables normatives embarquées. Les anciennes API de chargement
+externe ont été supprimées après clarification de cette contrainte.
 
-```swift
-let source = HL7V2SpecificationSource(
-    directory: URL(fileURLWithPath: "/opt/hl7/approved-xsd")
-)
-let hl7 = try HL7(specificationSource: source)
-```
+## API native prioritaire
 
-Le répertoire attendu est `v<version>/` : par exemple
-`v2.5.1/messages.xsd`, `datatypes.xsd`, `fields.xsd`, `segments.xsd` et les
-fichiers `messages/<structure>.xsd`. Aucun téléchargement n'est effectué et
-l'absence d'un fichier désactive seulement les métadonnées correspondantes.
+`ER7Message` conserve les messages, y compris versions inconnues et segments
+locaux. `V2MessageBuilder` produit les événements ADT A01/A02/A03/A04/A05/A08/
+A28/A31/A40, ORM O01, OMI O23, ORU R01 et MDM T02. Ses primitives patient,
+ordre, résultat textuel et identifiants antérieurs échappent les valeurs avant
+composition. Un segment partenaire peut être ajouté explicitement.
 
-Les lots HL7 fournis à plat peuvent être utilisés sans copie ou import :
+`V2NativeValidator` exécute des contrôles de contrat implémentés dans le code :
+enveloppe, présence des segments ciblés, identifiants patient/ordre, autorité
+requise selon la politique et codes ACK. Son rapport décrit précisément ces
+contrôles ; les contraintes de profils non implémentées restent `notRun`.
+Un rapport sans erreur ne signifie pas une conformité complète au standard.
 
-```swift
-let source = HL7V2SpecificationSource(directory: licensedRoot,
-    versionDirectories: ["2.5.1": flatVersionDirectory])
-let hl7 = try HL7(specificationSource: source)
-```
+## Compatibilité
 
-Des tests avec XML minimal écrit à la main qualifient ce chargement optionnel,
-indépendamment des tests historiques nécessitant un lot licencié. DTD et
-entités sont refusées ; aucun import XSD ou accès externe n'est résolu.
-L'outil `HL7CodeGen` exige désormais `--specification-directory` et
-`--output-directory`, et ne peut plus utiliser implicitement un bundle.
+`HL7()` installe ses modèles de travail natifs pour les familles prioritaires.
+Les noms de champs courants, la construction historique et les accès Terser
+plats fonctionnent sans fichiers. Les arbres de groupes anciennement issus
+des XSD ne sont plus annoncés comme disponibles : utiliser les projections
+patient/ordre/résultat pour les contextes cliniques.
 
-Un intégrateur doit conserver la provenance, la version exacte, les errata et
-les droits de redistribution de son lot. Le dossier de travail local fourni à
-l'équipe ne devient pas une dépendance de package et n'est jamais embarqué dans
-un binaire ou une archive SPM.
+`Versioned.loadXML()` est seulement une méthode de compatibilité dépréciée :
+elle recharge les modèles natifs et ne lit aucun XML. `HL7CodeGen` peut exporter
+les symboles de ces modèles via `--output-directory` ; il ne lit pas de lot HL7.
+
+Les contrôles historiques restent partiels. Privilégier la validation native
+et des corpus partenaires qualifiés plutôt qu'une supposée conformité issue
+de la seule présence d'un symbole de version.

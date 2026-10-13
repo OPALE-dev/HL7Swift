@@ -15,7 +15,7 @@ public class Cell:Node {
     // WARNING unused ? might be empty
     var text: String = ""
     public var name: String = ""
-    public var parent: Node?
+    public weak var parent: Node?
     public var components: [Cell] = []
     public var type: DataType? = nil
     public var minOccurs:Int = 0
@@ -29,12 +29,12 @@ public class Cell:Node {
         } else {
 
             if str.contains("^") {
-                for component in str.split(separator: "^", maxSplits: 20, omittingEmptySubsequences: false) {
+                for component in str.split(separator: "^", omittingEmptySubsequences: false) {
                     
                     if component.contains("&") {
                         let parentCell = Cell(text: "", parent: self, components: [])
                         
-                        for subcomponent in component.split(separator: "&", maxSplits: 20, omittingEmptySubsequences: false) {
+                        for subcomponent in component.split(separator: "&", omittingEmptySubsequences: false) {
                             parentCell.components.append(Cell(text: String(subcomponent), parent: parentCell, components: []))
                         }
                         
