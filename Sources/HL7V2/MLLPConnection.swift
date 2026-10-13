@@ -55,7 +55,7 @@ public actor MLLPConnection {
     public func send(_ message: ER7Message, encoding: String.Encoding = .utf8) async throws -> ER7Message {
         guard let channel, channel.isActive else { throw MLLPConnectionError.notConnected }
         guard !requestInProgress else { throw MLLPConnectionError.requestInProgress }
-        guard let controlID = message.segment("MSH")?[10], !controlID.isEmpty else { throw MLLPConnectionError.missingControlID }
+        guard let controlID = message.segment("MSH")?[10], !controlID.isEmpty, controlID != "\"\"" else { throw MLLPConnectionError.missingControlID }
         guard let data = message.serialized(lineEnding: "\r").data(using: encoding) else { throw ER7Error.invalidEncoding }
         guard data.count <= maximumFrameBytes else { throw MLLPError.frameTooLarge }
         requestInProgress = true

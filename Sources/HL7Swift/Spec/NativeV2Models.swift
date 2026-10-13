@@ -21,7 +21,8 @@ enum NativeV2Models {
         "OBX": [2: "Value Type", 3: "Observation Identifier", 5: "Observation Value", 6: "Units", 11: "Observation Result Status", 14: "Date/Time of the Observation"],
         "MRG": [1: "Prior Patient Identifier List"], "EVN": [2: "Recorded Date/Time"],
         "NTE": [3: "Comment"], "TXA": [2: "Document Type", 12: "Unique Document Number", 17: "Document Completion Status"],
-        "ERR": [7: HL7.Diagnostic_Information, 8: HL7.User_Message]
+        "ERR": [7: HL7.Diagnostic_Information, 8: HL7.User_Message],
+        "IPC": [1: "Accession Identifier", 2: "Requested Procedure ID", 3: "Study Instance UID", 4: "Scheduled Procedure Step ID", 5: "Modality", 9: "Scheduled AE Title"]
     ]
 
     static func segment(_ code: String, owner: SpecMessage) -> Segment {
@@ -42,7 +43,7 @@ enum NativeV2Models {
         let families: [(String, [String])] = [
             ("ACK", ["MSH", "MSA", "ERR"]),
             ("ORM_O01", ["MSH", "PID", "PV1", "ORC", "OBR", "OBX", "NTE"]),
-            ("OMI_O23", ["MSH", "PID", "PV1", "ORC", "OBR", "OBX", "NTE"]),
+            ("OMI_O23", ["MSH", "PID", "PV1", "ORC", "OBR", "IPC", "OBX", "NTE"]),
             ("ORU_R01", ["MSH", "PID", "PV1", "ORC", "OBR", "OBX", "NTE"]),
             ("MDM_T02", ["MSH", "EVN", "PID", "PV1", "TXA", "OBX", "NTE"])
         ] + adtEvents.map { ("ADT_" + $0, ["MSH", "EVN", "PID", "PV1", "MRG", "NTE"]) }

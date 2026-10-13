@@ -5,8 +5,10 @@ import HL7Core
 public struct V2NativeValidationPolicy: Sendable {
     public var requirePatientAuthority: Bool
     public var expectedMessageType: String?
-    public init(requirePatientAuthority: Bool = false, expectedMessageType: String? = nil) {
+    public var requireImagingStudyUID: Bool
+    public init(requirePatientAuthority: Bool = false, expectedMessageType: String? = nil, requireImagingStudyUID: Bool = false) {
         self.requirePatientAuthority = requirePatientAuthority; self.expectedMessageType = expectedMessageType
+        self.requireImagingStudyUID = requireImagingStudyUID
     }
 }
 
@@ -40,7 +42,8 @@ public struct V2NativeValidator: Sendable {
         switch family {
         case "ACK": requiredSegments = ["MSA"]
         case "ADT": requiredSegments = ["PID"]
-        case "ORM", "OMI": requiredSegments = ["PID", "ORC"]
+        case "ORM": requiredSegments = ["PID", "ORC"]
+        case "OMI": requiredSegments = ["PID", "ORC", "OBR", "IPC"]
         case "ORU": requiredSegments = ["PID", "OBR", "OBX"]
         case "MDM": requiredSegments = ["PID", "TXA", "OBX"]
         default:
@@ -70,6 +73,13 @@ public struct V2NativeValidator: Sendable {
             if order.placerIdentifier == nil && order.fillerIdentifier == nil {
                 finding("V2-NATIVE-ORDER-IDENTIFIER-REQUIRED", "An order requires a placer or filler identifier in this connector contract.", path: "Order[\(index + 1)]")
             }
+        }
+        for (index, _) in clinical.imagingProcedures.enumerated() {
+            for field in [1, 2, 4, 5] { required("IPC", field, occurrence: index + 1) }
+            if policy.requireImagingStudyUID { required("IPC", 3, occurrence: index + 1) }
+        }
+        if family == "MDM", message.segment("TXA") != nil {
+            for field in [2, 12, 17] { required("TXA", field) }
         }
         for code in message.notices {
             finding(code, "An explicit interoperability tolerance was applied.", path: "MSH", severity: .warning)

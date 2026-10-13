@@ -35,4 +35,22 @@ final class V2NativeAPITests: XCTestCase {
         try builder.appendRawSegment(code: "Z99", fields: ["local^value"])
         XCTAssertNotNil(try builder.build().segment("Z99"))
     }
+
+    func testImagingProcedureAndTextDocumentAreBuiltNatively() throws {
+        var imaging = try V2MessageBuilder(kind: .imagingOrder, sendingApplication: "RIS", sendingFacility: "HOSP", receivingApplication: "PACS", receivingFacility: "HOSP", controlID: "imaging")
+        try imaging.addPatient(.init(identifiers: [.init(value: "p", namespace: "HOSP")], family: "Patient"))
+        try imaging.addOrder(control: "NW", placer: .init(value: "order", namespace: "RIS"), serviceCode: "CT")
+        try imaging.addImagingProcedure(.init(accession: .init(value: "accession", namespace: "RIS"), requestedProcedure: .init(value: "rp", namespace: "RIS"), scheduledProcedureStep: .init(value: "sps", namespace: "RIS"), studyInstanceUID: "1.2.3.4", modality: "CT", scheduledAETitle: "CT_SCANNER"))
+        let message = try imaging.build()
+        XCTAssertTrue(V2NativeValidator().validate(message).diagnostics.isEmpty)
+        let projection = try XCTUnwrap(V2ClinicalProjection(message).imagingProcedures.first)
+        XCTAssertEqual(projection.accession?.value, "accession")
+        XCTAssertEqual(projection.scheduledAETitle, "CT_SCANNER")
+        XCTAssertEqual(projection.orderIndex, 0)
+        XCTAssertEqual(projection.studyInstanceUID, "1.2.3.4")
+        var document = try V2MessageBuilder(kind: .document, sendingApplication: "RIS", sendingFacility: "HOSP", receivingApplication: "PACS", receivingFacility: "HOSP", controlID: "document")
+        try document.addPatient(.init(identifiers: [.init(value: "p", namespace: "HOSP")], family: "Patient"))
+        try document.addTextDocument(type: "RAD", identifier: .init(value: "report", namespace: "RIS"), completionStatus: "AU", text: ["Compte rendu"])
+        XCTAssertTrue(try V2NativeValidator().validate(document.build()).diagnostics.isEmpty)
+    }
 }

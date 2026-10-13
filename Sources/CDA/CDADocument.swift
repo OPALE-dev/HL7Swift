@@ -189,7 +189,10 @@ public struct CDAParser: Sendable {
         parser.allowedExternalEntityURLs = []
         parser.delegate = delegate
 
-        guard parser.parse() else {
+        let parsed = parser.parse()
+        // FoundationXML on Linux may recover a malformed tree and still return
+        // true. Treat any recorded parser error or unclosed root as a failure.
+        guard parsed, parser.parserError == nil, delegate.didCloseRoot else {
             if delegate.sawLimitExceeded { throw CDAError.resourceLimit }
             if delegate.sawProhibitedEntityDeclaration {
                 throw CDAError.prohibitedDeclaration
@@ -231,6 +234,7 @@ private final class CDAXMLDelegate: NSObject, XMLParserDelegate {
     var document = CDADocument()
     var didFindRootName = false
     var didFindCDANamespace = false
+    var didCloseRoot = false
     var sawProhibitedEntityDeclaration = false
     var sawLimitExceeded = false
     let maximumDepth: Int
@@ -339,6 +343,7 @@ private final class CDAXMLDelegate: NSObject, XMLParserDelegate {
     ) {
         guard !sawLimitExceeded, !path.isEmpty else { return }
         depth -= 1
+        if depth == 0 { didCloseRoot = true }
         defer { path.removeLast(); namespaces.removeLast() }
         readClinicalEnd(elementName, namespaceURI: namespaceURI)
         if titleDepth == depth,

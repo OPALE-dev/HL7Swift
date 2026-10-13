@@ -28,6 +28,9 @@ champs, transactions PostgreSQL, Worklist et MPPS DICOM.
 - `MLLPConnection` async : socket à un échange en vol, corrélation MSA-2,
   timeout/annulation, fermeture sur ACK invalide et TLS vérifié en loopback.
 - Constructeur et contrôles cliniques natifs (`V2MessageBuilder`, `V2NativeValidator`).
+- IPC natif pour les adaptateurs Worklist et TXA/OBX TX pour les comptes rendus MDM.
+- Traitement entrant async à callback obligatoire, conservation des octets exacts
+  et ACK après le résultat de persistance/traitement fourni par l'application.
 - Suppression de l'API de répertoire externe après clarification du besoin.
 - Retrait des 164 CSV de mapping importés inutilisés et de SwiftCSV.
 - Corrections de portabilité FoundationXML, CoreFoundation et taille de fichiers

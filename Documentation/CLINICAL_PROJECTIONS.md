@@ -8,6 +8,8 @@ let clinical = V2ClinicalProjection(message)
 ```
 
 Cette lecture positionnelle expose PID, PV1-19, MRG-1, ORC, OBR et OBX.
+IPC expose séparément accession, procédure demandée, étape planifiée, UID
+d'étude, modalité et AE Title, avec indices patient/ordre.
 Les identifiants CX/EI conservent valeur, namespace, identifiant universel,
 type d'identifiant universel et type d'identifiant. Les noms et valeurs
 composites restent bruts et le message source est conservé par l'application.

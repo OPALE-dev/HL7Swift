@@ -35,6 +35,22 @@ public struct V2PatientInput: Sendable, Equatable {
     }
 }
 
+public struct V2ImagingProcedureInput: Sendable, Equatable {
+    public var accession: V2IdentifierInput
+    public var requestedProcedure: V2IdentifierInput
+    public var scheduledProcedureStep: V2IdentifierInput
+    public var studyInstanceUID: String?
+    public var modality: String
+    public var scheduledAETitle: String?
+    public init(accession: V2IdentifierInput, requestedProcedure: V2IdentifierInput,
+                scheduledProcedureStep: V2IdentifierInput, studyInstanceUID: String? = nil,
+                modality: String, scheduledAETitle: String? = nil) {
+        self.accession = accession; self.requestedProcedure = requestedProcedure
+        self.scheduledProcedureStep = scheduledProcedureStep; self.studyInstanceUID = studyInstanceUID
+        self.modality = modality; self.scheduledAETitle = scheduledAETitle
+    }
+}
+
 /// Builds native ER7 using explicit clinical inputs. Values are escaped before
 /// composition; assigning-authority components are never discarded. Unknown
 /// partner-specific segments can be appended explicitly as raw ER7.
@@ -85,6 +101,26 @@ public struct V2MessageBuilder: Sendable {
         observationIndex += 1
         lines.append("OBX|" + [String(observationIndex), "TX", escaper.escape(code), "",
             text.map(escaper.escape).joined(separator: "~"), "", "", "", "", "", escaper.escape(status)].joined(separator: "|"))
+    }
+
+    /// Imaging order details for a downstream worklist adapter. Does not create
+    /// a DICOM worklist entry, generate UIDs or choose modality scheduling.
+    public mutating func addImagingProcedure(_ procedure: V2ImagingProcedureInput) throws {
+        let accession = try encode(procedure.accession, patient: false)
+        let requested = try encode(procedure.requestedProcedure, patient: false)
+        let step = try encode(procedure.scheduledProcedureStep, patient: false)
+        let uid = escaper.escape(procedure.studyInstanceUID ?? "")
+        lines.append("IPC|" + [accession, requested, uid, step, escaper.escape(procedure.modality), "", "", "", escaper.escape(procedure.scheduledAETitle ?? "")].joined(separator: "|"))
+    }
+
+    public mutating func addTextDocument(type: String, identifier: V2IdentifierInput,
+                                         completionStatus: String, text: [String]) throws {
+        let id = try encode(identifier, patient: false)
+        var fields = Array(repeating: "", count: 17)
+        fields[0] = "1"; fields[1] = escaper.escape(type); fields[2] = "TX"
+        fields[11] = id; fields[16] = escaper.escape(completionStatus)
+        lines.append("TXA|" + fields.joined(separator: "|"))
+        addTextObservation(code: type, text: text)
     }
 
     public mutating func addPriorIdentifiers(_ identifiers: [V2IdentifierInput]) throws {

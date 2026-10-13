@@ -44,6 +44,18 @@ public struct V2ObservationProjection: Equatable, Sendable {
     public let resultStatus: String?
 }
 
+public struct V2ImagingProcedureProjection: Equatable, Sendable {
+    public let patientIndex: Int?
+    public let orderIndex: Int?
+    public let segmentIndex: Int
+    public let accession: V2Identifier?
+    public let requestedProcedure: V2Identifier?
+    public let scheduledProcedureStep: V2Identifier?
+    public let studyInstanceUID: String?
+    public let rawModality: String?
+    public let scheduledAETitle: String?
+}
+
 /// Positional reading model for ADT/ORM/OMI/ORU adapters. It preserves
 /// patient/order boundaries and flags unprojected data. It is not a worklist
 /// command, a merge instruction or an automatic v2-to-FHIR transformation.
@@ -56,6 +68,7 @@ public struct V2ClinicalProjection: Equatable, Sendable {
     public let patients: [V2PatientProjection]
     public let orders: [V2OrderProjection]
     public let observations: [V2ObservationProjection]
+    public let imagingProcedures: [V2ImagingProcedureProjection]
     public let unprojectedSegmentIndices: [Int]
     public let notices: [String]
 
@@ -89,6 +102,7 @@ public struct V2ClinicalProjection: Equatable, Sendable {
         var patients: [V2PatientProjection] = []
         var orders: [V2OrderProjection] = []
         var observations: [V2ObservationProjection] = []
+        var imaging: [V2ImagingProcedureProjection] = []
         var unprojected: [Int] = []
         var warnings = message.notices
         var patientIndex: Int?
@@ -130,6 +144,12 @@ public struct V2ClinicalProjection: Equatable, Sendable {
                 if let previous = orderIndex, orders[previous].segmentIndex == currentORCIndex { orders[previous] = order }
                 else { orders.append(order); orderIndex = orders.count - 1 }
                 if patientIndex == nil { warnings.append("V2-ORDER-WITHOUT-PATIENT") }
+            case "IPC":
+                imaging.append(.init(patientIndex: patientIndex, orderIndex: orderIndex, segmentIndex: index,
+                    accession: identifier(segment[1], cx: false), requestedProcedure: identifier(segment[2], cx: false),
+                    scheduledProcedureStep: identifier(segment[4], cx: false), studyInstanceUID: identifier(segment[3], cx: false)?.value,
+                    rawModality: value(segment[5]), scheduledAETitle: value(segment[9])))
+                if orderIndex == nil { warnings.append("V2-IMAGING-PROCEDURE-WITHOUT-ORDER") }
             case "OBX":
                 observations.append(.init(patientIndex: patientIndex, orderIndex: orderIndex, segmentIndex: index,
                     valueType: value(segment[2]), rawIdentifier: value(segment[3]), rawValues: repeats(segment[5]),
@@ -139,6 +159,7 @@ public struct V2ClinicalProjection: Equatable, Sendable {
             }
         }
         self.patients = patients; self.orders = orders; self.observations = observations
+        imagingProcedures = imaging
         unprojectedSegmentIndices = unprojected
         // Stable codes contain no PHI. The source message is the complete record.
         notices = warnings

@@ -12,8 +12,8 @@ public extension ER7Message {
     func acknowledgment(code: ER7AcknowledgmentCode, sendingApplication: String,
                         sendingFacility: String, controlID: String = UUID().uuidString,
                         timestamp: Date = Date()) throws -> ER7Message {
-        guard let originalID = segment("MSH")?[10], !originalID.isEmpty,
-              !controlID.isEmpty else { throw MLLPConnectionError.missingControlID }
+        guard let originalID = segment("MSH")?[10], !originalID.isEmpty, originalID != "\"\"",
+              !controlID.isEmpty, controlID != "\"\"" else { throw MLLPConnectionError.missingControlID }
         let date = DateFormatter()
         date.locale = Locale(identifier: "en_US_POSIX")
         date.dateFormat = "yyyyMMddHHmmssZ"
