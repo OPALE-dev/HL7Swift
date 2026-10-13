@@ -22,6 +22,14 @@ Aucun certificat ni profil de provisioning n'est requis : la compilation iOS dé
 
 ## Résultats conservés
 
-Les tests Linux et macOS publient un rapport JUnit visible dans l'onglet de tests GitLab. Le job iOS conserve son bundle `xcresult` pendant 30 jours, y compris en cas d'échec, afin de permettre l'analyse détaillée dans Xcode.
+Les tests macOS publient un rapport JUnit visible dans l'onglet de tests GitLab.
+Linux conserve le journal complet sous `.reports/linux-tests.log` et exécute
+XCTest en série : des processus enfants sont restés bloqués de façon intermittente
+avec le runner parallèle Swift 6.1 lors des vérifications locales, y compris avec
+deux workers, alors que le test concerné réussit isolément. La cause reste à
+diagnostiquer ; ce changement n'est pas une preuve que le problème vient de SwiftPM.
+SwiftPM n'émet pas le rapport xUnit XCTest dans le mode série testé.
+Le job iOS conserve son bundle `xcresult` pendant 30 jours, y compris en cas
+d'échec, afin de permettre l'analyse détaillée dans Xcode.
 
 La pipeline ne remplace pas une matrice de conformité aux standards HL7. Elle établit que le commit compile en release et que les tests automatisés passent sur les plateformes annoncées.

@@ -70,10 +70,12 @@ public enum FHIRR4ImagingProjection {
                         return ImagingStudySeriesInstance(sopClass: sopClass, uid: .init(FHIRString(instance.uid)))
                     }
                     output.numberOfInstances = .init(FHIRUnsignedInteger(Int32(instances.count)))
+                    if instances.isEmpty { output.instance = nil }
                 }
                 return output
             }
             result.numberOfSeries = .init(FHIRUnsignedInteger(Int32(series.count)))
+            if series.isEmpty { result.series = nil }
             if series.allSatisfy({ $0.instances != nil }) {
                 let count = series.reduce(0) { $0 + ($1.instances?.count ?? 0) }
                 guard count <= Int(Int32.max) else { throw FHIRR4ImagingProjectionError.invalidIdentifier }
@@ -109,7 +111,7 @@ public enum FHIRR4ImagingProjection {
     }
 
     private static func validID(_ value: String) -> Bool {
-        !value.isEmpty && value.utf8.count <= 64 && value.allSatisfy { $0.isASCII && ($0.isLetter || $0.isNumber || $0 == "-" || $0 == ".") }
+        !value.isEmpty && value != "." && value != ".." && value.utf8.count <= 64 && value.allSatisfy { $0.isASCII && ($0.isLetter || $0.isNumber || $0 == "-" || $0 == ".") }
     }
     private static func validUID(_ value: String) -> Bool {
         let components = value.split(separator: ".", omittingEmptySubsequences: false)

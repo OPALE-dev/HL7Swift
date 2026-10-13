@@ -13,8 +13,8 @@ default:
   artifacts:
     when: always
     expire_in: 30 days
-    reports:
-      junit: .reports/*.xml
+    paths:
+      - .reports/
 
 linux-package:
   stage: test
@@ -26,8 +26,11 @@ linux-package:
     - swift --version
     - bash Documentation/verify-v2-resources.sh
     - swift build -c release
-    # SwiftPM emits its XCTest xUnit report when tests run in parallel.
-    - swift test --parallel --num-workers 2 --xunit-output .reports/linux-tests.xml
+    # Serial XCTest avoids intermittent stalled child processes observed with
+    # Swift 6.1's parallel runner locally. Preserve the complete output instead:
+    # SwiftPM does not emit an XCTest xUnit file in this execution mode.
+    - set -o pipefail
+    - swift test 2>&1 | tee .reports/linux-tests.log
 
 macos-package:
   stage: test
@@ -36,6 +39,9 @@ macos-package:
     - swift
   variables:
     HOMEBREW_NO_AUTO_UPDATE: "1"
+  artifacts:
+    reports:
+      junit: .reports/macos-tests.xml
   script:
     - xcodebuild -version
     - swift --version

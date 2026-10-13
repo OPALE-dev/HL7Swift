@@ -32,6 +32,10 @@ final class FHIRImagingProjectionTests: XCTestCase {
             series: [.init(uid: "1.2.3.1", modality: "MR")])
         XCTAssertEqual(study.numberOfSeries?.value?.integer, 1)
         XCTAssertNil(study.numberOfInstances); XCTAssertNil(study.series?.first?.numberOfInstances)
+        let empty = try FHIRR4ImagingProjection.imagingStudy(id: "study", studyUID: "1.2.3", patientID: "p", status: .registered, series: [])
+        XCTAssertNil(empty.series)
+        XCTAssertEqual(empty.numberOfSeries?.value?.integer, 0)
+        XCTAssertEqual(empty.numberOfInstances?.value?.integer, 0)
     }
 
     func testInvalidUIDsDuplicatesIdentityAndCredentialsAreRejected() throws {

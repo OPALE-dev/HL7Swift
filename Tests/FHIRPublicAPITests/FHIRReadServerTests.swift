@@ -105,6 +105,8 @@ final class FHIRReadServerTests: XCTestCase {
         }
         let precedence = await api.respond(to: request("Patient/p1", headers: ["If-None-Match": "\"other\"", "If-Modified-Since": "Tue, 13 Oct 2026 10:00:00 GMT"]), read: read, search: noSearch)
         XCTAssertEqual(precedence.status, 200)
+        let malformed = await api.respond(to: request("Patient/p1", headers: ["If-None-Match": "W/W/\"7\""]), read: read, search: noSearch)
+        XCTAssertEqual(malformed.status, 200)
     }
 
     func testSearchPreservesRepeatedExpressionsAndSafePagination() async throws {
@@ -135,7 +137,7 @@ final class FHIRReadServerTests: XCTestCase {
         }
         XCTAssertEqual(response.status, 200)
         let bundle = try JSONDecoder().decode(ModelsR4.Bundle.self, from: response.body)
-        XCTAssertEqual(bundle.total?.value?.integer, 12); XCTAssertEqual(bundle.entry?.count, 0)
+        XCTAssertEqual(bundle.total?.value?.integer, 12); XCTAssertNil(bundle.entry)
         XCTAssertEqual(bundle.link?.count, 1)
     }
 
@@ -193,6 +195,8 @@ final class FHIRReadServerTests: XCTestCase {
         XCTAssertEqual(oversized.status, 500)
         let badTotal = await api.respond(to: request("Patient"), read: noRead) { _ in .init(resources: [], total: Int.max) }
         XCTAssertEqual(badTotal.status, 500)
+        let missingTotal = await api.respond(to: request("Patient?_count=0"), read: noRead) { _ in .init(resources: []) }
+        XCTAssertEqual(missingTotal.status, 500)
         XCTAssertThrowsError(try FHIRR4ReadServer(baseURL: URL(string: "https://pacs.example/fhir?token=secret")!, capabilities: [], publicationDate: Date()))
         XCTAssertThrowsError(try FHIRR4ReadServer(baseURL: api.baseURL, capabilities: [.init(resourceType: "NotAResource")], publicationDate: Date()))
         XCTAssertThrowsError(try FHIRR4ReadServer(baseURL: api.baseURL, capabilities: [.init(resourceType: "Patient"), .init(resourceType: "Patient")], publicationDate: Date()))

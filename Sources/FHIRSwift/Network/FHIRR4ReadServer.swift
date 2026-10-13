@@ -31,6 +31,10 @@ public struct FHIRR4ServerSearchRequest {
     public let parameters: [URLQueryItem]
     public let count: Int
     public let pageToken: String?
+    public init(resourceType: String, parameters: [URLQueryItem], count: Int, pageToken: String? = nil) {
+        self.resourceType = resourceType; self.parameters = parameters
+        self.count = count; self.pageToken = pageToken
+    }
 }
 
 /// Matches only, not `_include` results. The application supplies a stable,
@@ -105,11 +109,13 @@ public struct FHIRR4ReadServer {
             }
             return resource
         }
+        var rest: [String: Any] = ["mode": "server"]
+        if !resources.isEmpty { rest["resource"] = resources }
         return try model(["resourceType": "CapabilityStatement", "status": "active",
             "date": ISO8601DateFormatter().string(from: publicationDate), "kind": "instance",
             "fhirVersion": "4.0.1", "format": ["json"],
             "implementation": ["description": "Application-backed read-only FHIR R4 API", "url": baseURL.absoluteString],
-            "rest": [["mode": "server", "resource": resources]]], as: CapabilityStatement.self)
+            "rest": [rest]], as: CapabilityStatement.self)
     }
 
     /// Callbacks are per-request so authentication context is never stored in a
@@ -228,7 +234,7 @@ public struct FHIRR4ReadServer {
         guard validID(request.resourceType), request.count >= 0, request.count <= maximumCount,
               page.resources.count <= request.count, page.total.map({ $0 >= page.resources.count && $0 <= Int(Int32.max) }) ?? true,
               page.nextPageToken.map({ !$0.isEmpty && $0.utf8.count <= 4096 }) ?? true,
-              request.count != 0 || page.nextPageToken == nil else { throw FHIRR4ServerError.invalidConfiguration }
+              request.count != 0 || (page.nextPageToken == nil && page.total != nil) else { throw FHIRR4ServerError.invalidConfiguration }
         let bundle = ModelsR4.Bundle(type: .init(.searchset))
         var ids = Set<String>()
         bundle.entry = try page.resources.map { resource in
@@ -239,6 +245,7 @@ public struct FHIRR4ReadServer {
             entry.search = BundleEntrySearch(); entry.search?.mode = .init(.match)
             return entry
         }
+        if page.resources.isEmpty { bundle.entry = nil } // FHIR JSON omits empty arrays.
         if let total = page.total { bundle.total = .init(FHIRUnsignedInteger(Int32(total))) }
         bundle.link = [BundleLink(relation: "self", url: .init(FHIRURI(stringLiteral: searchURL(request.resourceType, items).absoluteString)))]
         if let next = page.nextPageToken {
@@ -260,7 +267,10 @@ public struct FHIRR4ReadServer {
         if let condition = header(request, "If-None-Match") {
             unchanged = condition.split(separator: ",").contains { item in
                 let tag = item.trimmingCharacters(in: .whitespaces)
-                return tag == "*" || (headers["ETag"] != nil && tag.replacingOccurrences(of: "W/", with: "") == headers["ETag"]!.replacingOccurrences(of: "W/", with: ""))
+                let normalized = tag.hasPrefix("W/") ? String(tag.dropFirst(2)) : tag
+                guard normalized.count >= 2, normalized.first == "\"", normalized.last == "\"",
+                      validID(String(normalized.dropFirst().dropLast())) else { return tag == "*" }
+                return headers["ETag"].map { String($0.dropFirst(2)) == normalized } ?? false
             }
         } else if let condition = header(request, "If-Modified-Since"), let since = Self.httpDate.date(from: condition), let modified {
             unchanged = floor(modified.timeIntervalSince1970) <= since.timeIntervalSince1970
@@ -313,7 +323,7 @@ public struct FHIRR4ReadServer {
         request.headers.first { $0.key.caseInsensitiveCompare(name) == .orderedSame }?.value
     }
     private func validID(_ value: String) -> Bool {
-        !value.isEmpty && value.utf8.count <= 64 && value.allSatisfy { $0.isASCII && ($0.isLetter || $0.isNumber || $0 == "-" || $0 == ".") }
+        !value.isEmpty && value != "." && value != ".." && value.utf8.count <= 64 && value.allSatisfy { $0.isASCII && ($0.isLetter || $0.isNumber || $0 == "-" || $0 == ".") }
     }
     private func validPercentEncoding(_ value: String) -> Bool {
         let bytes = Array(value.utf8); var index = 0
