@@ -145,7 +145,6 @@ public class FHIRClient {
         
         guard let url = components.url else { throw FHIRClientError.malformedURL(message: url.description) }
         
-        print("url \(url)")
         
         var request = try HTTPClient.Request(url: url, method: .GET)
         request.headers.add(name: "Content-Type", value: "application/fhir+json")
@@ -238,7 +237,7 @@ public class FHIRClient {
                         if let data = response.body?.readData(length: rb) {
                             do {
                                 if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String : Any] {
-                                    print(json)
+                                    _ = json
 //                                    if let id = json["id"] as? String {
 //                                        if resourceName == "Patient" {
 //                                            let patient = Patient(from: <#T##Decoder#>)

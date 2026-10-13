@@ -25,6 +25,12 @@ champs, transactions PostgreSQL, Worklist et MPPS DICOM.
   explicite, frontières multi-patient et ORC/OBR/OBX préservées.
 - CDA : patients de l'en-tête, sections imbriquées, narration texte,
   namespaces contrôlés, CDATA et limites de taille/profondeur.
+- `MLLPConnection` async : socket à un échange en vol, corrélation MSA-2,
+  timeout/annulation, fermeture sur ACK invalide et TLS vérifié en loopback.
+- Chargement optionnel de lots XSD à plat, tests synthétiques, DTD refusées.
+- Retrait des 164 CSV de mapping importés inutilisés et de SwiftCSV.
+- Corrections de portabilité FoundationXML, CoreFoundation et taille de fichiers
+  détectées par la compilation Linux Swift 6.1.
 
 Les tests de structure historiques nécessitent `HL7_TEST_SPEC_DIRECTORY` et
 sont explicitement ignorés sans lot local. Les tests de parsing autonome et

@@ -45,7 +45,6 @@ let package = Package(
         // FHIRModels 0.9.x requires Swift tools 6.2. Keep the last release
         // compatible with this package's declared Swift tools 6.1 baseline.
         .package(url: "https://github.com/apple/FHIRModels.git", exact: "0.8.0"),
-        .package(url: "https://github.com/swiftcsv/SwiftCSV.git", from: "0.10.0"),
         .package(url: "https://github.com/jpsim/Yams.git", from: "5.4.0")
     ],
     targets: [
@@ -57,7 +56,6 @@ let package = Package(
             name: "HL7Swift",
             dependencies: [
                 "SwiftGenerator",
-                "SwiftCSV",
                 .product(name: "NIO", package: "swift-nio"),
                 .product(name: "NIOTLS", package: "swift-nio"),
                 .product(name: "NIOSSL", package: "swift-nio-ssl"),
@@ -65,7 +63,7 @@ let package = Package(
             ]),
         .target(
             name: "HL7V2",
-            dependencies: ["HL7Swift", "HL7Core"]),
+            dependencies: ["HL7Swift", "HL7Core", .product(name: "NIO", package: "swift-nio"), .product(name: "NIOSSL", package: "swift-nio-ssl")]),
         .target(
             name: "FHIR",
             dependencies: [
@@ -75,7 +73,7 @@ let package = Package(
                 .product(name: "AsyncHTTPClient", package: "async-http-client")
             ],
             path: "Sources/FHIRSwift",
-            exclude: ["Converter", "HL7", "Resources"],
+            exclude: ["Converter", "HL7"],
             sources: ["FHIRSwift.swift", "Network", "Validation"]),
         .target(
             name: "CDA",
@@ -86,15 +84,11 @@ let package = Package(
                 "HL7Core",
                 "HL7V2",
                 "FHIR",
-                "SwiftCSV",
                 .product(name: "ModelsR4", package: "FHIRModels")
             ],
             path: "Sources/FHIRSwift",
             exclude: ["FHIRSwift.swift", "Network", "Validation"],
-            sources: ["Converter", "HL7"],
-            resources: [
-                .process("Resources"),
-            ]),
+            sources: ["Converter", "HL7"]),
         .target(
             name: "FHIRSwift",
             dependencies: ["FHIR", "HL7Mapping"],
@@ -160,7 +154,8 @@ let package = Package(
         ),
         .testTarget(
             name: "HL7V2PublicAPITests",
-            dependencies: ["HL7V2"]
+            dependencies: ["HL7V2"],
+            resources: [.process("Resources")]
         ),
         .testTarget(
             name: "FHIRPublicAPITests",

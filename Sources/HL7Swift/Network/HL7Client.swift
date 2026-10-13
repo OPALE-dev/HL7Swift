@@ -160,7 +160,6 @@ public class HL7CLient {
         try channel.writeAndFlush(message).wait()
         
         Logger.info("### Sent Message \(message.type.name) (\(message.version.rawValue))")
-        Logger.debug("\n\n\(message)\n")
         let timeout = channel.eventLoop.scheduleTask(in: .seconds(Int64(self.config.readTimeout))) {
             responsePromise.fail(HL7Error.timeoutError(message: "Timeout while sending message"))
         }
@@ -235,7 +234,6 @@ extension HL7CLient: ChannelInboundHandler {
     
     
     public func errorCaught(context: ChannelHandlerContext, error: Error) {
-        print("errorCaught \(error)")
         promise?.fail(error)
     }
 }

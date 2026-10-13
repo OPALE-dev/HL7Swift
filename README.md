@@ -39,7 +39,6 @@ Import only the product your application needs:
 * **AsyncHTTPClient**: [https://github.com/swift-server/async-http-client](https://github.com/swift-server/async-http-client)
 * **Swift Argument Parser** : [https://github.com/apple/swift-argument-parser](https://github.com/apple/swift-argument-parser)
 * **FHIRModels**: [https://github.com/apple/FHIRModels](https://github.com/apple/FHIRModels)
-* **SwiftCSV**: [https://github.com/swiftcsv/SwiftCSV](https://github.com/swiftcsv/SwiftCSV)
 * **Yams**: [https://github.com/jpsim/Yams](https://github.com/jpsim/Yams)
 
 ## Dependents
@@ -77,6 +76,9 @@ decision to retain Apple FHIRModels and AsyncHTTPClient.
 The [clinical reading projections](Documentation/CLINICAL_PROJECTIONS.md)
 provide v2 patient/order/result contexts and CDA patients, nested sections and
 plain-text narratives for application adapters.
+
+Use [`MLLPConnection`](Documentation/MLLP.md) for async, correlated MLLP
+exchanges with optional verified TLS and application-owned retry policies.
 
 ### Installation
 

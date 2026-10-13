@@ -40,7 +40,7 @@ class HL7Responder {
             nak[HL7.ERR]?[HL7.User_Message]? = "HL7 Error"
             nak[HL7.ERR]?[HL7.Diagnostic_Information]? = text
             
-            Logger.info("### Reply NAK (\(nak.version.rawValue)):\n\n\(nak)\n")
+            Logger.info("### Reply NAK")
             
             _ = context.writeAndFlush(NIOAny(nak))
         }

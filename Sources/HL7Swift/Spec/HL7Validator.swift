@@ -112,7 +112,7 @@ private extension DefaultValidator {
     func validateVersion(_ message:Message) -> [ValidationResult] {
         var results:[ValidationResult] = []
         if message.specMessage == nil,
-           message.spec?.spec(ofVersion: message.version)?.specificationSource == nil {
+           message.spec?.spec(ofVersion: message.version)?.messages.isEmpty ?? true {
             return [ValidationResult(message: message, type: .notice, level: .version,
                 text: "No external specification was supplied; structural conformance was not checked.")]
         }

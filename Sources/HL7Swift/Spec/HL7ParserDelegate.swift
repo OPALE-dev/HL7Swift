@@ -6,6 +6,9 @@
 //
 
 import Foundation
+#if canImport(FoundationXML)
+import FoundationXML
+#endif
 
 //MARK: XMLParserDelegate methods
 extension Versioned:XMLParserDelegate {
@@ -25,7 +28,8 @@ extension Versioned:XMLParserDelegate {
         }
         else if loadSegmentsFlag {
             if elementName == "xsd:complexType" {
-                currentSequence = (attributeDict["name"])!
+                guard let name = attributeDict["name"] else { return }
+                currentSequence = name
                 
                 currentSequence = shortname(currentSequence!)
                 
@@ -90,7 +94,7 @@ extension Versioned:XMLParserDelegate {
                 if let attributeGroup = attributeDict["name"] {
                     let split = attributeGroup.split(separator: ".")
                     
-                    if let first = split.first {
+                    if let first = split.first, split.count >= 2 {
                         let segmentCode = String(first)
                         
                         currentField = Field(name: "\(split[0]).\(split[1])")
@@ -104,37 +108,37 @@ extension Versioned:XMLParserDelegate {
             } else if elementName == "xsd:attribute" {
                 if let name = attributeDict["name"] {
                     if name == "Item" {
-                        currentField?.item = attributeDict["fixed"]!
+                        currentField?.item = attributeDict["fixed"] ?? ""
                     }
                     else if name == "Type" {
-                        if let type = dataTypes[attributeDict["fixed"]!] {
+                        if let type = dataTypes[attributeDict["fixed"] ?? ""] {
                             currentField?.type = type
                         }
                     }
                     else if name == "LongName" {
-                        currentField?.longName = attributeDict["fixed"]!
+                        currentField?.longName = attributeDict["fixed"] ?? ""
                     }
                     else if name == "minLength" {
-                        currentField?.minLength = Int(attributeDict["fixed"]!)!
+                        currentField?.minLength = Int(attributeDict["fixed"] ?? "") ?? 0
                     }
                     else if name == "maxLength" {
-                        currentField?.maxLength = Int(attributeDict["fixed"]!)!
+                        currentField?.maxLength = Int(attributeDict["fixed"] ?? "") ?? 0
                     }
                 }
             }
         }
         else if loadDataTypesFlag {
             if elementName == "xsd:simpleType" {
-                currentDataType = SimpleType(name: attributeDict["name"]!)
+                if let name = attributeDict["name"] { currentDataType = SimpleType(name: name) }
             }
             else if elementName == "xsd:restriction" {
                 if currentDataType != nil {
-                    currentDataType!.base = attributeDict["base"]!
+                    currentDataType!.base = attributeDict["base"] ?? ""
                 }
             }
             else if elementName == "xsd:complexType" {
-                if attributeDict["name"]! != "escapeType" && attributeDict["name"]!.contains(".") {
-                    currentDataType = ComponentType(name: attributeDict["name"]!)
+                if let name = attributeDict["name"], name != "escapeType" && name.contains(".") {
+                    currentDataType = ComponentType(name: name)
                 }
             }
             else if elementName == "hl7:type" {
@@ -150,15 +154,15 @@ extension Versioned:XMLParserDelegate {
         }
         else if loadCompositeTypesFlag {
             if elementName == "xsd:complexType" {
-                if attributeDict["name"]! != "escapeType" && !attributeDict["name"]!.contains(".") {
-                    currentDataType = CompositeType(name: attributeDict["name"]!)
+                if let name = attributeDict["name"], name != "escapeType" && !name.contains(".") {
+                    currentDataType = CompositeType(name: name)
                 }
             }
             else if elementName == "xsd:element" {
                 if currentDataType != nil {
                     if let currentDataType = currentDataType as? CompositeType {
                         if let ref = attributeDict["ref"], let type = dataTypes[ref] {
-                            currentDataType.types.append(ComposedType(type: type, minOccurs: attributeDict["minOccurs"]!, maxOccurs: attributeDict["maxOccurs"]!))
+                            currentDataType.types.append(ComposedType(type: type, minOccurs: attributeDict["minOccurs"] ?? "1", maxOccurs: attributeDict["maxOccurs"] ?? "1"))
                         }
                     }
                 }
@@ -179,18 +183,19 @@ extension Versioned:XMLParserDelegate {
                 if currentSegment != nil && currentSegment != "anyHL7Segment" {
                     
                     if let ref = attributeDict["ref"] {
-                        let index = Int(ref.split(separator: ".")[1])!
+                        let parts = ref.split(separator: ".")
+                        guard parts.count >= 2, let index = Int(parts[1]) else { return }
                         
                         for segmentDic in groups.values {
                             if segmentDic.keys.contains(currentSegment!) {
                                 if let segment = segmentDic[currentSegment!] {
                                     if let field = segment.fields[index] {
-                                        field.minOccurs = Int(attributeDict["minOccurs"]!)!
+                                        field.minOccurs = Int(attributeDict["minOccurs"] ?? "1") ?? 1
                                         
-                                        if attributeDict["maxOccurs"]! == "unbounded" {
+                                        if attributeDict["maxOccurs"] == "unbounded" {
                                             field.maxOccurs = -1
                                         } else {
-                                            field.maxOccurs = Int(attributeDict["maxOccurs"]!)!
+                                            field.maxOccurs = Int(attributeDict["maxOccurs"] ?? "1") ?? 1
                                         }
                                     }
                                 }
@@ -265,10 +270,11 @@ extension Versioned:XMLParserDelegate {
     }
 
     public func parser(_ parser: XMLParser, parseErrorOccurred parseError: Error) {
-        print("failure error: ", parseError)
+        // Error reporting is performed by the caller without logging artefacts.
     }
     
     public func parserDidEndDocument(_ parser: XMLParser) {
+        loadFieldsFlag = false
         // clean the lmess to avoid when parser delegate is reused
         if loadMessagesFlag == true {
             loadMessagesFlag = false

@@ -8,7 +8,6 @@
 import Foundation
 import FHIR
 import ModelsR4
-import SwiftCSV
 import HL7V2
 
 
@@ -50,8 +49,6 @@ public class HL72FHIRR4Converter: Converter, CustomStringConvertible {
     }
     
     public init() throws {
-        // Bof...
-        try load()
     }
     
     
@@ -396,22 +393,3 @@ public class HL72FHIRR4Converter: Converter, CustomStringConvertible {
 }
 
 
-// MARK: - Load CSV
-private extension HL72FHIRR4Converter {
-    func load() throws {
-//        if let csvURLs = Bundle.module.urls(forResourcesWithExtension: "csv", subdirectory: nil) {
-//            for url in csvURLs {
-//                if url.lastPathComponent.starts(with: "HL7Message-FHIRR4_") {
-//                    let comps = url.lastPathComponent.split(separator: "_")
-//                    let messageType = comps[1] + "_" + comps[2].split(separator: "-")[0]
-//                    csvMessages[String(messageType)] = try CSV(url: url)
-//                }
-//                else if url.lastPathComponent.starts(with: "HL7Segment-FHIRR4_") {
-////                    let comps = url.lastPathComponent.split(separator: "_")
-////                    let messageType = comps[1] + "_" + comps[2].split(separator: "-")[0]
-////                    csvMessages[String(messageType)] = try CSV(url: url)
-//                }
-//            }
-//        }
-    }
-}

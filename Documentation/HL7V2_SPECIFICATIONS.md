@@ -21,6 +21,20 @@ Le répertoire attendu est `v<version>/` : par exemple
 fichiers `messages/<structure>.xsd`. Aucun téléchargement n'est effectué et
 l'absence d'un fichier désactive seulement les métadonnées correspondantes.
 
+Les lots HL7 fournis à plat peuvent être utilisés sans copie ou import :
+
+```swift
+let source = HL7V2SpecificationSource(directory: licensedRoot,
+    versionDirectories: ["2.5.1": flatVersionDirectory])
+let hl7 = try HL7(specificationSource: source)
+```
+
+Des tests avec XML minimal écrit à la main qualifient ce chargement optionnel,
+indépendamment des tests historiques nécessitant un lot licencié. DTD et
+entités sont refusées ; aucun import XSD ou accès externe n'est résolu.
+L'outil `HL7CodeGen` exige désormais `--specification-directory` et
+`--output-directory`, et ne peut plus utiliser implicitement un bundle.
+
 Un intégrateur doit conserver la provenance, la version exacte, les errata et
 les droits de redistribution de son lot. Le dossier de travail local fourni à
 l'équipe ne devient pas une dépendance de package et n'est jamais embarqué dans

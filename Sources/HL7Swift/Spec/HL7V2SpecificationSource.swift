@@ -18,12 +18,21 @@ import Foundation
 /// artefacts. This type deliberately performs no download or network access.
 public struct HL7V2SpecificationSource: Sendable, Equatable {
     public let directory: URL
+    /// Optional version-to-directory map for locally supplied flat HL7 archives.
+    public let versionDirectories: [String: URL]
 
-    public init(directory: URL) {
+    public init(directory: URL, versionDirectories: [String: URL] = [:]) {
         self.directory = directory.standardizedFileURL
+        self.versionDirectories = versionDirectories.mapValues(\.standardizedFileURL)
     }
 
     func url(for relativePath: String) -> URL {
-        directory.appendingPathComponent(relativePath, isDirectory: false)
+        let parts = relativePath.split(separator: "/").map(String.init)
+        if let first = parts.first, let versionDirectory = versionDirectories[String(first.dropFirst())] {
+            let nested = versionDirectory.appendingPathComponent(parts.dropFirst().joined(separator: "/"))
+            if FileManager.default.isReadableFile(atPath: nested.path) { return nested }
+            return versionDirectory.appendingPathComponent(parts.last ?? "")
+        }
+        return directory.appendingPathComponent(relativePath, isDirectory: false)
     }
 }

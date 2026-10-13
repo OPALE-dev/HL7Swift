@@ -6,6 +6,9 @@
 //
 
 import Foundation
+#if canImport(FoundationXML)
+import FoundationXML
+#endif
 
 
 
@@ -187,7 +190,7 @@ public class Versioned: NSObject, Versionable {
     
     private func loadMessages(forVersion version: Version) throws {
         if let xmlURL = specificationURL("messages.xsd", version: version) {
-            let xmlParser = XMLParser(contentsOf: xmlURL)!
+            let xmlParser = try makeParser(at: xmlURL)
             
             xmlParser.delegate = self
             
@@ -207,7 +210,7 @@ public class Versioned: NSObject, Versionable {
     
     private func loadRepetitions(forVersion version: Version) throws {
         if let xmlURL = specificationURL("segments.xsd", version: version) {
-            let xmlParser = XMLParser(contentsOf: xmlURL)!
+            let xmlParser = try makeParser(at: xmlURL)
             xmlParser.delegate = self
             
             loadRepetitionsFlag = true
@@ -220,7 +223,7 @@ public class Versioned: NSObject, Versionable {
     
     private func loadSegments(forMessage message: SpecMessage, version: Version) throws {
         if let xmlURL = specificationURL("messages/\(message.type.name).xsd", version: version) {
-            let xmlParser = XMLParser(contentsOf: xmlURL)!
+            let xmlParser = try makeParser(at: xmlURL)
             
             xmlParser.delegate = self
             
@@ -235,7 +238,7 @@ public class Versioned: NSObject, Versionable {
     
     private func loadFields(forVersion version: Version) throws {
         if let xmlURL = specificationURL("fields.xsd", version: version) {
-            let xmlParser = XMLParser(contentsOf: xmlURL)!
+            let xmlParser = try makeParser(at: xmlURL)
             
             xmlParser.delegate = self
             
@@ -250,7 +253,7 @@ public class Versioned: NSObject, Versionable {
     
     private func loadDataTypes(forVersion version: Version) throws {
         if let xmlURL = specificationURL("datatypes.xsd", version: version) {
-            let xmlParser = XMLParser(contentsOf: xmlURL)!
+            let xmlParser = try makeParser(at: xmlURL)
             
             xmlParser.delegate = self
             
@@ -265,7 +268,7 @@ public class Versioned: NSObject, Versionable {
     
     private func loadCompositeTypes(forVersion version: Version) throws {
         if let xmlURL = specificationURL("datatypes.xsd", version: version) {
-            let xmlParser = XMLParser(contentsOf: xmlURL)!
+            let xmlParser = try makeParser(at: xmlURL)
             
             xmlParser.delegate = self
             
@@ -282,5 +285,21 @@ public class Versioned: NSObject, Versionable {
         guard let specificationSource else { return nil }
         let url = specificationSource.url(for: "v\(version.rawValue)/\(path)")
         return FileManager.default.isReadableFile(atPath: url.path) ? url : nil
+    }
+
+    private func makeParser(at url: URL) throws -> XMLParser {
+        let data = try Data(contentsOf: url)
+        guard data.count <= 16 * 1024 * 1024 else { throw HL7Error.parserError(message: "Specification artefact exceeds size limit") }
+        for encoding: String.Encoding in [.utf8, .utf16LittleEndian, .utf16BigEndian, .utf32LittleEndian, .utf32BigEndian] {
+            if let text = String(data: data, encoding: encoding),
+               text.contains("<!DOCTYPE") || text.contains("<!ENTITY") {
+                throw HL7Error.parserError(message: "Specification DTD and entity declarations are not accepted")
+            }
+        }
+        let parser = XMLParser(data: data)
+        parser.shouldResolveExternalEntities = false
+        parser.externalEntityResolvingPolicy = .never
+        parser.allowedExternalEntityURLs = []
+        return parser
     }
 }

@@ -378,11 +378,7 @@ public class Logger {
         do {
             if let path = filePath?.path {
                 let attr = try FileManager.default.attributesOfItem(atPath: path)
-                fileSize = attr[FileAttributeKey.size] as! UInt64
-
-                //if you convert to NSDictionary, you can get file size old way as well.
-                let dict = attr as NSDictionary
-                fileSize = dict.fileSize()
+                fileSize = (attr[.size] as? NSNumber)?.uint64Value ?? 0
             }
         } catch {
             print("Error: \(error)")

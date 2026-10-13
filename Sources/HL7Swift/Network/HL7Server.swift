@@ -218,7 +218,7 @@ extension HL7Server : ChannelInboundHandler, ChannelOutboundHandler {
         Logger.debug("Channel inactive \(context.channel)")
         if let delegate = self.delegate {
             //DispatchQueue.main.async {
-                delegate.server(self, channelDidBecomeInactive: self.channel)
+                delegate.server(self, channelDidBecomeInactive: context.channel)
             //}
         }
     }
@@ -248,7 +248,6 @@ extension HL7Server : ChannelInboundHandler, ChannelOutboundHandler {
         }
         
         Logger.info("### Received HL7 (\(spec.version.rawValue)) message \(message.type.name)")
-        Logger.debug("\n\n\(message)\n")
         
         // get remote name and facility (TODO: handle optionals below)
         var status = AcknowledgeStatus.AA

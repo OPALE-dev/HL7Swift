@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import CoreFoundation
 
 // TODO method ? class ?
 let default_encoding = String.Encoding.ascii
