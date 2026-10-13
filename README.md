@@ -49,7 +49,7 @@ Import only the product your application needs:
 ## Current features
 
 - Parse, edit and write HL7 message (v2.x)
-- Build standardized HL7 messages from scratch
+- Build native HL7 v2 patient, order, imaging procedure and text-result messages
 - Send HL7 messages over TCP/IP (HL7 client)
 - Receive HL7 messages over TCP/IP (HL7 server)
 - Access FHIR R4 models and REST services
@@ -83,6 +83,11 @@ exchanges with optional verified TLS and application-owned retry policies.
 [`V2MessageBuilder` and `V2NativeValidator`](Documentation/NATIVE_V2.md) provide
 native patient/order/result construction and explicit connector checks, without
 loading any specification files.
+
+`V2InboundProcessor` requires an application callback before generating an ACK;
+ELENA retains ownership of persistence, identity reconciliation and retries.
+See [PACS progress and qualification](Documentation/ELENA_PROGRESS.md) for tested
+platforms and the remaining clinical/profile work.
 
 ### Installation
 

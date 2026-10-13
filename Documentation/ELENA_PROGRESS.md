@@ -41,11 +41,39 @@ historique, les champs nommés courants, le Terser plat, la construction native
 et la libération des arbres. La validation normative demeure `indeterminate`
 pour les contraintes de standard/profil qui ne sont pas encore implémentées.
 
+## Qualification du lot natif — 13 octobre 2026
+
+Révision du code : `7944e6e`. Les contrôles suivants ont réussi :
+
+- macOS arm64, Swift 6.2.4 : `swift test`, 82 tests, 2 ignorés, aucun échec.
+- Linux aarch64, image officielle Swift 6.1 (compilateur 6.1.3) :
+  `swift build -c release -j 4`, puis
+  `swift test -j 4 --parallel --num-workers 2`, 82 tests, aucun échec.
+  Le dépôt est monté en lecture seule et copié dans le conteneur avant compilation.
+- iOS, destination générique sans signature : compilation réussie avec
+  `xcodebuild build -scheme HL7Swift-Package -destination 'generic/platform=iOS'`
+  et `CODE_SIGNING_ALLOWED=NO`. Pas de test sur appareil ou simulateur dans ce lot.
+- Vérification d'absence de XSD sous `Sources` :
+  `bash Documentation/verify-v2-resources.sh`.
+
+Les deux anciens tests d'intégration FHIR nécessitent désormais l'activation
+explicite `HL7_TEST_FHIR_BASE_URL` vers un serveur jetable. Les tests courants
+HTTP et MLLP/TLS démarrent leurs propres serveurs loopback : vraie connexion,
+certificat et nom d'hôte contrôlés, délais, annulation et corrélation ACK.
+Cette preuve n'est pas une qualification d'un serveur partenaire ou d'un réseau
+hospitalier. La compilation iOS ne constitue pas une preuve d'exécution sur appareil.
+
 ## Tranches suivantes
 
-Les résultats de qualification sont mis à jour à la clôture de chaque lot.
-
-- Qualification TLS en réseau, Linux Swift 6.1, iOS et corpus partenaires.
+- Profils de connecteurs ELENA et corpus partenaires : écarts de versions,
+  champs obligatoires locaux, identifiants et variantes d'ordres/résultats.
+- Validation normative par version/profil et terminologies : les contrôles
+  natifs partiels ne doivent pas être présentés comme exhaustifs.
+- Entrées CDA structurées et profils documentaires, au-delà de la narration.
+- Transformations explicites vers Patient, ServiceRequest, ImagingStudy,
+  Endpoint et DocumentReference R4, avec politique de références/identités.
+- Adaptateurs ELENA : inbox/outbox PostgreSQL et services Worklist/MPPS DICOM.
+  Les primitives sont disponibles ; ces workflows ne sont pas implémentés ici.
 
 ## Frontière ELENA
 

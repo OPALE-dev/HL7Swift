@@ -20,6 +20,9 @@
   and plain-text narration with XML byte/depth limits.
 - `V2MessageBuilder` and `V2NativeValidator` provide native clinical construction
   and scoped connector checks without schema artefacts.
+- Added IPC imaging procedure and TXA/OBX text-document construction/projection,
+  plus `V2InboundProcessor` with an obligatory async persistence/processing callback.
+- CDA rejects recovered/truncated XML consistently on Darwin and Linux.
 - `HL7CodeGen` exports native working-model symbols to an explicit output directory.
 - Fixed Unicode and repeated-segment lookup in the historical parser, removed
   message-body transport logging, and corrected Linux imports/file-size access.
