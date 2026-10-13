@@ -2,7 +2,12 @@
 
 Statut : document directeur vivant
 
-Dernière révision : 9 octobre 2026
+Dernière révision : 13 octobre 2026
+
+Priorité active : [livraison pour les intégrateurs PACS](ELENA_PROGRESS.md).
+La décision de distribution est arrêtée : aucune spécification HL7 v2 n'est
+embarquée. Les anciens points M2.1c/d ne bloquent plus le parsing ni les
+transports ; seuls les usages optionnels de lots externes en dépendent.
 
 ## 1. Vision
 

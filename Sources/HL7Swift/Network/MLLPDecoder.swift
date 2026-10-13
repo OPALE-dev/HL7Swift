@@ -1,77 +1,56 @@
-//
-//  File.swift
-//  
-//
-//  Created by Rafael Warnault on 23/12/2021.
-//
-
 import Foundation
 import NIO
 
+public enum MLLPError: Error, Equatable, Sendable {
+    case invalidStart, invalidTerminator, frameTooLarge, truncatedFrame, invalidUTF8
+}
+
+/// Strict VT + payload + FS + CR framing, independent of TCP/UTF-8 boundaries.
 public struct MLLPDecoder: ByteToMessageDecoder {
     public typealias InboundOut = Message
-    
-    var messageString = String()
-    var startFound = false
-    var endFound = false
-    
-    var hl7:HL7!
-    var responder:HL7Responder!
-    
-    init(withHL7 hl7: HL7, responder: HL7Responder) {
-        self.hl7        = hl7
-        self.responder  = responder
-    }
-    
-    public mutating func decode(context: ChannelHandlerContext, buffer: inout ByteBuffer) -> DecodingState {
-        var byte = buffer.readString(length: 1)
-        
-        // read SB (0x0B)
-        if byte == "\u{0B}" {
-            startFound = true
-        }
-        
-        if startFound {
-            // read message until EB (0x1C) + CR (0x0D)
-            while buffer.readableBytes > 0 && !endFound {
-                byte = buffer.readString(length: 1)
-                                
-                if byte != "\u{1C}" {
-                    messageString.append(byte!)
-                    
-                } else {
-                    // read last CR
-                    byte = buffer.readString(length: 1)
-                    
-                    if byte == "\r" || byte == "\u{1C}" {
-                        endFound = true
-                    }
-                }
-            }
-        }
-        
-        if !startFound && !endFound {
-            return .needMoreData
-        }
-        
-        if endFound {
-            do {
-                let message = try Message(messageString, hl7: hl7)
-                context.fireChannelRead(wrapInboundOut(message))
-                
-            } catch let e {
-                context.fireErrorCaught(e)
-                
-                // reply NAK
-                // try? responder.replyNAK(withMessage: e.localizedDescription, inContext: context)
-            }
+    private enum State { case start, payload, terminator }
+    private var state: State = .start
+    private var bytes: [UInt8] = []
+    private let hl7: HL7
+    public let maximumFrameBytes: Int
 
-            // reset states
-            messageString   = String()
-            startFound      = false
-            endFound        = false
+    public init(hl7: HL7, maximumFrameBytes: Int = 8 * 1024 * 1024) {
+        precondition(maximumFrameBytes > 0)
+        self.hl7 = hl7
+        self.maximumFrameBytes = maximumFrameBytes
+    }
+
+    init(withHL7 hl7: HL7, responder: HL7Responder) { self.init(hl7: hl7) }
+
+    public mutating func decode(context: ChannelHandlerContext, buffer: inout ByteBuffer) throws -> DecodingState {
+        while let byte: UInt8 = buffer.readInteger() {
+            switch state {
+            case .start:
+                guard byte == 0x0b else { throw MLLPError.invalidStart }
+                state = .payload
+            case .payload:
+                if byte == 0x1c { state = .terminator }
+                else {
+                    guard byte != 0x0b else { throw MLLPError.invalidStart }
+                    guard bytes.count < maximumFrameBytes else { throw MLLPError.frameTooLarge }
+                    bytes.append(byte)
+                }
+            case .terminator:
+                guard byte == 0x0d else { throw MLLPError.invalidTerminator }
+                guard let string = String(bytes: bytes, encoding: .utf8) else { throw MLLPError.invalidUTF8 }
+                let message = try Message(string, hl7: hl7)
+                bytes.removeAll(keepingCapacity: true)
+                state = .start
+                context.fireChannelRead(wrapInboundOut(message))
+                return .continue
+            }
         }
-        
-        return .continue
+        return .needMoreData
+    }
+
+    public mutating func decodeLast(context: ChannelHandlerContext, buffer: inout ByteBuffer, seenEOF: Bool) throws -> DecodingState {
+        let result = try decode(context: context, buffer: &buffer)
+        if seenEOF && result == .needMoreData && state != .start { throw MLLPError.truncatedFrame }
+        return result
     }
 }

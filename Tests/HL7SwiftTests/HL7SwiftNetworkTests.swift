@@ -108,7 +108,9 @@ final class HL7SwiftNetworkTests: XCTestCase {
 
         for path in paths {
             let content = try String(contentsOf: URL(fileURLWithPath: path), encoding: .utf8)
-            let message = try Message(content, hl7: hl7)
+            // Some historical files include a trailing MLLP FS. A Message is
+            // the payload; the encoder supplies framing exactly once.
+            let message = try Message(content.trimmingCharacters(in: .controlCharacters), hl7: hl7)
 
             let response = try XCTUnwrap(client.send(message), "No response for \(path)")
             XCTAssertTrue(response.type.name.hasPrefix("ACK"), "Unexpected response for \(path)")

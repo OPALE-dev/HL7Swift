@@ -25,6 +25,9 @@ public struct ClientConfiguration {
     public var facility:String  = "HL7CLIENT"
 
     public var TLSEnabled:Bool  = false
+    /// Optional caller-owned trust roots, client identity and verification
+    /// policy. The default verifies the server chain and hostname.
+    public var tlsConfiguration: TLSConfiguration? = nil
     
     public init(_ hl7: HL7) {
         self.hl7 = hl7
@@ -74,10 +77,7 @@ public class HL7CLient {
             .channelInitializer { channel in
                 if let sslContext = self.sslContext, self.config.TLSEnabled {
                     do {
-                        let TLShandler = try NIOSSLClientHandler(context: sslContext, serverHostname: self.config.host, customVerificationCallback: { certs, promise in
-                            print("customVerificationCallback")
-                            return promise.succeed(.certificateVerified)
-                        })
+                        let TLShandler = try NIOSSLClientHandler(context: sslContext, serverHostname: self.config.host)
                                                 
                         return channel.pipeline.addHandler(TLShandler).flatMap {
                             channel.pipeline.addHandlers([
@@ -87,7 +87,7 @@ public class HL7CLient {
                             ])
                         }
                     } catch let e {
-                        print(e)
+                        return channel.eventLoop.makeFailedFuture(e)
                     }
                 }
                 
@@ -181,8 +181,7 @@ private extension HL7CLient {
     func initTLS() throws {
         Logger.info("TLS enabled")
                 
-        var conf = TLSConfiguration.makeClientConfiguration()
-        conf.certificateVerification = .none
+        let conf = config.tlsConfiguration ?? TLSConfiguration.makeClientConfiguration()
 
         // Test with hl7rcv (dcm4chee)
 //         conf.minimumTLSVersion = .tlsv12

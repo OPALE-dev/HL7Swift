@@ -8,7 +8,7 @@ The project is being modernized incrementally. See the [modernization plan](Docu
 
 The shared diagnostic model is described in [Diagnostics](Documentation/DIAGNOSTICS.md).
 
-The bundled HL7 v2 XSD inventory and its provenance and licensing limits are documented in [HL7 v2 resources](Documentation/HL7V2_RESOURCE_PROVENANCE.md). In particular, the bundled v2.8.2 message schemas are not qualified as v2.8.2 data.
+HL7Swift does **not** distribute HL7 v2 specifications or schemas. ER7 parsing, serialization, MLLP and acknowledgement handling work without them. Applications entitled to use their own artefacts can opt into specification-backed features explicitly; see [HL7 v2 specifications](Documentation/HL7V2_SPECIFICATIONS.md).
 
 ## Disclaimer
 
@@ -83,7 +83,7 @@ To use the `HL7Swift` library in a Swift Package Manager (SPM) project, add it t
 
 ### Manage HL7 versions
 
-Before everything you have to instanciate the `HL7` specification object as follow:
+Create the parser without bundling or downloading any specification:
 
     let hl7 = HL7()
  
@@ -97,7 +97,7 @@ You can retreive a version specific implementation as follow:
 
     let spec251 = hl7.spec(ofVersion: version)
     
-A `Versionable` implementation provides in-memory data structures that represents the [HL7 model specifications](https://build.fhir.org/ig/FHIR/fluentpath/v2-class-model.png) for its given verson.
+`Versionable` implementations expose generated message-type symbols. They only contain detailed structural metadata when you explicitly provide locally licensed XSD artefacts.
 
 ### Parse messages
 

@@ -19,7 +19,10 @@ final class HL7SwiftTests: XCTestCase {
     override func setUpWithError() throws {
         try super.setUpWithError()
 
-        self.hl7 = try HL7()
+        guard let path = ProcessInfo.processInfo.environment["HL7_TEST_SPEC_DIRECTORY"] else {
+            throw XCTSkip("Legacy specification-dependent tests require caller-owned HL7_TEST_SPEC_DIRECTORY; resource-free parsing is tested separately.")
+        }
+        self.hl7 = try HL7(specificationSource: .init(directory: URL(fileURLWithPath: path)))
     }
 
     

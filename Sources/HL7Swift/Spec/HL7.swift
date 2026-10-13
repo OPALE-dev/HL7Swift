@@ -29,19 +29,26 @@ public struct HL7 {
     private var v282    :V282!
     
     
+    /// Creates a parser which is fully usable for ER7 messages without an HL7
+    /// specification bundle. Pass a caller-owned source only when structural
+    /// specification features are required.
     public init() throws {
-        self.v21  = try V21(.v21)
-        self.v23  = try V23(.v23)
-        self.v231 = try V231(.v231)
-        self.v24  = try V24(.v24)
-        self.v25  = try V25(.v25)
-        self.v251 = try V251(.v251)
-        self.v26  = try V26(.v26)
-        self.v27  = try V27(.v27)
-        self.v271 = try V271(.v271)
-        self.v28  = try V28(.v28)
-        self.v281 = try V281(.v281)
-        self.v282 = try V282(.v282)
+        try self.init(specificationSource: nil)
+    }
+
+    public init(specificationSource: HL7V2SpecificationSource?) throws {
+        self.v21  = try V21(.v21, specificationSource: specificationSource)
+        self.v23  = try V23(.v23, specificationSource: specificationSource)
+        self.v231 = try V231(.v231, specificationSource: specificationSource)
+        self.v24  = try V24(.v24, specificationSource: specificationSource)
+        self.v25  = try V25(.v25, specificationSource: specificationSource)
+        self.v251 = try V251(.v251, specificationSource: specificationSource)
+        self.v26  = try V26(.v26, specificationSource: specificationSource)
+        self.v27  = try V27(.v27, specificationSource: specificationSource)
+        self.v271 = try V271(.v271, specificationSource: specificationSource)
+        self.v28  = try V28(.v28, specificationSource: specificationSource)
+        self.v281 = try V281(.v281, specificationSource: specificationSource)
+        self.v282 = try V282(.v282, specificationSource: specificationSource)
         
         self.validator = DefaultValidator()
     }
@@ -76,8 +83,8 @@ public struct HL7 {
     }
     
     class UnknowVersion: Versioned {
-        override init(_ version: Version) throws {
-            try super.init(.v21)
+        override init(_ version: Version, specificationSource: HL7V2SpecificationSource? = nil) throws {
+            try super.init(.v21, specificationSource: specificationSource)
         }
     }
 }
@@ -131,6 +138,8 @@ public class Versioned: NSObject, Versionable {
     }
     
     public var version: Version
+    /// The caller-owned source used for this version, if any.
+    public let specificationSource: HL7V2SpecificationSource?
     
     public var messages:[String:SpecMessage] = [:]
     public var dataTypes:[String:DataType] = [:] // datatypes by name
@@ -157,8 +166,9 @@ public class Versioned: NSObject, Versionable {
     
     var parentGroup:Group? = nil
     
-    init(_ version: Version) throws {
+    init(_ version: Version, specificationSource: HL7V2SpecificationSource? = nil) throws {
         self.version = version
+        self.specificationSource = specificationSource
         
         super.init()
         
@@ -176,7 +186,7 @@ public class Versioned: NSObject, Versionable {
     
     
     private func loadMessages(forVersion version: Version) throws {
-        if let xmlURL = Bundle.module.url(forResource: "messages", withExtension: "xsd", subdirectory: "v\(version.rawValue)") {
+        if let xmlURL = specificationURL("messages.xsd", version: version) {
             let xmlParser = XMLParser(contentsOf: xmlURL)!
             
             xmlParser.delegate = self
@@ -196,7 +206,7 @@ public class Versioned: NSObject, Versionable {
     
     
     private func loadRepetitions(forVersion version: Version) throws {
-        if let xmlURL = Bundle.module.url(forResource: "segments", withExtension: "xsd", subdirectory: "v\(version.rawValue)") {
+        if let xmlURL = specificationURL("segments.xsd", version: version) {
             let xmlParser = XMLParser(contentsOf: xmlURL)!
             xmlParser.delegate = self
             
@@ -209,7 +219,7 @@ public class Versioned: NSObject, Versionable {
     }
     
     private func loadSegments(forMessage message: SpecMessage, version: Version) throws {
-        if let xmlURL = Bundle.module.url(forResource: message.type.name, withExtension: "xsd", subdirectory: "v\(version.rawValue)/messages") {
+        if let xmlURL = specificationURL("messages/\(message.type.name).xsd", version: version) {
             let xmlParser = XMLParser(contentsOf: xmlURL)!
             
             xmlParser.delegate = self
@@ -224,7 +234,7 @@ public class Versioned: NSObject, Versionable {
     }
     
     private func loadFields(forVersion version: Version) throws {
-        if let xmlURL = Bundle.module.url(forResource: "fields", withExtension: "xsd", subdirectory: "v\(version.rawValue)") {
+        if let xmlURL = specificationURL("fields.xsd", version: version) {
             let xmlParser = XMLParser(contentsOf: xmlURL)!
             
             xmlParser.delegate = self
@@ -239,7 +249,7 @@ public class Versioned: NSObject, Versionable {
     }
     
     private func loadDataTypes(forVersion version: Version) throws {
-        if let xmlURL = Bundle.module.url(forResource: "datatypes", withExtension: "xsd", subdirectory: "v\(version.rawValue)") {
+        if let xmlURL = specificationURL("datatypes.xsd", version: version) {
             let xmlParser = XMLParser(contentsOf: xmlURL)!
             
             xmlParser.delegate = self
@@ -254,7 +264,7 @@ public class Versioned: NSObject, Versionable {
     }
     
     private func loadCompositeTypes(forVersion version: Version) throws {
-        if let xmlURL = Bundle.module.url(forResource: "datatypes", withExtension: "xsd", subdirectory: "v\(version.rawValue)") {
+        if let xmlURL = specificationURL("datatypes.xsd", version: version) {
             let xmlParser = XMLParser(contentsOf: xmlURL)!
             
             xmlParser.delegate = self
@@ -266,5 +276,11 @@ public class Versioned: NSObject, Versionable {
                 throw HL7Error.parserError(message: "Cannot parse")
             }
         }
+    }
+
+    private func specificationURL(_ path: String, version: Version) -> URL? {
+        guard let specificationSource else { return nil }
+        let url = specificationSource.url(for: "v\(version.rawValue)/\(path)")
+        return FileManager.default.isReadableFile(atPath: url.path) ? url : nil
     }
 }

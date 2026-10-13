@@ -20,10 +20,11 @@ extension Generator {
          Each `Versioned` subclass provides a `type(forName:)` method that returns the desired `Typable` class for a given string.
          Everything is declared as extension of the `HL7` (sort of) namespace.
          */
-        public func generateHL7Spec(at path:String) {
+        public func generateHL7Spec(at path:String, specificationSource: HL7V2SpecificationSource) throws {
             HL7.generator = true
+            defer { HL7.generator = false }
             
-            let hl7 = try! HL7()
+            let hl7 = try HL7(specificationSource: specificationSource)
             
             let versions = [
                 Version.v21 ,
@@ -41,9 +42,10 @@ extension Generator {
             
             let forlderPath = (path as NSString).expandingTildeInPath
             
-            try? FileManager.default.createDirectory(atPath: forlderPath, withIntermediateDirectories: true, attributes: nil)
+            try FileManager.default.createDirectory(atPath: forlderPath, withIntermediateDirectories: true, attributes: nil)
             
             for version in versions {
+                guard !(hl7.spec(ofVersion: version)?.messages.isEmpty ?? true) else { continue }
                 var namespaceExtension = Extension(name: "HL7")
                 
                 let versionName = Version.klass(forVersion: version)
@@ -77,7 +79,7 @@ extension Generator {
                 
                 let filePath = "\(forlderPath)/\(versionName).swift"
                 
-                try? namespaceExtension.generate().write(to: URL(fileURLWithPath: filePath), atomically: false, encoding: .utf8)
+                try namespaceExtension.generate().write(to: URL(fileURLWithPath: filePath), atomically: true, encoding: .utf8)
             }
         }
     }

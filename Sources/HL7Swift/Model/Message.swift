@@ -67,6 +67,7 @@ public struct Message {
     
     
     public init(_ str: String, hl7: HL7, force forcedVersion:Version? = nil) throws {
+        self.spec = hl7
         self.forcedVersion = forcedVersion
 
         guard str.range(
@@ -111,11 +112,9 @@ public struct Message {
         //let content = try String(contentsOf: url, encoding: encoding!)
         // str.encode(to: encoding!)
 
-        guard let encoding,
-              let data = str.data(using: encoding),
-              let encodedString = String(data: data, encoding: encoding) else {
-            throw HL7Error.unsupportedMessage(message: "Not HL7 message")
-        }
+        // A Swift String is already decoded Unicode. Re-encoding it as ASCII
+        // silently rejects legitimate patient names and must not be done here.
+        let encodedString = str
         
         // The separator depends on the implementation, not on the standard
         if encodedString.split(separator: "\r").count > 1 {
@@ -313,23 +312,10 @@ public struct Message {
      ```
     */
     func getSegment(_ code: String, repetition: UInt = 1) -> Segment? {
-        var rep = repetition
-        var i:UInt = 0
-        
-        for segment in segments {
-            if segment.code == code {
-                if rep == 1 {
-                    return segment
-                } else {
-                    rep -= 1
-                    
-                    return segments[Int(rep+i)]
-                }
-            }
-            i += 1
-        }
-        
-        return nil
+        guard repetition > 0 else { return nil }
+        let matches = segments.filter { $0.code == code }
+        guard repetition <= matches.count else { return nil }
+        return matches[Int(repetition - 1)]
     }
     
     /// Some messages have types on one cell, eg ACK

@@ -48,6 +48,8 @@ public struct ServerConfiguration {
     public var certificatePath:String?  = nil
     public var privateKeyPath:String?   = nil
     public var passphrase:String?       = nil
+    /// Caller-owned certificate chain, identity and optional mutual-TLS policy.
+    public var tlsConfiguration: TLSConfiguration? = nil
     
     public init(_ hl7: HL7) {
         self.hl7 = hl7
@@ -88,10 +90,7 @@ public class HL7Server {
             .childChannelInitializer { channel in
                 if self.config.TLSEnabled {
                     if let context = self.sslContext {
-                        let TLShandler = NIOSSLServerHandler(context: context) { certs, promise in
-                            Logger.debug("NIOSSLServerHandler")
-                            promise.succeed(.certificateVerified)
-                        }
+                        let TLShandler = NIOSSLServerHandler(context: context)
                         return channel.pipeline.addHandler(TLShandler).flatMap {
                             channel.pipeline.addHandlers([
                                 MessageToByteHandler(MLLPEncoder()),
@@ -159,13 +158,17 @@ public class HL7Server {
 private extension HL7Server {
     func initTLS() throws {
         Logger.info("TLS enabled")
+        if let configuration = config.tlsConfiguration {
+            self.tlsConfiguration = configuration
+            self.sslContext = try NIOSSLContext(configuration: configuration)
+            return
+        }
         
         if let certificatePath = config.certificatePath,
-           let privateKeyPath = config.privateKeyPath,
-           let passphrase = config.passphrase
+           let privateKeyPath = config.privateKeyPath
         {
             let key = try NIOSSLPrivateKey(file: privateKeyPath, format: .pem) { completion in
-                completion(passphrase.utf8)
+                completion((self.config.passphrase ?? "").utf8)
             }
             
             self.tlsConfiguration = TLSConfiguration.makeServerConfiguration(
@@ -180,6 +183,8 @@ private extension HL7Server {
                 Logger.debug("TLS init done")
                 Logger.debug("\(self.tlsConfiguration!)")
             }
+        } else {
+            throw HL7Error.initError(message: "TLS requires a certificate and private key")
         }
     }
 }
@@ -246,8 +251,6 @@ extension HL7Server : ChannelInboundHandler, ChannelOutboundHandler {
         Logger.debug("\n\n\(message)\n")
         
         // get remote name and facility (TODO: handle optionals below)
-        let remoteName = message[HL7.MSH]![HL7.Sending_Application]
-        let remoteFacility = message[HL7.MSH]![HL7.Sending_Facility]
         var status = AcknowledgeStatus.AA
         
         if let delegate = self.delegate {
@@ -255,41 +258,12 @@ extension HL7Server : ChannelInboundHandler, ChannelOutboundHandler {
         }
         
         // reply ACK/NAK
-        if let type = try? HL7.V251(.v251).type(forName: "ACK") {
-            if let ack = try? Message(type, spec: HL7.V251(.v251), preloadSegments: ["MSH", "MSA"]) {
-                // fill MSH
-                ack[HL7.MSH]![HL7.Version_ID] = message.version.rawValue
-                
-                if let r = remoteFacility {
-                    ack[HL7.MSH]![HL7.Receiving_Facility] = r
-                }
-                
-                if let r = remoteName {
-                    ack[HL7.MSH]![HL7.Receiving_Application] = r
-                }
-                
-                let messageControlID = message[HL7.MSH]?[HL7.Message_Control_ID]
-                
-                ack[HL7.MSH]![2] = message[HL7.MSH]?[2]
-                ack[HL7.MSH]![HL7.Sending_Facility] = config.facility
-                ack[HL7.MSH]![HL7.Sending_Application] = config.name
-                
-                ack[HL7.MSH]![HL7.Message_Control_ID] = messageControlID
-                ack[HL7.MSH]![HL7.Message_Type] = "ACK"
-                
-                // fill MSA
-                ack[HL7.MSA]![HL7.Acknowledgment_Code] = status.rawValue
-                ack[HL7.MSA]![HL7.Message_Control_ID] = messageControlID
-                
-                Logger.info("### Reply ACK (\(ack.version.rawValue))")
-                Logger.debug("\n\n\(ack)\n")
-                
-                if let delegate = self.delegate {
-                    delegate.server(self, send: ack, to: fromTo, channel: context.channel)
-                }
-                
-                _ = context.writeAndFlush(NIOAny(ack))
-            }
+        do {
+            let ack = try message.acknowledgment(status: status, application: config.name, facility: config.facility)
+            delegate?.server(self, send: ack, to: fromTo, channel: context.channel)
+            context.writeAndFlush(NIOAny(ack), promise: nil)
+        } catch {
+            context.fireErrorCaught(error)
         }
     }
     

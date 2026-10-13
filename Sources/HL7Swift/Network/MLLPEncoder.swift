@@ -22,6 +22,9 @@ public struct MLLPEncoder: MessageToByteEncoder {
         guard let messageData = data.description.data(using: .utf8) else {
             throw HL7Error.encondingFailed(message: "Cannot encode message as UTF-8")
         }
+        guard !messageData.contains(0x0b), !messageData.contains(0x1c) else {
+            throw HL7Error.encondingFailed(message: "MLLP payload contains framing control bytes")
+        }
         var outData = Data()
         
         // append SB 0x0B
@@ -34,7 +37,7 @@ public struct MLLPEncoder: MessageToByteEncoder {
         withUnsafeBytes(of: UInt8(0x1C)) { outData.append(contentsOf: $0) }
         withUnsafeBytes(of: UInt8(0x0D)) { outData.append(contentsOf: $0) }
                 
-        out = ByteBuffer(bytes: outData)
+        out.writeBytes(outData)
     }
 }
 

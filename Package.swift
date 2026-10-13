@@ -62,19 +62,6 @@ let package = Package(
                 .product(name: "NIOTLS", package: "swift-nio"),
                 .product(name: "NIOSSL", package: "swift-nio-ssl"),
                 .product(name: "AsyncHTTPClient", package: "async-http-client")
-            ],
-            resources: [
-                .copy("Spec/Resources/v2.3"),
-                .copy("Spec/Resources/v2.3.1"),
-                .copy("Spec/Resources/v2.4"),
-                .copy("Spec/Resources/v2.5"),
-                .copy("Spec/Resources/v2.5.1"),
-                .copy("Spec/Resources/v2.6"),
-                .copy("Spec/Resources/v2.7"),
-                .copy("Spec/Resources/v2.7.1"),
-                .copy("Spec/Resources/v2.8"),
-                .copy("Spec/Resources/v2.8.1"),
-                .copy("Spec/Resources/v2.8.2"),
             ]),
         .target(
             name: "HL7V2",
@@ -146,7 +133,7 @@ let package = Package(
             ]),
         .testTarget(
             name: "HL7SwiftTests",
-            dependencies: ["HL7Swift", "SwiftGenerator"],
+            dependencies: ["HL7Swift", "SwiftGenerator", .product(name: "NIOEmbedded", package: "swift-nio")],
             resources: [
                 .process("Resources"),
             ]

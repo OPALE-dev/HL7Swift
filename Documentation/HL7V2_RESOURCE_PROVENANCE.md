@@ -1,5 +1,10 @@
 # Inventaire et provenance des ressources HL7 v2
 
+**Archive historique** : les 1 816 XSD ont été retirés le 13 octobre 2026.
+Le package ne les redistribue plus. Les observations ci-dessous décrivent le
+lot ancien ; voir [le chargement explicite](HL7V2_SPECIFICATIONS.md) pour l'API
+actuelle. L'historique Git permet de retrouver cet état antérieur.
+
 État au 9 octobre 2026. Cet inventaire concerne uniquement les XSD présents dans
 `Sources/HL7Swift/Spec/Resources`. Il ne constitue ni une qualification des
 schémas, ni une conclusion juridique sur leur redistribution.
