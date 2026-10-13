@@ -15,6 +15,12 @@ champs, transactions PostgreSQL, Worklist et MPPS DICOM.
   FS/CR, frames concaténées, rejet des terminaisons invalides et EOF tronqué.
 - Vérification du certificat et du nom du serveur TLS par défaut ; configuration
   NIOSSL injectable côté client/serveur et échec explicite si identité absente.
+- `ER7Message` : séparateurs personnalisés, null explicite, échappements,
+  répétitions sans plafond historique arbitraire, politique d'interprétation
+  versionnée par connecteur et conservation de la déclaration MSH-12.
+- Client REST R4 async injectable : CRUD, recherche complète, pagination,
+  CapabilityStatement, historique, lecture versionnée, batch/transaction,
+  ETag/Location et erreurs OperationOutcome ; transport HTTP borné.
 
 Les tests de structure historiques nécessitent `HL7_TEST_SPEC_DIRECTORY` et
 sont explicitement ignorés sans lot local. Les tests de parsing autonome et
@@ -28,9 +34,6 @@ Vérification locale de cette première tranche : `swift test --parallel`,
 explicitement sans lot externe. Aucune preuve Linux/iOS ni pipeline distante
 n'est revendiquée pour cette tranche.
 
-- ER7 indépendant avec séparateurs MSH, politique de tolérance explicite,
-  échappements et version déclarée conservée.
-- Client FHIR R4 async, CRUD, recherche Bundle, erreurs OperationOutcome.
 - Extraction des identités et ordres ADT/ORM/OMI/ORU pour les adaptateurs.
 - CDA : patient, sections et narration consultable.
 - Qualification TLS en réseau, Linux Swift 6.1, iOS et corpus partenaires.

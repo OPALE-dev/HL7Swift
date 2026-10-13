@@ -65,6 +65,15 @@ The roadmap prioritizes library quality and developer usability, HL7 v2 qualific
 
 ## Getting Started
 
+For new PACS adapters, start with the resource-free [`ER7Message`](Documentation/ER7.md)
+API. It preserves declared versions and supports explicit connector tolerance,
+custom delimiters, Unicode, repetitions and null values.
+
+Use [`FHIRR4RESTClient`](Documentation/FHIR_REST.md) for async R4 REST calls,
+full search Bundles, version metadata and OperationOutcome errors. The
+[Swift-FHIR assessment](Documentation/SWIFT_FHIR_EVALUATION.md) explains the
+decision to retain Apple FHIRModels and AsyncHTTPClient.
+
 ### Installation
 
 To use the `HL7Swift` library in a Swift Package Manager (SPM) project, add it to the dependencies for your package and your command-line executable target:
