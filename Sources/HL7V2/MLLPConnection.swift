@@ -32,13 +32,18 @@ public actor MLLPConnection {
         requestInProgress = true
         defer { requestInProgress = false }
         let context = try tls.map { try NIOSSLContext(configuration: $0) }
+        // SNI cannot carry an IP address; without a name, NIOSSL verifies the certificate
+        // against the connected address (IP subjectAltName).
+        var v4 = in_addr(), v6 = in6_addr()
+        let literalAddress = inet_pton(AF_INET, host, &v4) == 1 || inet_pton(AF_INET6, host, &v6) == 1
+        let sniName = serverHostname ?? (literalAddress ? nil : host)
         let maximum = maximumFrameBytes
         let bootstrap = ClientBootstrap(group: group)
             .connectTimeout(connectTimeout)
             .channelInitializer { channel in
                 channel.eventLoop.makeCompletedFuture {
                     if let context {
-                        try channel.pipeline.syncOperations.addHandler(NIOSSLClientHandler(context: context, serverHostname: serverHostname ?? host))
+                        try channel.pipeline.syncOperations.addHandler(NIOSSLClientHandler(context: context, serverHostname: sniName))
                     }
                     try channel.pipeline.syncOperations.addHandler(MessageToByteHandler(MLLPFrameEncoder()))
                     try channel.pipeline.syncOperations.addHandler(ByteToMessageHandler(MLLPFrameDecoder(maximumFrameBytes: maximum)))
