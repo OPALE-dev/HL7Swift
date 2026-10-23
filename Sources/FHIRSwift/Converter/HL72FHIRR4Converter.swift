@@ -267,11 +267,11 @@ public class HL72FHIRR4Converter: Converter, CustomStringConvertible {
                 hn.family = xpn.familyName?.asFHIRStringPrimitive()
                 hn.use = xpn.nameUse?.asPrimitive()
                 
-                if let prefix = xpn.prefix?.asFHIRStringPrimitive() {
+                if let prefix = xpn.prefix.map { ModelsR4.FHIRPrimitive(ModelsR4.FHIRString($0)) } {
                     hn.prefix?.append(prefix)
                 }
                 
-                if let suffix = xpn.suffix?.asFHIRStringPrimitive() {
+                if let suffix = xpn.suffix.map { ModelsR4.FHIRPrimitive(ModelsR4.FHIRString($0)) } {
                     hn.suffix?.append(suffix)
                 }
                 
@@ -320,11 +320,11 @@ public class HL72FHIRR4Converter: Converter, CustomStringConvertible {
                 
                 addr.line = []
                 
-                if let sa = cx.streetAddress?.asFHIRStringPrimitive() {
+                if let sa = cx.streetAddress.map { ModelsR4.FHIRPrimitive(ModelsR4.FHIRString($0)) } {
                     addr.line?.append(sa)
                 }
                 
-                if let od = cx.otherDesignation?.asFHIRStringPrimitive() {
+                if let od = cx.otherDesignation.map { ModelsR4.FHIRPrimitive(ModelsR4.FHIRString($0)) } {
                     addr.line?.append(od)
                 }
                 

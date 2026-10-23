@@ -144,3 +144,7 @@ Références : [REST FHIR R4](https://hl7.org/fhir/R4/http.html),
 [recherche R4](https://hl7.org/fhir/R4/search.html).
 Projection : [ImagingStudy R4](https://hl7.org/fhir/R4/imagingstudy.html) et
 [Endpoint WADO-RS](https://hl7.org/fhir/R4/endpoint-example-wadors.json.html).
+
+## Échanges PACS R4B/R5
+
+Les primitives existantes restent R4. Pour les conversions et le transport des huit ressources PACS en R4B/R5, voir [Versioned PACS exchanges](FHIR_PACS_VERSIONS.md). La version est explicite ; les champs non représentables sont refusés. Les droits, la conservation des originaux et les capacités annoncées restent à la charge de l’application.

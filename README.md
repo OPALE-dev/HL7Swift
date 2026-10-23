@@ -52,7 +52,7 @@ Import only the product your application needs:
 - Build native HL7 v2 patient, order, imaging procedure and text-result messages
 - Send HL7 messages over TCP/IP (HL7 client)
 - Receive HL7 messages over TCP/IP (HL7 server)
-- Access FHIR R4 models and REST services
+- Access FHIR R4 models and REST services, with bounded [PACS wire adapters for R4B and R5](Documentation/FHIR_PACS_VERSIONS.md)
 - Convert selected HL7 v2 content to FHIR
 - Read the basic structure and metadata of CDA R2 documents
 
