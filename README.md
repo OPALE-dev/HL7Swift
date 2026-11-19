@@ -4,7 +4,7 @@
 [![CodeQL](https://github.com/OPALE-dev/HL7Swift/actions/workflows/codeql.yml/badge.svg)](https://github.com/OPALE-dev/HL7Swift/actions/workflows/codeql.yml)
 [![Documentation](https://github.com/OPALE-dev/HL7Swift/actions/workflows/documentation.yml/badge.svg)](https://opale-dev.github.io/HL7Swift/documentation/)
 [![Release](https://img.shields.io/github/v/release/OPALE-dev/HL7Swift)](https://github.com/OPALE-dev/HL7Swift/releases/latest)
-[![Swift 6.1+](https://img.shields.io/badge/Swift-6.1%2B-F05138?logo=swift&logoColor=white)](https://swift.org)
+[![Swift 6.2+](https://img.shields.io/badge/Swift-6.2%2B-F05138?logo=swift&logoColor=white)](https://swift.org)
 [![Platforms](https://img.shields.io/badge/platforms-macOS%20%7C%20iOS%20%7C%20Linux-lightgrey)](#requirements)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
@@ -37,7 +37,7 @@ serialization, MLLP, and acknowledgements need no specification files.
 
 ## Requirements
 
-- Swift 6.1 or later;
+- Swift 6.2 or later;
 - macOS 13, iOS 16, or Linux (tested with the official `swift` images).
 
 ## Installation

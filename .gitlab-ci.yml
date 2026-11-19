@@ -19,7 +19,7 @@ default:
 linux-package:
   stage: test
   extends: .swiftpm-tests
-  image: swift:6.1
+  image: swift:6.2
   tags:
     - deploy
   script:

@@ -1,4 +1,4 @@
-// swift-tools-version:6.1
+// swift-tools-version:6.2
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -42,8 +42,8 @@ let package = Package(
         .package(url: "https://github.com/apple/swift-nio-ssl.git", from: "2.37.5"),
         .package(url: "https://github.com/swift-server/async-http-client.git", from: "1.36.2"),
         .package(url: "https://github.com/apple/swift-argument-parser", from: "1.8.2"),
-        // FHIRModels 0.9.x requires Swift tools 6.2. Keep the last release
-        // compatible with this package's declared Swift tools 6.1 baseline.
+        // Keep FHIRModels 0.8.0, whose models the R4, R4B, and R5 adapters
+        // are qualified against; 0.9 is a separate upgrade.
         .package(url: "https://github.com/apple/FHIRModels.git", exact: "0.8.0"),
         .package(url: "https://github.com/jpsim/Yams.git", from: "5.4.0"),
         .package(url: "https://github.com/swiftlang/swift-docc-plugin", from: "1.5.0")
