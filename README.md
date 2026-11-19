@@ -46,7 +46,7 @@ Add the package to your `Package.swift`, and depend on the products you use:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/OPALE-dev/HL7Swift.git", from: "1.1.0"),
+    .package(url: "https://github.com/OPALE-dev/HL7Swift.git", from: "1.1.1"),
 ],
 targets: [
     .target(name: "MyConnector", dependencies: [
