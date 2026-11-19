@@ -45,7 +45,8 @@ let package = Package(
         // FHIRModels 0.9.x requires Swift tools 6.2. Keep the last release
         // compatible with this package's declared Swift tools 6.1 baseline.
         .package(url: "https://github.com/apple/FHIRModels.git", exact: "0.8.0"),
-        .package(url: "https://github.com/jpsim/Yams.git", from: "5.4.0")
+        .package(url: "https://github.com/jpsim/Yams.git", from: "5.4.0"),
+        .package(url: "https://github.com/swiftlang/swift-docc-plugin", from: "1.5.0")
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
@@ -75,9 +76,7 @@ let package = Package(
                 .product(name: "NIOFoundationCompat", package: "swift-nio"),
                 .product(name: "AsyncHTTPClient", package: "async-http-client")
             ],
-            path: "Sources/FHIRSwift",
-            exclude: ["Converter", "HL7"],
-            sources: ["FHIRSwift.swift", "Network", "Validation"]),
+            path: "Sources/FHIRSwift"),
         .target(
             name: "CDA",
             dependencies: ["HL7Core"]),
@@ -88,10 +87,7 @@ let package = Package(
                 "HL7V2",
                 "FHIR",
                 .product(name: "ModelsR4", package: "FHIRModels")
-            ],
-            path: "Sources/FHIRSwift",
-            exclude: ["FHIRSwift.swift", "Network", "Validation"],
-            sources: ["Converter", "HL7"]),
+            ]),
         .target(
             name: "FHIRSwift",
             dependencies: ["FHIR", "HL7Mapping"],

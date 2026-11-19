@@ -4,6 +4,7 @@
 /*.xcodeproj
 xcuserdata/
 DerivedData/
-.swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
-/doc
-/docs
+.reports/
+.derived-data/
+# Xcode creates its workspace and schemes here when it opens the package.
+/.swiftpm/xcode/

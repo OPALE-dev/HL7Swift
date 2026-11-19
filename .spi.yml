@@ -1,0 +1,4 @@
+version: 1
+builder:
+  configs:
+    - documentation_targets: [HL7Core, HL7V2, FHIR, CDA, HL7Mapping]

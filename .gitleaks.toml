@@ -1,0 +1,8 @@
+# gitleaks configuration: the default rules, minus the TLS test material that
+# the MLLP TLS tests use, generated for localhost.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Throwaway TLS keys of the test suite"
+paths = ['''Tests/HL7V2PublicAPITests/Resources/localhost-(cert|key)\.pem''']

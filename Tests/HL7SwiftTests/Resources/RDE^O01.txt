@@ -1,5 +1,5 @@
 MSH|^~\&|MILLENNIUM|WSH|WSH_TIE|WSH_TIE|20200310095702||RDE^O01|Q105132700T129367833||2.3||||||8859/1
-PID|1|1516070^^^RGR50^MRN|1516070^^^RGR50^MR~^^^NHS^NH||ZZZTEST^MEDS TEAM OAK^^^PROFESSOR^^CURRENT||19800101|2|||No Fixed Abode^^^""^ZZ99 3VZ^GBR^HOME^^""||||""|""|""|10012589^^^Encounter Num^FINNBR||||C||""|0|""|""|""||""
+PID|1|7000391^^^RGR50^MRN|7000391^^^RGR50^MR~^^^NHS^NH||EXEMPLAR^ROBIN^^^PROFESSOR^^CURRENT||19720622|2|||Bo Opghr Tcwsr^^^""^JK00 3SY^GBR^HOME^^""||||""|""|""|27305329^^^Encounter Num^FINNBR||||C||""|0|""|""|""||""
 PD1|""|""|Practice Code not known^^8023|G1234567^Test^GP^^^^^^External Id^PRSNL^^^EXTID^""|""||""|""
 PV1|1|INPATIENT|ZZZTEST LAB^Bay 1^Bed 10^WSH^^BED^Main Building|22|||C4598938^Suresh^Mohanraj^^^Dr^^^NHS Consultant Number^PRSNL^^^NONGP^""~716337131016^Suresh^Mohanraj^^^Dr^^^Doctor Nbr^PRSNL^^^ORGDR^""|G1234567^Test^GP^^^^^^External Id^PRSNL^^^EXTID^""||300|""|""|""|19|""|""||INPATIENT|10012589^^^Attendance Num^VISITID|""||""||||||||||||||""|""|""|WSH||ACTIVE|||20190308090900
 PV2||1||""|||""|||0|||""||||||||""|""|^^38024||||""

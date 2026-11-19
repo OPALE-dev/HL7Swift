@@ -1,0 +1,56 @@
+name: Bug report
+description: Something does not work as the HL7 standard or the documentation says.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not attach messages or documents that contain patient data. Report vulnerabilities privately, as described in SECURITY.md.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, what you expected, and what happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: How to reproduce
+      description: A minimal code sample, and a synthetic or public message, resource, or document if one is needed.
+    validations:
+      required: true
+  - type: dropdown
+    id: product
+    attributes:
+      label: Product
+      multiple: true
+      options: [HL7V2, FHIR, CDA, HL7Mapping, HL7Core, HL7Swift (historical API), Command-line tools]
+    validations:
+      required: true
+  - type: input
+    id: reference
+    attributes:
+      label: Standard reference
+      description: The HL7 v2 chapter, FHIR page, or CDA section that defines the expected behavior, if known.
+      placeholder: HL7 v2.5.1 chapter 3.4.2, or https://hl7.org/fhir/R4/http.html#read
+  - type: input
+    id: revision
+    attributes:
+      label: HL7Swift revision
+      placeholder: commit or tag
+    validations:
+      required: true
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      multiple: true
+      options: [macOS, iOS, Linux]
+    validations:
+      required: true
+  - type: input
+    id: swift
+    attributes:
+      label: Swift version
+      description: Output of `swift --version`.

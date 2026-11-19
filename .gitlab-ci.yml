@@ -6,7 +6,7 @@ default:
   timeout: 45m
 
 # The Opale GitLab instance provides a Docker runner tagged `deploy` and an
-# Apple runner tagged `swift`. See Documentation/CONTINUOUS_INTEGRATION.md.
+# Apple runner tagged `swift`.
 .swiftpm-tests:
   before_script:
     - mkdir -p .reports
@@ -24,7 +24,7 @@ linux-package:
     - deploy
   script:
     - swift --version
-    - bash Documentation/verify-v2-resources.sh
+    - bash Scripts/check-no-specifications.sh
     - swift build -c release
     # SwiftPM emits its XCTest xUnit report when tests run in parallel.
     - swift test --parallel --num-workers 2 --xunit-output .reports/linux-tests.xml
@@ -39,7 +39,7 @@ macos-package:
   script:
     - xcodebuild -version
     - swift --version
-    - bash Documentation/verify-v2-resources.sh
+    - bash Scripts/check-no-specifications.sh
     - swift build -c release
     - swift test --parallel --xunit-output .reports/macos-tests.xml
 

@@ -1,40 +1,330 @@
 # Changelog
 
-## Unreleased — 2026-10-13
+All notable changes to HL7Swift are listed here, newest first. This file is
+generated from the commit history with [git-cliff](https://git-cliff.org); do
+not edit it by hand.
 
-- Added framework-independent `FHIRR4ReadServer`: configured CapabilityStatement,
-  JSON read/GET and POST search, bounded parameters, cursor searchsets,
-  canonical links, conditional reads and safe OperationOutcome responses.
-  Application callbacks own identity, search semantics and authorization.
-- Added explicit ImagingStudy/series/instance and WADO-RS Endpoint projections,
-  with UID/identity/duplicate checks and unknown versus empty collection handling.
-- No HL7 v2 XSDs or imported mapping CSVs are distributed in library resources.
-  `HL7()` is resource-free and installs handwritten native working models.
-  No application-supplied specification directory is accepted or needed.
-- New `ER7Message` value API supports custom delimiters, Unicode, explicit null,
-  long repetitions, edits, escape handling and connector parsing policies.
-  Declared and interpreted versions remain separate.
-- New original/enhanced-phase ACK builder supports AA/AE/AR/CA/CE/CR without
-  artefacts; the application chooses the phase and persistence contract.
-- New `MLLPConnection` async API checks ACK correlation, handles deadlines and
-  cancellation, and closes uncertain exchanges. Raw framing codecs are public.
-  Standard client TLS configurations verify trust and hostname.
-- New `FHIRR4RESTClient` async API supports CRUD, full search Bundles, bounded
-  pagination, capabilities, history, vread, batch/transaction, version metadata
-  and OperationOutcome errors through an injectable HTTP transport.
-- Added positional v2 clinical projections and CDA patients, nested sections
-  and plain-text narration with XML byte/depth limits.
-- `V2MessageBuilder` and `V2NativeValidator` provide native clinical construction
-  and scoped connector checks without schema artefacts.
-- Added IPC imaging procedure and TXA/OBX text-document construction/projection,
-  plus `V2InboundProcessor` with an obligatory async persistence/processing callback.
-- CDA rejects recovered/truncated XML consistently on Darwin and Linux.
-- `HL7CodeGen` exports native working-model symbols to an explicit output directory.
-- Fixed Unicode and repeated-segment lookup in the historical parser, removed
-  message-body transport logging, and corrected Linux imports/file-size access.
+## [1.0.0] - 2026-10-23
 
-Migration and limitations: [ER7](Documentation/ER7.md),
-[MLLP](Documentation/MLLP.md), [FHIR REST](Documentation/FHIR_REST.md),
-[clinical projections](Documentation/CLINICAL_PROJECTIONS.md).
-Full profile conformance, clinical workflows and automatic patient reconciliation
-are not implied by these API additions. Worklist/MPPS services belong to the PACS.
+### Added
+
+- Add bounded R4B and R5 PACS exchange adapters
+- Add explicit FHIR imaging projections and qualify server HTTP exchanges
+- Add framework-independent read-only FHIR R4 server primitives
+- Add native imaging orders and ACK-after-processing pipeline
+- Add correlated async MLLP with verified TLS and qualify optional schemas
+- Add tolerant resource-free ER7 API and async FHIR R4 REST client
+- Add scoped CDA diagnostics and track roadmap progress
+- Add scoped FHIR R4 JSON validation diagnostics
+- Add public module tests and shared diagnostics
+- Add GitLab CI for Swift platforms
+- Add test file for ORU_R01 base64 PNG
+- Add TriggerEvent and MessageStructure to Message class alongside Message Type
+- Add configuration for client and server
+- Add configuration for client
+- Add localization
+- Add localization
+- Add forgotten file
+- Add file
+- Add class for terser path autocompletion :D
+- Add method to get terser path for a model
+- Add TLS on client side, but not working yet (WIP)
+- Add server delegate methods
+- Add channel arg to server delegate
+- Add channel arg to server delegate
+- Add server delegate method to inform socket connected
+- Add server delegate method to inform socket disconnected
+- Add selection for cell
+- Add documentation
+- Add little slash at beggining of suggestion
+- Add client localPort property
+- Add netwok tests + test func can throw
+- Add date DT validation
+- Add computed sortedFields to Segment
+- Add min and max occurs to field
+- Add none ResultType
+- Add none ResultType
+- Add none ResultType
+- Add message ref to Validationresult
+- Add min/max occurs to segments (needed for validation)
+- Add send delegate method to HL7ServerDelegate
+- Add send delegate method to HL7ServerDelegate
+- Add missing MSH-1 separator field and fix subscript by index
+- Add getSegment with repetition handling
+- Add tests for terser
+- Add generated code for all HL7 version implementation
+- Add HL7CodeGen target
+- Add Typable quick test
+- Add some generated Versionable implementations
+- Add subscripts to read segments/fields according to spec names
+- Add .all in Version OptionSet
+- Add better HL7 spec support + all versions resources
+- Add documentation for Cell (wip)
+- Add documentation for Message
+- Add documentation for Segment
+- Add MessageType to handle HL7 multiple versions
+- Add MessageType enum
+- Add server delegate
+- Add 2.5.1 messages standard + Fix encoding field parsing
+- Add HL7Server target
+- Encode and send message to remote HL7 server
+- Add Error class and new init in Message + send() in HL7Client
+- Add Logger class and initiate client connection
+- Add untracked resources files
+
+### Fixed
+
+- Fix all warnings
+- Fix terser: index out of range error
+- Fix position getter for segment
+- Fix server connection timeout
+- Fix timeout for HL7Client
+- Fix localization
+- Fix #38 issue with ACK_
+- Fix #37 message Control ID was missing in ACK response from server
+- Fix slash bugs in terser searcher
+- Fix slash problem in terser searcher
+- Fix some offsets in repetitions and field/cell counts in terser paths
+- Fix empty fields count in tersePath()
+- Fix bug on segments not all displayed (index)
+- Fix some FHIR converter issues
+- Fix MLLPDecoder read end of message
+- Fix server ACK response
+- Fix selection for subcomponent
+- Fix selection for MSH segment
+- Fix selection, carriage return was the culprit \!
+- Fix selection for encoding fields
+- Fix client send
+- Fix segment setter subscript and make testSendAllTestMessages pass the test
+- Fix indexing in populate
+- Fix validation level for version
+- Fix validation level for segments
+- Fix validation level for segments
+- Fix fields offset?
+- Fix fields offset?
+- Fix fields order in rootGroup
+- Fix fields order in rootGroup
+- Fix indexing (2)
+- Fix indexing in populate
+- Fix subscript overflow
+- Fix segment subscript out of index on set
+- Fix wrong values
+- Fix double segment
+- Fix Message init
+- Fix unknow message version
+- Fix subscript field getter + refactoring
+- Fix some warning
+- Fix wrong versions (starts with 2.5.1)
+- Fix type parsing
+
+### Changed
+
+- Record FHIR server progress and explicit Linux qualification limits
+- Tighten FHIR response contracts and serialize Linux test execution
+- Replace external specifications with autonomous native v2 models and checks
+- Expose scoped v2 clinical contexts and CDA patient and section projections
+- Inventory bundled HL7 v2 schemas and document provenance limits
+- Validate CDA namespaces and reject XML DTDs
+- Report known losses in HL7 v2 to FHIR mappings
+- Adapt HL7 v2 validator to shared diagnostics
+- Pin FHIRModels for Swift 6.1
+- Split interoperability APIs into domain modules
+- Modernize package and stabilize HL7 networking
+- Update versions
+- Handle encoding in message in all intializers
+- Export HL7 messages with different version
+- Update readme
+- Handle different encodings
+- Add CDA template
+- Multiple AND conditions, fixes, refactor, clean, comment
+- Refactor and add some resources
+- Initial commit with template POC
+- Cleaning
+- Better HL7 date to Swift date method in extensions
+- Clean
+- Expand tree on terser search
+- Restore tree on clear button press in search field
+- Free search works in group segmented mode
+- Wip
+- Wip
+- Clean
+- Show parent group on wrong terser path
+- Clean
+- Clean
+- Populate segments parents
+- OH MY GOD IT WORKS IT WOOOOOOOOORKS
+- Handle field repetition in terse path
+- Better neame and index of fields in segment
+- Update visility of DataType and related
+- Get position in message for given segment + handle repetitions
+- Get position in message for given group
+- Completely remove FHIRModels dependency in HL7Swift target (everything FHIR is now in FHIRSwift target)
+- More and more FHIR stuff
+- Refactor + comments
+- Move FHIR stuff into new FHIRSwift library target
+- More FHIR stuff
+- Base for HL7 v2.x to FHIR Models R4 converter (fix SPM resources)
+- Base for HL7 v2.x to FHIR Models R4 converter
+- Refactor + update README
+- TLS server/client works, without certificate verification (comm are encrypted anyway)
+- Try to impl TLS on client side, but fail (WIP)
+- TLS server works, compatible with hl7snd from dcm4chee! This is victory, and yuck the Java keystore
+- Try to implement SSL/TLS
+- Forward some changes
+- Forward some changes
+- Forward some changes
+- Forward some changes
+- Rollback some changes
+- Clean
+- Clean
+- Try to fix segment position (2)
+- Try to fix segment position
+- Get range for cell in HL7 message
+- Preload message segments from spec
+- Preload message segments from spec
+- Preload message segments from spec
+- Preload message segments from spec
+- Switch Versionable protocol to public visibility
+- Wip
+- Minor changes
+- Debug call
+- Debug call
+- Clean + Add documentation
+- Advanced autocomplete
+- Clean
+- Pass selection, Begin autocompletion
+- Get position of segment string in message
+- Pass from/to to server delegate methods
+- Pass from to server delegate method
+- Pass from to server delegate method
+- Pass from to server delegate method
+- Make sure to call server delegate methods on main thread
+- Make tests to send all test files to HL7Server and debug them
+- Refactor
+- Refactor
+- Update visibility
+- Handle empty cells
+- Replace name by longName in validation messages
+- Handle max length of * (-1)
+- Validate fields
+- Set min and max occurs in populate
+- Use segments fields hash indexing
+- Adjust validator
+- Adjust validator
+- Adjust validator
+- More tests
+- More tests
+- Segment fields is now a dictionary
+- Revert xml files
+- Fixing the spec, some holes in the xml files
+- Update visibility
+- Update visibility of spec for version
+- Fallback to higher version if message type not found + sanitize check HL7 string
+- Pass all tests
+- Segment validation
+- Segment validation
+- Try to fill cell type, min/max occurs, etc.
+- Fully implement Node protocol
+- Node protocol
+- Update visibility
+- Update visibility
+- Update visibility
+- Tired of commit messages
+- Expand populate mecanism to handle segment repetitions
+- Expand populate mecanism to handle segment repetitions
+- ValidationLevel description
+- ResultType description
+- Update validator visibility
+- Update validator visibility
+- Refactor HL7 struct
+- Move Datatype in Models dir
+- Refactor and comment
+- Base of the validation logic
+- « I know HL7 datatypes »
+- Message separator switched to public
+- Clean + Add documentation
+- Terser takes into account segment repetition
+- Clean
+- Populate message (parsed) root group with message values
+- Adjust visibility
+- Adjust visibility
+- Adjust visibility
+- Message always have a type (UnknowMessageType to the rescue)
+- Message always have a type (UnknowMessageType to the rescue)
+- Prevent index out of bounds in segment subscript
+- Preserve separator field in segment description
+- Adjust visibility
+- Adjust visibility
+- Adjust visibility
+- Adjust visibility
+- Adjust visibility
+- Adjust visibility
+- Make Message init explicitely public
+- Refactor and organize project
+- Separate code generator classes in a different target (SwiftGenerator)
+- Update README
+- Reply default ACK (WIP)
+- Update README
+- Update README
+- Update README
+- Update README
+- Came back to flat static field types
+- Refactor terser methods names
+- Clean
+- Clean
+- Terse with repetitions handling !
+- Clean
+- Refactor segment tersing, todo handle repetitions
+- Terse segments, fields, components and subcomponents
+- Get a segment with terser
+- Clean
+- Move versions into a directory
+- Generate HL7 classes at a given dir path
+- Update tests
+- Some test around code generation (see tests)
+- Le commit mystère
+- Assert on unsupported message
+- Make the spec works
+- Terser WIP
+- Forge empty messages against spec WIP
+- Prepare full HL7 spec support
+- RunParser throws exception when type/version are wrong
+- Clean
+- Successful parsing of spec !
+- Parse XML to generate group
+- Parse spec message T.T
+- Update readme
+- Reply default ACK
+- Server runs and receive message and write them in directory
+- Server listen
+- Begin xml parsing
+- Attach Unit Tests to HL7Swift target in Xcode
+- Read ACK/NAK response after sent message
+- Prepare lib classes and HL7Client target
+- Update README
+- All tests pass
+- Clean up
+- Initial Commit
+
+### Removed
+
+- Remove bundled HL7 schemas and enable autonomous parsing and MLLP ACKs
+- Remove NAK for now
+- Remove .CONTENT from group's names
+
+### Documentation
+
+- Document native implementation qualification and remaining PACS work
+- Document comparison with supplied HL7 v2.8.2 schemas
+- Document HL7Swift modernization roadmap
+- Comment and refactor
+
+### Tests
+
+- Test pass for autocompletion
+- Test fallback on rax segment if spec unavailable
+- Test segment/field subscript setter (tofix)
+- Test pass for ACK message
+- Test passes
+
+<!-- generated by git-cliff -->

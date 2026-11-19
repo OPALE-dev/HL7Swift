@@ -1,0 +1,75 @@
+# Mirrors the test jobs of .gitlab-ci.yml.
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  linux-package:
+    name: Linux
+    runs-on: ubuntu-latest
+    container: swift:6.1
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+      - run: swift --version
+      - run: bash Scripts/check-no-specifications.sh
+      - run: swift build -c release
+      # SwiftPM writes the XCTest xUnit report only in parallel mode.
+      - run: mkdir -p .reports && swift test --parallel --num-workers 2 --xunit-output .reports/linux-tests.xml
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: linux-test-report
+          path: .reports/*.xml
+          retention-days: 30
+
+  macos-package:
+    name: macOS
+    runs-on: macos-26
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+      - run: xcodebuild -version && swift --version
+      - run: bash Scripts/check-no-specifications.sh
+      - run: swift build -c release
+      - run: mkdir -p .reports && swift test --parallel --xunit-output .reports/macos-tests.xml
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: macos-test-report
+          path: .reports/*.xml
+          retention-days: 30
+
+  ios-package:
+    name: iOS
+    runs-on: macos-26
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+      - run: xcodebuild -version
+      - run: >-
+          xcodebuild build -scheme HL7Swift-Package -destination 'generic/platform=iOS'
+          -derivedDataPath .derived-data CODE_SIGNING_ALLOWED=NO -quiet
+      - name: Test on the newest iOS Simulator
+        run: |
+          # An iPhone from the newest installed iOS runtime, so the job does not
+          # depend on device names that change between Xcode releases.
+          IOS_RUNTIME=$(xcrun simctl list runtimes available | awk '/^iOS / {version=$2} END {print version}')
+          SIMULATOR_ID=$(xcrun simctl list devices available "iOS $IOS_RUNTIME" | grep -m1 'iPhone' | grep -oE '[0-9A-F]{8}(-[0-9A-F]{4}){3}-[0-9A-F]{12}')
+          test -n "$SIMULATOR_ID"
+          mkdir -p .reports
+          xcodebuild test -scheme HL7Swift-Package -quiet \
+            -destination "platform=iOS Simulator,id=$SIMULATOR_ID" \
+            -derivedDataPath .derived-data \
+            -resultBundlePath .reports/ios-tests.xcresult \
+            CODE_SIGNING_ALLOWED=NO

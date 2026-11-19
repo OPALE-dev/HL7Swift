@@ -1,0 +1,21 @@
+name: Feature request
+description: Propose an HL7 v2, FHIR, or CDA capability, or an API improvement.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: need
+    attributes:
+      label: Need
+      description: What you want to do with HL7Swift, and why the current API does not allow it.
+    validations:
+      required: true
+  - type: input
+    id: reference
+    attributes:
+      label: Standard reference
+      description: The HL7 v2 chapter, FHIR page, or CDA section involved, if any.
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposal
+      description: The API or behavior you have in mind, and how it could be checked.
