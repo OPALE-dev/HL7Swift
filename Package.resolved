@@ -1,5 +1,5 @@
 {
-  "originHash" : "ef3887c4ba504cdc02e4d0c7e898a55c53b63d8a691c642718a5164a18473fec",
+  "originHash" : "799e36a36be75754cfb376a99d02b4fa1329432e67c105b7ffef16f6be8dd8ce",
   "pins" : [
     {
       "identity" : "async-http-client",
@@ -15,8 +15,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/FHIRModels.git",
       "state" : {
-        "revision" : "a05392269b630a8d661bda720d149fee2f0257e2",
-        "version" : "0.8.0"
+        "revision" : "d3abe06ad46ffc5609c0b96cdfdaaca9f636e360",
+        "version" : "0.9.4"
       }
     },
     {
