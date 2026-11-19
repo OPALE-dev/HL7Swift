@@ -8,6 +8,7 @@ not edit it by hand.
 
 ### Documentation
 
+- Changelog of 1.1.0
 - Prepare the repository for public release
 
 ## [1.0.0] - 2026-10-23
