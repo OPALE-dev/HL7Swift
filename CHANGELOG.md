@@ -4,6 +4,12 @@ All notable changes to HL7Swift are listed here, newest first. This file is
 generated from the commit history with [git-cliff](https://git-cliff.org); do
 not edit it by hand.
 
+## [1.1.0] - 2026-11-19
+
+### Documentation
+
+- Prepare the repository for public release
+
 ## [1.0.0] - 2026-10-23
 
 ### Added
@@ -119,6 +125,7 @@ not edit it by hand.
 
 ### Changed
 
+- MLLP client: no SNI for IP literal hosts
 - Record FHIR server progress and explicit Linux qualification limits
 - Tighten FHIR response contracts and serialize Linux test execution
 - Replace external specifications with autonomous native v2 models and checks
