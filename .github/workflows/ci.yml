@@ -33,6 +33,8 @@ jobs:
         with:
           name: linux-test-report
           path: .reports/*.xml
+          # .reports is a hidden directory, which upload-artifact skips by default.
+          include-hidden-files: true
           retention-days: 30
 
   macos-package:
@@ -50,6 +52,8 @@ jobs:
         with:
           name: macos-test-report
           path: .reports/*.xml
+          # .reports is a hidden directory, which upload-artifact skips by default.
+          include-hidden-files: true
           retention-days: 30
 
   ios-package:
