@@ -69,8 +69,10 @@ public class TerserSuggestion {
                 return message.rootGroup
             } else {
                 // Remove the unwanted part, ie "/goodpart/goodpart/uncompleted_par_"
-                let lastSlash = input.lastIndex(of: "/")
-                let parentString = String(input[..<lastSlash!])
+                guard let lastSlash = input.lastIndex(of: "/") else {
+                    return nil
+                }
+                let parentString = String(input[..<lastSlash])
 
                 self.input = parentString
                 

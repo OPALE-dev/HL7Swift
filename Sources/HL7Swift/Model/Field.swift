@@ -38,7 +38,7 @@ public class Field:Node {
     public var maxOccurs: Int = 0
     
     public lazy var fieldCode: String = {
-        return parent!.name + "-" + String(self.index)
+        return (parent?.name ?? "") + "-" + String(self.index)
     }()
     
     init(name: String, parent: Node? = nil) {

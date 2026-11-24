@@ -216,7 +216,7 @@ extension Segment: CustomStringConvertible {
 
         var str = code + "|"
         
-        if isHeader {
+        if isHeader && !localFields.isEmpty {
             // remove separator field
             localFields.remove(at: 0)
         }

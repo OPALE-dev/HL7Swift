@@ -50,9 +50,13 @@ public class ComponentType: DataType {
     override public init(name: String) {
         super.init(name: name)
         
+        // Names read "TYPE.n"; a name without a numeric position keeps
+        // its text and the index -1.
         let comps = name.split(separator: ".")
-        self.name = String(comps[0] + "." + comps[1])
-        self.index = Int(comps[1])!
+        if comps.count >= 2 {
+            self.name = String(comps[0] + "." + comps[1])
+            self.index = Int(comps[1]) ?? -1
+        }
     }
     
     public override var description: String {

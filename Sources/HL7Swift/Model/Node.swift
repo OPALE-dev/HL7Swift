@@ -48,7 +48,9 @@ extension Node {
      */
     public func autocomplete(_ input: String, deepInput: String = "/") -> [String:Node] {
         var suggestions: [String:Node] = [:]
-        let i = input.lastIndex(of: "/")!
+        guard let i = input.lastIndex(of: "/") else {
+            return suggestions
+        }
         let j = input.index(after: i)
         let otherNodes = String(input[..<i])
         let lastNode = String(input[j...])

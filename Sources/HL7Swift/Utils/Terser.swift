@@ -143,15 +143,17 @@ public struct Terser {
         if result == nil {
             return (1, group)
         } else {
-            // Extracting the number of repetitions
-            let a = group.firstIndex(of: "(")!
-            let a1 = group.index(after: a)
-            let b = group.firstIndex(of: ")")!
+            // Extracting the number of repetitions; a count that does not
+            // fit leaves the name unmatched rather than stopping.
+            guard let a = group.firstIndex(of: "("), let b = group[a...].firstIndex(of: ")"),
+                  let count = UInt(group[group.index(after: a)..<b]) else {
+                return (1, group)
+            }
             
             // Extracting the group name
             let groupName = String(group[..<a])
             
-            return (UInt(group[a1..<b])!, groupName)
+            return (count, groupName)
         }
     }
 
@@ -187,30 +189,46 @@ public struct Terser {
         return nil
     }
     
+    /**
+     Scans a segment path, eg `PID-1(2)-3-12`, which represents `code-field(repetition)-component-subcomponent`,
+     and returns the node it designates, or nil when the message has no such node.
+     The repetition is optional, default's 1
+     */
     private func scanSegPath(_ segment: String, repetitions: UInt = 1) -> Node? {
+        // CODE
+        guard segment.count >= 3 else {
+            return nil
+        }
         var path = segment
         var field: Int = 0
         var repetition: Int = 0
         var component: Int = 0
         var subcomponent: Int = 0
         
-        // CODE
         let code = String(path.prefix(3))
         path.removeFirst(3)
         
-        let scanner = Scanner(string: path)
+        guard let messageSegment = message.getSegment(code, repetition: repetitions) else {
+            return nil
+        }
         
         if path.isEmpty {
-            return message.getSegment(code, repetition: repetitions)
+            return messageSegment
         }
+        
+        let scanner = Scanner(string: path)
         
         // FIELD
         scanner.charactersToBeSkipped = CharacterSet(charactersIn: "-")
         scanner.scanInt(&field)
         //field -= 1 // index offset is now managed by segment subscript itself
         
+        guard let messageField = messageSegment[field] else {
+            return nil
+        }
+        
         if scanner.isAtEnd {
-            return message.getSegment(code, repetition: repetitions)?[field]
+            return messageField
         }
         
         // REPETITION, optional
@@ -219,108 +237,58 @@ public struct Terser {
                 scanner.scanString(")", into: nil)
                 repetition -= 1
             }
-            
-            if scanner.isAtEnd {
-                return message.getSegment(code, repetition: repetitions)?[field]?.cells[repetition]
-            }
+        }
+        
+        guard messageField.cells.indices.contains(repetition) else {
+            return nil
+        }
+        let cell = messageField.cells[repetition]
+        
+        if scanner.isAtEnd {
+            return cell
         }
         
         // COMPONENT
         scanner.scanInt(&component)
         component -= 1
         
+        guard cell.components.indices.contains(component) else {
+            return nil
+        }
+        let messageComponent = cell.components[component]
+        
         if scanner.isAtEnd {
-            if let a = message.getSegment(code, repetition: repetitions) {
-                if let b = a[field] {
-                    // TODO bad code, we should handle that somewhere else
-                    if b.cells.count < repetition || b.cells[repetition].components.count < component {
-                        return nil
-                    }
-                    return b.cells[repetition].components[component]
-                }
-            }
+            return messageComponent
         }
         
         // SUBCOMPONENT
         scanner.scanInt(&subcomponent)
         subcomponent -= 1
         
-        if scanner.isAtEnd {
-            return message.getSegment(code, repetition: repetitions)?[field]?.cells[repetition].components[component].components[subcomponent]
+        if scanner.isAtEnd, messageComponent.components.indices.contains(subcomponent) {
+            return messageComponent.components[subcomponent]
         }
         
-        // TODO throw error, path too long
+        // path too long, or no such subcomponent
         return nil
     }
     
     /**
-     Scans a segment path, eg `PID-1(2)-3-12`, which represents `code-field(repetition)-component-subcomponent`.
+     Scans a segment path, eg `PID-1(2)-3-12`, which represents `code-field(repetition)-component-subcomponent`,
+     and returns the text of the node it designates.
      The repetition is optional, default's 1
      */
     private func scanSegmentPath(_ segment: String, repetitions: UInt = 1) -> String? {
-        var path = segment
-        var field: Int = 0
-        var repetition: Int = 0
-        var component: Int = 0
-        var subcomponent: Int = 0
-        
-        // CODE
-        let code = String(path.prefix(3))
-        path.removeFirst(3)
-        
-        let scanner = Scanner(string: path)
-        
-        if path.isEmpty {
-            return message.getSegment(code, repetition: repetitions)?.description
+        switch scanSegPath(segment, repetitions: repetitions) {
+        case let segment as Segment:
+            return segment.description
+        case let field as Field:
+            return field.description
+        case let cell as Cell:
+            return cell.description
+        default:
+            return nil
         }
-        
-        // FIELD
-        scanner.charactersToBeSkipped = CharacterSet(charactersIn: "-")
-        scanner.scanInt(&field)
-        //field -= 1 // index offset is now managed by segment subscript itself
-        
-        if scanner.isAtEnd {
-            return message.getSegment(code, repetition: repetitions)?[field]?.description
-        }
-        
-        // REPETITION, optional
-        if scanner.scanString("(", into: nil) {
-            if scanner.scanInt(&repetition) {
-                scanner.scanString(")", into: nil)
-                repetition -= 1
-            } 
-            
-            if scanner.isAtEnd {
-                return message.getSegment(code, repetition: repetitions)?[field]?.cells[repetition].description
-            }
-        }        
-        
-        // COMPONENT
-        scanner.scanInt(&component)
-        component -= 1
-        
-        if scanner.isAtEnd {
-            if let a = message.getSegment(code, repetition: repetitions) {
-                if let b = a[field] {
-                    // TODO bad code, we should handle that somewhere else
-                    if b.cells.count < repetition || b.cells[repetition].components.count < component {
-                        return nil
-                    }
-                    return b.cells[repetition].components[component].description
-                }
-            }
-        }
-        
-        // SUBCOMPONENT
-        scanner.scanInt(&subcomponent)
-        subcomponent -= 1
-        
-        if scanner.isAtEnd {
-            return message.getSegment(code, repetition: repetitions)?[field]?.cells[repetition].components[component].components[subcomponent].description
-        }
-        
-        // TODO throw error, path too long
-        return nil
     }
     
 }

@@ -357,7 +357,9 @@ public class Group:Node {
 public func shortname(_ longName: String) -> String {
     let a = longName.split(separator: ".")
     //print("a \(a)")
-    if a.count == 2 {
+    if a.isEmpty {
+        return longName
+    } else if a.count == 2 {
         if a[1] == "CONTENT" {
             return String(a[0])
         } else {

@@ -169,15 +169,19 @@ private extension DefaultValidator {
         var results:[ValidationResult] = []
         var group:Group? = parent
         
-        if parent == nil {
-            group = message.rootGroup!
-        }
-        
         if message.specMessage == nil || message.rootGroup == nil {
             return []
         }
         
-        for item in group!.items {
+        if parent == nil {
+            group = message.rootGroup
+        }
+        
+        guard let current = group else {
+            return []
+        }
+        
+        for item in current.items {
             switch item {
             case .group(let subGroup):
                 results.append(contentsOf: validateMissingSegments(message, parent: subGroup))

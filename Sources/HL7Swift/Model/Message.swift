@@ -308,21 +308,22 @@ public struct Message {
             throw HL7Error.unsupportedMessage(message: "MSH segment not found")
         }
         
-        guard let field = segment.fields[9] else {
+        guard let field = segment.fields[9], let cell = field.cells.first else {
             throw HL7Error.unsupportedMessage(message: "Message Type field not found")
         }
         
         // ACK / NAK
-        if field.cells[0].components.isEmpty {
-            str = field.cells[0].text
+        if cell.components.isEmpty {
+            str = cell.text
         } else {
-            if field.cells[0].components.count == 3 {
-                str = field.cells[0].components[0].text + "_" + field.cells[0].components[1].text
-                self.triggerEvent = field.cells[0].components[1].text
-                self.messageStructure = field.cells[0].components[2].text
-            } else {
-                str = field.cells[0].components[0].text + "_" + field.cells[0].components[1].text
-                self.triggerEvent = field.cells[0].components[1].text
+            let parts = cell.components.map { $0.text }
+            guard parts.count >= 2 else {
+                throw HL7Error.unsupportedMessage(message: "Message Type has no trigger event")
+            }
+            str = parts[0] + "_" + parts[1]
+            self.triggerEvent = parts[1]
+            if parts.count == 3 {
+                self.messageStructure = parts[2]
             }
         }
         
@@ -336,15 +337,15 @@ public struct Message {
             throw HL7Error.unsupportedMessage(message: "MSH segment not found")
         }
         
-        guard let field = segment.fields[12] else {
+        guard let field = segment.fields[12], let cell = field.cells.first else {
             throw HL7Error.unsupportedMessage(message: "Version field not found")
         }
         
-        var vString = field.cells[0].text
+        var vString = cell.text
         
         if vString == "" {
-            if field.cells[0].components.count > 0 {
-                vString = field.cells[0].components[0].text
+            if let component = cell.components.first {
+                vString = component.text
             }
             else {
                 throw HL7Error.unsupportedMessage(message: "Version field empty")
@@ -536,16 +537,25 @@ public struct Message {
             
         }
         
-        sum = self.getPositionInMessage(field!)!.location
+        // The cell must be found under a field of this message.
+        guard let field = field, let fieldRange = self.getPositionInMessage(field) else {
+            return nil
+        }
+        sum = fieldRange.location
         
         if repetition || component || subcomponent {// ~
-            sum += field!.cells[0..<cellIndex].map({$0.description.utf16.count + 1}).reduce(0, +)
+            guard field.cells.indices.contains(cellIndex) else { return nil }
+            sum += field.cells[0..<cellIndex].map({$0.description.utf16.count + 1}).reduce(0, +)
             
             if component || subcomponent {// ^
-                sum += field!.cells[cellIndex].components[0..<componentIndex].map({$0.description.utf16.count + 1}).reduce(0, +)
+                let components = field.cells[cellIndex].components
+                guard components.indices.contains(componentIndex) else { return nil }
+                sum += components[0..<componentIndex].map({$0.description.utf16.count + 1}).reduce(0, +)
                 
                 if subcomponent {// &
-                    sum += field!.cells[cellIndex].components[componentIndex].components[0..<subcomponentIndex].map({$0.description.utf16.count + 1}).reduce(0, +)
+                    let subcomponents = components[componentIndex].components
+                    guard subcomponents.indices.contains(subcomponentIndex) else { return nil }
+                    sum += subcomponents[0..<subcomponentIndex].map({$0.description.utf16.count + 1}).reduce(0, +)
                 }
             }
         }
