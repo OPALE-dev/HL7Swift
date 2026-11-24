@@ -45,7 +45,7 @@ let package = Package(
         // Keep FHIRModels 0.8.0, whose models the R4, R4B, and R5 adapters
         // are qualified against; 0.9 is a separate upgrade.
         .package(url: "https://github.com/apple/FHIRModels.git", exact: "0.8.0"),
-        .package(url: "https://github.com/jpsim/Yams.git", from: "5.4.0"),
+        .package(url: "https://github.com/jpsim/Yams.git", from: "6.2.2"),
         .package(url: "https://github.com/swiftlang/swift-docc-plugin", from: "1.5.0")
     ],
     targets: [
