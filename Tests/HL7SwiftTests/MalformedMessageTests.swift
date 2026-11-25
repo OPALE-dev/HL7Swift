@@ -8,17 +8,22 @@ final class MalformedMessageTests: XCTestCase {
 
     func testDegenerateHeadersThrowInsteadOfStopping() throws {
         let hl7 = try HL7()
-        let refused: [(String, HL7Error)] = [
-            ("PID|1|2", .unsupportedMessage(message: "MSH segment not found")),
-            ("MSH\rPID|1", .unsupportedMessage(message: "Not HL7 message")),
-            ("MSH|\rPID|1", .unsupportedMessage(message: "Not enought field in segment MSH")),
-            ("MSH|^~\\&|||||||ADT^A08|id|P|~", .unsupportedMessage(message: "Version field empty")),
-            ("MSH|^~\\&|||||||ADT^A08|id|P|", .unsupportedMessage(message: "Version field empty")),
-            ("MSH|^~\\&|||||||ADT^A08|id|P|^2.5.1", .unsupportedVersion(message: "Unknow/unsupported version")),
+        // A header without field separator is refused by the pattern check or by
+        // the field count, depending on how the platform's regular expressions
+        // treat the carriage return: both are refusals of the same kind.
+        let refused: [(String, [HL7Error])] = [
+            ("PID|1|2", [.unsupportedMessage(message: "MSH segment not found")]),
+            ("MSH\rPID|1", [.unsupportedMessage(message: "Not HL7 message"),
+                            .unsupportedMessage(message: "Not enought field in segment MSH")]),
+            ("MSH|\rPID|1", [.unsupportedMessage(message: "Not enought field in segment MSH")]),
+            ("MSH|^~\\&|||||||ADT^A08|id|P|~", [.unsupportedMessage(message: "Version field empty")]),
+            ("MSH|^~\\&|||||||ADT^A08|id|P|", [.unsupportedMessage(message: "Version field empty")]),
+            ("MSH|^~\\&|||||||ADT^A08|id|P|^2.5.1", [.unsupportedVersion(message: "Unknow/unsupported version")]),
         ]
-        for (text, error) in refused {
+        for (text, errors) in refused {
             XCTAssertThrowsError(try Message(text, hl7: hl7), text) {
-                XCTAssertEqual($0 as? HL7Error, error, text)
+                guard let error = $0 as? HL7Error else { return XCTFail("\(text): \($0)") }
+                XCTAssertTrue(errors.contains(error), "\(text): \(error)")
             }
         }
     }
